@@ -1,0 +1,32 @@
+{
+  "name": "finance-playground",
+  "version": "1.0.0",
+  "private": true,
+  "description": "这笔钱借给谁：第一章写实场景调查游戏",
+  "scripts": {
+    "start": "vite --host 127.0.0.1 --open",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build && node scripts/package-game.mjs",
+    "preview": "vite preview --host 127.0.0.1 --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Starxxgazer/finance-playground.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Starxxgazer/finance-playground/issues"
+  },
+  "homepage": "https://github.com/Starxxgazer/finance-playground",
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.2"
+  }
+}

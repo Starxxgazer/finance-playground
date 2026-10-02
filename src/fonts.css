@@ -1,0 +1,35 @@
+@font-face {
+  font-family: "UI Sans";
+  src: url("/fonts/ui/noto-sans-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Sans";
+  src: url("/fonts/ui/noto-sans-medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Song";
+  src: url("/fonts/ui/noto-serif-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Song";
+  src: url("/fonts/ui/noto-serif-semibold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Hand";
+  src: url("/fonts/ui/ma-shan-zheng.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}

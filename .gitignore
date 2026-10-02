@@ -1,33 +1,38 @@
-# 本地官方资料、下载包和个人交接文件
-/官方比赛资料/
-/参赛问答/
-/参赛准备/
-/提交材料/
-*.zip
-*:Zone.Identifier
-/个人背景与黑客松交流交接*
+# Only the playable game, its source, assets and reproducible build are published.
+/*
+!/.gitignore
+!/index.html
+!/开始游戏.html
+!/package.json
+!/package-lock.json
+!/vite.config.js
+!/src/
+!/public/
+!/scripts/
 
-# 凭证与本地环境；示例只能包含占位值
+/scripts/*
+!/scripts/package-game.mjs
+/public/*
+!/public/scenes/
+!/public/characters/
+!/public/fonts/
+
+# Design, instructions, references, exported masters, tests and worktrees stay local.
+*.md
+node_modules/
+dist/
+test-results/
+playwright-report/
+coverage/
+.worktrees/
 .env
 .env.*
-!.env.example
 *.pem
 *.key
 credentials.json
-
-# 依赖、构建结果、日志与浏览器测试产物
-node_modules/
-dist/
-build/
-coverage/
-test-results/
-playwright-report/
 *.log
+*.zip
+*:Zone.Identifier
 __pycache__/
-.venv/
-
-# 编辑器和操作系统本地文件
 .DS_Store
 Thumbs.db
-.idea/
-.vscode/
