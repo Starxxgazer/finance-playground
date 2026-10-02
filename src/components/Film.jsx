@@ -1,26 +1,67 @@
-import { useRef, useState, useEffect } from 'react';
-import { films } from '../game/content.js';
-import { asset, Button, Icon, Portrait } from './Ui.jsx';
-
-export default function Film({ id, onContinue, onPause, paused }) {
-  const film = films[id];
-  const video = useRef(null);
+import { useState } from "react";
+import { films } from "../game/content.js";
+import { Button, Icon, asset } from "./Ui.jsx";
+export default function Film({ index, onContinue }) {
+  const film = films[index];
   const [failed, setFailed] = useState(false);
-  const [summary, setSummary] = useState(!film.src);
-  const [ended, setEnded] = useState(false);
-  useEffect(() => { if (paused) video.current?.pause(); }, [paused]);
-  const showSummary = () => { video.current?.pause(); setSummary(true); };
-  const isPoster = !film.src || failed || summary;
-  return <main className={`film-stage ${id === 'intro' ? 'film-intro' : ''}`} aria-label="剧情展示">
-    <img className="film-background" src={asset(`scenes/${film.image}.webp`)} alt="" />
-    <div className="film-top"><span><Icon name="film" size={18} />剧情 {id === 'intro' ? '01' : id === 'turning' ? '02' : '03'} / 03</span><button className="light-button" onClick={onPause}><Icon name="pause" size={18} />暂停</button></div>
-    {!isPoster && <video ref={video} controls playsInline preload="metadata" poster={asset(`scenes/${film.image}.webp`)} onError={() => { setFailed(true); setSummary(true); }} onEnded={() => { setEnded(true); setSummary(true); }}><source src={asset(film.src)} type="video/mp4" />{film.captions && <track kind="subtitles" src={asset(film.captions)} srcLang="zh" label="中文" default />}</video>}
-    {isPoster && <div className="film-content"><div className="chapter-label">{film.kicker}<span /></div><h1>{film.title}</h1>
-      <div className="film-summary">{film.summary.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
-      <div className="film-people"><Portrait person={id === 'intro' ? 'lin' : id === 'turning' ? 'chen' : 'xiaohe'} /><div><strong>{id === 'intro' ? '一份申请，两个用处。' : id === 'turning' ? '把发现带回去，把依据留下来。' : '故事告一段落，调查留下了依据。'}</strong><span>{!film.src ? '视频待接入 · 当前以剧情摘要呈现' : failed ? '视频暂时无法播放 · 可阅读摘要继续' : ended ? '剧情播放完毕' : '已切换为剧情摘要'}</span></div></div>
-      <Button onClick={onContinue}>{film.next}<Icon name="arrow" /></Button>
-    </div>}
-    {!isPoster && <button className="film-skip light-button" onClick={showSummary}>跳过视频，阅读摘要<Icon name="arrow" size={18} /></button>}
-    <div className="film-bottom"><span>留灯烘焙 · 第一章</span><span>虚构案例 / 第一人称剧情调查</span></div>
-  </main>;
+  return (
+    <section className={`film film-${index}`} aria-label="场景过渡">
+      <img
+        className="film-background"
+        src={asset(`scenes/${film.image}.webp`)}
+        srcSet={`${asset(`scenes/${film.image}-960.webp`)} 960w, ${asset(`scenes/${film.image}.webp`)} 1672w`}
+        sizes="100vw"
+        alt={
+          index === 0 ? "晨光里，小禾为排队顾客装面包，陈叔在烤箱旁忙碌" : ""
+        }
+        fetchPriority="high"
+      />
+      {film.src && !failed && (
+        <video
+          controls
+          playsInline
+          onError={() => setFailed(true)}
+          src={asset(film.src)}
+        >
+          {film.captions && (
+            <track
+              kind="captions"
+              src={asset(film.captions)}
+              srcLang="zh"
+              label="中文"
+              default
+            />
+          )}
+        </video>
+      )}
+      <div className="film-content">
+        <span className="film-kicker">
+          {index === 0
+            ? "第一章 / 一次有依据的调查"
+            : ["", "10月29日 下午", "10月29日 晚", "10月30日 上午"][index]}
+        </span>
+        <h1>{film.title}</h1>
+        <p>{film.text}</p>
+        {index === 0 && (
+          <p className="film-role">
+            你负责调查，林姐负责带教与复核。
+            <br />
+            你和小禾是朋友，这件事已告诉林姐。
+          </p>
+        )}
+        <Button onClick={onContinue}>
+          {index === 0 ? "开始调查" : "进入场景"}
+          <Icon name="arrow" size={22} />
+        </Button>
+        {film.src && (
+          <button className="text-button" onClick={onContinue}>
+            跳过视频，继续调查
+          </button>
+        )}
+      </div>
+      <span className="film-footnote">
+        自由探索 / 没有倒计时 / 进度自动保存
+      </span>
+    </section>
+  );
 }

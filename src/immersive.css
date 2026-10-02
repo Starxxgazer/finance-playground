@@ -1,0 +1,1275 @@
+/* Recovered “街角手记” presentation: transparent panels, open scene, deliberate camera. */
+:root,
+:root[data-theme] {
+  font-family: "UI Sans", "Noto Sans CJK SC", sans-serif;
+  color-scheme: dark;
+  --bg: #191713;
+  --surface: rgba(35, 30, 25, 0.56);
+  --paper: rgba(245, 230, 207, 0.065);
+  --ink: #faf3e8;
+  --muted: #ded6c9;
+  --line: rgba(245, 230, 207, 0.14);
+  --accent: #f0cba7;
+  --accent-bg: rgba(227, 195, 151, 0.18);
+  --button: rgba(189, 128, 79, 0.32);
+  --button-ink: #fff7ec;
+  --glass: rgba(35, 30, 25, 0.56);
+  --glass-soft: rgba(35, 30, 25, 0.34);
+  --glass-strong: rgba(35, 30, 25, 0.76);
+  --shadow: transparent;
+  color: var(--ink);
+  background: var(--bg);
+}
+:root[data-theme="light"] {
+  --glass: rgba(35, 30, 25, 0.46);
+  --glass-strong: rgba(35, 30, 25, 0.7);
+}
+:root[data-theme="dark"] {
+  --glass: rgba(35, 30, 25, 0.65);
+  --glass-strong: rgba(35, 30, 25, 0.84);
+}
+body {
+  overflow: hidden;
+}
+h1,
+h2 {
+  font-family: "UI Hand", "UI Song", serif;
+  font-weight: 400;
+}
+h3,
+h4,
+legend {
+  font-family: "UI Song", serif;
+  font-weight: 500;
+}
+button,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+button:disabled {
+  opacity: 0.52;
+}
+select,
+input:not([type="checkbox"]):not([type="radio"]) {
+  border: 0;
+  background: rgba(245, 230, 207, 0.1);
+}
+select option {
+  background: #342e28;
+  color: var(--ink);
+}
+.immersive-app,
+.immersive-app > main {
+  width: 100%;
+  height: 100dvh;
+}
+.immersive-scene {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  animation: scene-arrive 0.8s both;
+}
+.world-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #21241d;
+}
+.camera-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transition: transform 850ms cubic-bezier(0.22, 0.68, 0.12, 1);
+  will-change: transform;
+}
+.camera-world img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+.world-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(19, 17, 13, 0.4),
+    transparent 32%,
+    transparent 55%,
+    rgba(19, 17, 13, 0.69)
+  );
+}
+.world-error {
+  position: absolute;
+  left: 40px;
+  top: 150px;
+  max-width: 30em;
+  padding: 20px;
+}
+.scene-hud {
+  position: absolute;
+  left: 40px;
+  right: 36px;
+  top: 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.scene-location {
+  max-width: 480px;
+  text-shadow: 0 2px 12px #211b17;
+}
+.scene-location > span {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.scene-location h1 {
+  margin: 9px 0 8px;
+  font-size: 36px;
+  line-height: 1.3;
+}
+.scene-location p {
+  font-size: 12px;
+  line-height: 1.8;
+  opacity: 0.88;
+}
+.scene-tools {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  pointer-events: auto;
+}
+.scene-tools .toolbar-button,
+.scene-tools .icon-button {
+  color: var(--ink);
+  border: 0;
+  border-radius: 3px;
+  background: var(--glass-soft);
+  backdrop-filter: blur(9px);
+  min-height: 40px;
+}
+.scene-tools .toolbar-button {
+  display: flex;
+  gap: 8px;
+  padding: 9px 13px;
+  font-size: 12px;
+}
+.scene-tools .toolbar-button small {
+  font-size: 10px;
+  opacity: 0.72;
+}
+.scene-tools .icon-button {
+  width: 40px;
+  height: 40px;
+}
+.outside-tools {
+  position: fixed;
+  top: 30px;
+  right: 36px;
+  z-index: 3;
+}
+.scene-subtitle {
+  position: absolute;
+  bottom: 113px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(710px, 65%);
+  display: flex;
+  align-items: baseline;
+  gap: 23px;
+  text-shadow:
+    0 2px 12px #171510,
+    0 1px 3px #171510;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.scene-subtitle strong {
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.scene-subtitle p {
+  font-family: "UI Song", serif;
+  font-size: 19px;
+  line-height: 1.85;
+}
+.scene-controls {
+  position: absolute;
+  left: 40px;
+  right: 36px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  transition: opacity 0.25s;
+}
+.scene-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.button-primary,
+.button-secondary {
+  min-height: 44px;
+  border: 0;
+  border-radius: 3px;
+  padding: 12px 20px;
+  font-size: 13px;
+  box-shadow: none;
+}
+.button-primary {
+  background: var(--button);
+  color: var(--button-ink);
+}
+.button-secondary {
+  background: var(--paper);
+  color: var(--ink);
+}
+.button-primary:hover:not(:disabled),
+.button-secondary:hover:not(:disabled) {
+  background: rgba(204, 155, 109, 0.42);
+}
+.scene-controls .button-primary,
+.scene-controls .button-secondary {
+  backdrop-filter: blur(10px);
+}
+.scene-controls .button-secondary {
+  background: var(--glass-soft);
+}
+.scene-controls small {
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.has-focus .scene-hud,
+.has-focus .scene-controls,
+.has-focus .scene-subtitle {
+  opacity: 0;
+  pointer-events: none;
+}
+.has-focus .scene-tools {
+  pointer-events: none;
+}
+.world-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  z-index: 1;
+}
+.world-hotspot:not(:disabled):active {
+  transform: translate(-50%, -50%);
+}
+.reticle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--glass-soft);
+  backdrop-filter: blur(6px);
+  transition: background 0.3s;
+}
+.reticle > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff4e3;
+}
+.world-hotspot:hover .reticle,
+.world-hotspot:focus-visible .reticle {
+  background: rgba(189, 128, 79, 0.55);
+}
+.world-hotspot-label {
+  position: absolute;
+  top: 47px;
+  white-space: nowrap;
+  padding: 9px 13px;
+  background: var(--glass);
+  backdrop-filter: blur(9px);
+  font-size: 12px;
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.world-hotspot-label small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.world-hotspot:hover .world-hotspot-label,
+.world-hotspot:focus-visible .world-hotspot-label {
+  opacity: 1;
+  transform: none;
+}
+.is-read .reticle {
+  color: var(--accent);
+}
+.floating-hint {
+  position: fixed;
+  left: 40px;
+  bottom: 190px;
+  margin: 0;
+  width: min(680px, calc(100% - 80px));
+  background: var(--glass-strong);
+  backdrop-filter: blur(12px);
+  border: 0;
+  z-index: 5;
+}
+/* The dialog is transparent; only the two reading surfaces blur the photograph. */
+.modal {
+  border: 0;
+  border-radius: 3px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(15px);
+  box-shadow: none;
+  scrollbar-color: #bc9c785c transparent;
+}
+.modal::backdrop {
+  background: #10181530;
+  backdrop-filter: blur(2px);
+}
+.modal-heading {
+  background: transparent;
+  border: 0;
+}
+.modal:not(.scene-overlay) .modal-heading {
+  background: rgba(35, 30, 25, 0.9);
+}
+.modal-heading h2 {
+  font-size: 28px;
+}
+.modal-heading .icon-button {
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.modal-body {
+  padding: 24px 28px 30px;
+}
+.scene-overlay {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+.scene-overlay::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+}
+.scene-overlay > .modal-heading {
+  position: absolute;
+  left: 36px;
+  right: 30px;
+  top: 24px;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.scene-overlay > .modal-heading h2 {
+  font-family: "UI Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  text-shadow: 0 2px 8px #171510;
+}
+.scene-overlay > .modal-heading button {
+  display: flex;
+  width: auto;
+  gap: 8px;
+  background: var(--glass-soft);
+  backdrop-filter: blur(9px);
+  padding: 10px 13px;
+  pointer-events: auto;
+  font-size: 12px;
+  border-radius: 3px;
+}
+.scene-overlay > .modal-body {
+  height: 100%;
+  padding: 0;
+  animation: panels-arrive 0.4s 0.56s both;
+}
+.inspection-panels {
+  position: absolute;
+  top: 105px;
+  bottom: 48px;
+  left: 40px;
+  right: 40px;
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(60px, 1fr) minmax(
+      340px,
+      410px
+    );
+  gap: 30px;
+  align-items: start;
+  pointer-events: none;
+}
+.inspection-intro {
+  grid-column: 1;
+  background: var(--glass-soft);
+  backdrop-filter: blur(7px) brightness(0.7);
+  padding: 27px;
+  max-height: 100%;
+  overflow: auto;
+  pointer-events: auto;
+}
+.inspection-intro .eyebrow {
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+}
+.inspection-intro h2 {
+  font-size: 35px;
+  line-height: 1.35;
+  margin: 17px 0;
+}
+.inspection-intro p {
+  font-family: "UI Song", serif;
+  font-size: 14px;
+  margin: 18px 0;
+  line-height: 1.95;
+}
+.inspection-intro > small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+.inspection-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 32px;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.inspection-caption svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.inspection-body {
+  grid-column: 3;
+  min-width: 0;
+  max-height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--glass);
+  backdrop-filter: blur(9px) brightness(0.82);
+  padding: 26px;
+  pointer-events: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #bc9c785c transparent;
+}
+.inspection-body > .document:first-child {
+  margin-top: 0;
+}
+.inspection-body > .document:first-child > .document-meta,
+.inspection-body > .document:first-child > h3,
+.inspection-body > .document:first-child > .document-source {
+  display: none;
+}
+.inspection-body > .document:first-child > .document-lines {
+  margin-top: 0;
+  padding-top: 0;
+}
+.document {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+  box-shadow: none;
+}
+.document.compact {
+  padding: 15px;
+  background: var(--paper);
+}
+.document-lines {
+  border: 0;
+  padding-top: 5px;
+}
+.document-lines p {
+  font-family: "UI Song", serif;
+  line-height: 1.9;
+  font-size: 14px;
+  padding: 8px 0;
+}
+.document-lines p + p {
+  margin-top: 3px;
+}
+.document h3 {
+  font-size: 21px;
+}
+.classify-grid {
+  gap: 10px;
+}
+fieldset {
+  border: 0;
+  background: var(--paper);
+  padding: 10px;
+  min-width: 0;
+}
+legend {
+  font-size: 23px;
+  padding: 0 5px;
+}
+.choice {
+  background: var(--paper);
+  border: 0;
+  font-size: 12px;
+  padding: 10px;
+  gap: 7px;
+}
+.choice:has(input:checked) {
+  background: var(--accent-bg);
+}
+.receipt-pair {
+  gap: 10px;
+}
+.receipt-pair > div {
+  background: var(--paper);
+  border: 0;
+  padding: 13px;
+}
+.receipt-pair strong {
+  font-size: 14px;
+}
+.receipt-pair p {
+  font-size: 12px;
+}
+.sentence-choice,
+.note,
+.note-choice,
+.feedback,
+.receipt-notice,
+.sticky-note,
+.month,
+.reference-slot,
+.selectable-lines button,
+.sequence-slots > button,
+.paper-options button,
+.company-nav button,
+.dimension-evidence button,
+.bag-documents > button,
+.invitation-card {
+  border: 0;
+  box-shadow: none;
+  background: var(--paper);
+}
+.sentence-choice:hover,
+.selectable-lines button:hover,
+.clue-list button:hover {
+  background: var(--accent-bg);
+}
+.feedback {
+  padding: 13px;
+  color: var(--ink);
+  border: 0;
+  line-height: 1.9;
+}
+.feedback.success {
+  background: rgba(156, 187, 148, 0.13);
+  color: #e4f0dc;
+}
+.inspection-body .dialogue .portrait {
+  display: none;
+}
+.inspection-body .dialogue p {
+  font-family: "UI Song", serif;
+  font-size: 14px;
+}
+.inspection-body .calendar-workspace {
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+.inspection-body .month {
+  width: 100%;
+  margin: 0;
+}
+.month {
+  padding: 18px;
+}
+.month-title strong,
+.equation strong {
+  font-family: "UI Song", serif;
+}
+.days button {
+  min-height: 36px;
+}
+.days .selected {
+  background: var(--accent-bg);
+  color: var(--ink);
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+.day-note-count {
+  background: #9b734d;
+  color: #fff4e3;
+}
+.sticky-list {
+  gap: 12px;
+}
+.sticky-note.selected {
+  outline: 1px solid var(--accent);
+}
+.sticky-note.placed {
+  background: var(--accent-bg);
+}
+.calendar-pins,
+.count-line,
+.hint-row,
+.handover-action,
+.handover-notes article,
+.review-citations,
+.sequence-section {
+  border: 0;
+}
+.clue-list {
+  display: grid;
+  gap: 9px;
+  margin: 20px 0 28px;
+}
+.clue-list button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 15px;
+  background: var(--paper);
+  border-radius: 2px;
+  font-size: 14px;
+}
+.clue-list button > svg:last-child,
+.clue-list button > small {
+  margin-left: auto;
+}
+.clue-list small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 24px 0;
+}
+.chapter-nav button {
+  border: 0;
+  background: var(--paper);
+  padding: 13px;
+  font-size: 12px;
+}
+.chapter-nav button[aria-current] {
+  background: var(--accent-bg);
+  color: var(--ink);
+}
+/* Worktable remains a transparent surface within the room, with its own scroll. */
+.work-glass {
+  position: absolute;
+  top: 105px;
+  bottom: 42px;
+  right: 40px;
+  width: min(1050px, calc(100% - 180px));
+  padding: 30px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--glass);
+  backdrop-filter: blur(9px) brightness(0.82);
+  scrollbar-width: thin;
+  scrollbar-color: #bc9c785c transparent;
+}
+.work-glass .desk-intro h2,
+.work-glass .section-title h2 {
+  font-size: 33px;
+}
+.work-glass .desk-intro {
+  gap: 20px;
+}
+.work-glass .desk-intro > div {
+  min-width: 0;
+}
+.work-glass .desk-intro .button-secondary {
+  flex-shrink: 0;
+}
+.work-glass .assumption {
+  font-size: 12px;
+  max-width: 600px;
+}
+.work-glass .funds-grid {
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 35px;
+}
+.work-glass .desk-evidence {
+  padding: 0;
+  border: 0;
+}
+.work-glass .calculation-sheet {
+  border: 0;
+  background: var(--glass-soft);
+  padding: 22px;
+}
+.work-glass .calculation-sheet .document {
+  margin-top: 0;
+}
+.work-glass .dialogue .portrait {
+  display: none;
+}
+.work-glass .dialogue p {
+  font-family: "UI Song", serif;
+}
+.reference-slot {
+  padding: 16px;
+}
+.reference-slot p {
+  font-size: 13px;
+}
+.selectable-lines {
+  max-height: 210px;
+  overflow: auto;
+}
+.selectable-lines button {
+  font-size: 13px;
+}
+.selectable-lines button.selected,
+.reference-slot.filled {
+  background: var(--accent-bg);
+}
+.equation {
+  background: transparent;
+  border: 0;
+}
+.payment-gap > div {
+  border: 0;
+  background: var(--paper);
+}
+.payment-gap .available {
+  border: 0;
+  background: var(--accent-bg);
+}
+.sequence-slots > button {
+  min-height: 100px;
+}
+.sequence-section {
+  margin-top: 14px;
+  padding-top: 0;
+}
+.company-nav button[aria-selected="true"],
+.dimension-evidence .collected {
+  border: 0;
+  background: var(--accent-bg);
+}
+.dimension-evidence .uncollected {
+  background: var(--paper);
+}
+.work-next {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 26px;
+}
+.film {
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 80px 8vw;
+}
+.film h1 {
+  font-size: clamp(44px, 5vw, 70px);
+  font-weight: 400;
+}
+.film-content > p {
+  font-family: "UI Song", serif;
+  font-size: 17px;
+  line-height: 2;
+}
+.film .button-primary {
+  background: rgba(189, 128, 79, 0.42);
+  color: var(--ink);
+  backdrop-filter: blur(10px);
+}
+.film-content {
+  animation: panels-arrive 0.8s 0.2s both;
+}
+.ending {
+  display: block;
+  position: relative;
+  height: 100dvh;
+  overflow: auto;
+  background: #211c17;
+  padding: 100px 7vw 50px;
+}
+.ending-image {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  object-fit: cover;
+  opacity: 0.65;
+}
+.ending-content {
+  position: relative;
+  margin-left: auto;
+  width: min(570px, 100%);
+  padding: 30px;
+  background: var(--glass);
+  backdrop-filter: blur(9px);
+}
+.ending-content .dialogue .portrait {
+  display: none;
+}
+.ending h1 {
+  font-size: 40px;
+}
+@keyframes panels-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes scene-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (min-width: 1600px) {
+  .inspection-panels {
+    grid-template-columns: 320px 1fr 440px;
+  }
+}
+@media (max-width: 1000px) {
+  .inspection-panels {
+    left: 25px;
+    right: 25px;
+    gap: 20px;
+    grid-template-columns: 230px minmax(20px, 1fr) minmax(320px, 390px);
+  }
+  .inspection-intro {
+    padding: 22px;
+  }
+  .inspection-intro h2 {
+    font-size: 29px;
+  }
+  .inspection-body {
+    padding: 22px;
+  }
+  .work-glass {
+    width: calc(100% - 70px);
+    right: 35px;
+    padding: 25px;
+  }
+  .work-glass .funds-grid {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 24px;
+  }
+  .scene-location {
+    max-width: 350px;
+  }
+  .scene-subtitle {
+    width: 75%;
+  }
+}
+@media (max-width: 699px) {
+  .scene-hud {
+    left: 20px;
+    right: 16px;
+    top: 21px;
+    gap: 14px;
+  }
+  .scene-location {
+    max-width: calc(100% - 120px);
+  }
+  .scene-location > span {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  .scene-location h1 {
+    font-size: 29px;
+    margin-top: 10px;
+  }
+  .scene-location p {
+    display: none;
+  }
+  .scene-tools {
+    gap: 6px;
+  }
+  .scene-tools .toolbar-button {
+    min-height: 36px;
+    padding: 8px 10px;
+  }
+  .scene-tools .toolbar-button > span {
+    display: none;
+  }
+  .scene-tools .icon-button {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+  .fullscreen-button {
+    display: none;
+  }
+  .outside-tools {
+    top: 20px;
+    right: 16px;
+  }
+  .scene-subtitle {
+    bottom: 151px;
+    width: calc(100% - 48px);
+    gap: 13px;
+    align-items: flex-start;
+  }
+  .scene-subtitle p {
+    font-size: 16px;
+    line-height: 1.9;
+  }
+  .scene-subtitle strong {
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  .scene-controls {
+    left: 20px;
+    right: 20px;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .scene-controls-left {
+    width: 100%;
+    gap: 8px;
+  }
+  .scene-controls .button-primary {
+    margin-left: auto;
+  }
+  .scene-controls .button-secondary {
+    padding: 10px 12px;
+    font-size: 11px;
+    min-height: 39px;
+  }
+  .scene-controls .button-primary {
+    padding: 10px 16px;
+    min-height: 40px;
+    font-size: 12px;
+  }
+  .scene-controls small {
+    font-size: 9px;
+  }
+  .floating-hint {
+    left: 20px;
+    bottom: 270px;
+    width: calc(100% - 40px);
+    padding: 16px;
+    font-size: 12px;
+  }
+  .modal {
+    width: calc(100% - 24px);
+    max-height: 88dvh;
+  }
+  .modal-heading h2 {
+    font-size: 25px;
+  }
+  .modal-body {
+    padding: 20px;
+  }
+  .scene-overlay {
+    width: 100vw;
+    max-height: none;
+  }
+  .scene-overlay > .modal-heading {
+    top: 20px;
+    left: 20px;
+    right: 16px;
+    gap: 15px;
+  }
+  .scene-overlay > .modal-heading h2 {
+    font-size: 11px;
+  }
+  .scene-overlay > .modal-heading button {
+    padding: 9px 11px;
+    min-height: 40px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .inspection-panels {
+    top: 34%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    overflow: auto;
+    padding: 22px 20px max(30px, env(safe-area-inset-bottom));
+    background: var(--glass);
+    backdrop-filter: blur(9px) brightness(0.75);
+    pointer-events: auto;
+    scrollbar-width: thin;
+  }
+  .inspection-intro {
+    padding: 0 0 18px;
+    background: transparent;
+    backdrop-filter: none;
+    max-height: none;
+    overflow: visible;
+  }
+  .inspection-intro h2 {
+    margin: 10px 0;
+    font-size: 30px;
+  }
+  .inspection-intro p {
+    margin: 10px 0;
+    font-size: 12px;
+  }
+  .inspection-intro .eyebrow {
+    font-size: 10px;
+  }
+  .inspection-caption {
+    display: none;
+  }
+  .inspection-body {
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    max-height: none;
+    overflow: visible;
+  }
+  .document-lines p {
+    font-size: 14px;
+  }
+  .work-glass {
+    top: 28%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 24px 20px 35px;
+  }
+  .work-glass .desk-intro {
+    flex-direction: column;
+  }
+  .work-glass .desk-intro h2,
+  .work-glass .section-title h2 {
+    font-size: 29px;
+  }
+  .work-glass .funds-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .work-glass .desk-intro .button-secondary {
+    max-width: none;
+  }
+  .work-glass .calculation-sheet {
+    padding: 18px;
+  }
+  .work-glass .funds-grid .month {
+    max-width: 360px;
+    margin: 16px auto;
+  }
+  .work-glass .desk-evidence {
+    padding-top: 0;
+  }
+  .reference-slot {
+    min-height: 110px;
+    padding: 12px;
+  }
+  .reference-slot p {
+    font-size: 12px;
+  }
+  .film {
+    padding: 100px 26px 85px;
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+  .film h1 {
+    font-size: 43px;
+  }
+  .film-content > p {
+    font-size: 15px;
+  }
+  .film .film-role {
+    font-size: 12px;
+  }
+  .film-footnote {
+    left: 26px;
+    bottom: 28px;
+  }
+  .ending {
+    padding: 34dvh 0 0;
+  }
+  .ending-image {
+    position: fixed;
+    opacity: 0.75;
+    height: 100dvh;
+  }
+  .ending-content {
+    padding: 25px 22px;
+    width: 100%;
+  }
+  .ending h1 {
+    font-size: 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: #27221e;
+    --glass-strong: #27221e;
+  }
+  .inspection-intro {
+    background: #27221e;
+  }
+}
+/* Before the finding, keep the calendar and evidence on opposite sides of the room. */
+@media (min-width: 1000px) {
+  .work-glass:has(.is-selecting) {
+    left: 40px;
+    right: 40px;
+    width: auto;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    overflow: visible;
+  }
+  .is-selecting .desk-intro {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320px;
+    padding: 23px;
+    background: var(--glass-soft);
+    backdrop-filter: blur(7px) brightness(0.7);
+    display: block;
+  }
+  .is-selecting .desk-intro .section-caption {
+    font-size: 10px;
+  }
+  .is-selecting .desk-intro h2 {
+    font-size: 29px;
+  }
+  .is-selecting .desk-intro .button-secondary {
+    margin-top: 16px;
+    font-size: 12px;
+    padding: 10px 13px;
+  }
+  .is-selecting .desk-intro .assumption {
+    font-size: 11px;
+  }
+  .is-selecting .funds-grid {
+    display: contents;
+  }
+  .is-selecting .funds-grid > section:first-child {
+    position: absolute;
+    left: 0;
+    top: 230px;
+    width: 320px;
+    bottom: 85px;
+    overflow: auto;
+    padding: 23px;
+    background: var(--glass);
+    backdrop-filter: blur(9px) brightness(0.82);
+    scrollbar-width: thin;
+  }
+  .is-selecting .funds-grid > section:first-child h3 {
+    font-size: 16px;
+  }
+  .is-selecting .funds-grid > section:first-child > p {
+    font-size: 11px;
+  }
+  .is-selecting .month {
+    padding: 12px;
+    margin: 18px 0;
+  }
+  .is-selecting .funds-grid > .desk-evidence {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 440px;
+    max-height: 100%;
+    overflow: auto;
+    padding: 26px;
+    background: var(--glass);
+    backdrop-filter: blur(9px) brightness(0.82);
+    scrollbar-width: thin;
+  }
+  .is-selecting .hint-row {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 320px;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+  }
+  .is-selecting .hint-row .button-secondary {
+    background: var(--glass);
+    backdrop-filter: blur(9px);
+    font-size: 11px;
+    padding: 11px;
+  }
+  .is-selecting .hint-row p {
+    font-size: 11px;
+    line-height: 1.7;
+    text-shadow: 0 2px 7px #191510;
+  }
+  .is-selecting .calculation-sheet {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 440px;
+    margin: 0;
+    padding: 26px;
+    overflow: auto;
+    background: var(--glass-strong);
+    backdrop-filter: blur(15px);
+  }
+  .is-selecting:has(.calculation-sheet) .funds-grid,
+  .is-selecting:has(.calculation-sheet) .hint-row {
+    visibility: hidden;
+  }
+}
