@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172923">
+  <meta name="description" content="走进留灯烘焙。在一盏灯、一份邀请函与几页账本之间，完成你的第一次现场调查。">
+  <title>这笔钱借给谁 · 留灯</title>
+  <link rel="icon" href="data:,">
+  <link rel="preload" as="image" href="assets/opening.webp">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="cinema.css">
+  <script type="module" src="app.js"></script>
+  <script type="module" src="cinema.js"></script>
+</head>
+<body>
+  <main id="game" aria-label="留灯烘焙，第一章调查">
+    <div id="world" aria-hidden="true"><div id="scene-plane"><img id="scene-image" src="assets/bakery.webp" alt=""><div class="atmosphere"></div></div><div class="vignette"></div></div>
+    <div id="screen"></div>
+    <div id="dialogue"></div>
+    <div id="transition" aria-hidden="true"></div>
+  </main>
+  <dialog id="overlay" aria-labelledby="overlay-title"><div id="overlay-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript>此试玩需要启用 JavaScript。启用后刷新即可开始。</noscript>
+</body>
+</html>

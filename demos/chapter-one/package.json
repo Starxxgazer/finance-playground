@@ -1,0 +1,10 @@
+{
+  "name": "liudeng-chapter-one",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 4186 --bind 127.0.0.1",
+    "test": "node --test tests/model.test.mjs",
+    "test:browser": "node tests/browser.cjs"
+  }
+}
