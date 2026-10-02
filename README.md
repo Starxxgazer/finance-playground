@@ -2,7 +2,7 @@
 
 通过游戏帮助普通人理解金融。当前正在确定游戏形式、推进流程和故事格式。
 
-**旧面包店试玩原型已否决并移除，目前没有可运行的游戏。** 历史方案仅作讨论记录，不代表当前需求。
+当前游戏设计见根目录[游戏设计](游戏设计.md)。按用户要求，只保留这一份游戏设计稿；旧稿、设计附件和审核记录已清理。
 
 仓库：<https://github.com/Starxxgazer/finance-playground>
 
@@ -18,9 +18,9 @@
 
 - .github/：自动检查、审查负责人和 PR 模板。
 - docs/协作指南.md：团队工作流程。
-- docs/design/：A、B 的当前设计讨论与体验记录。
+- 游戏设计.md：当前唯一游戏设计稿。
+- docs/design/：设计协作说明。
 - docs/standards/：开发负责人制定的内容格式与接口约定。
-- docs/archive/：历史方案，不是当前需求。
 - AGENTS.md、README.md：协作规则与项目入口。
 
 本机唯一开发目录为 `/home/stargazer/workspace/finance-playground`，通过 `origin` 对接本仓库。Windows 访问路径为 `\\wsl.localhost\Ubuntu-24.04\home\stargazer\workspace\finance-playground`。
@@ -37,6 +37,6 @@ Windows 可将 python3 替换为 py。当前只检查文档链接和仓库文件
 
 ## 下一步
 
-先确定一种游戏形式和一段可演示流程，再定义内容格式，队友据此制作故事。[历史方案](docs/archive/README.md)仅供回顾。
+根据[游戏设计](游戏设计.md)确认场景与交互，再由开发负责人确定内容格式，队友制作预留的视频。
 
 本项目使用 Codex 辅助协作。新代码、图片及 AI 生成素材需记录来源和用途；尚未选定开源许可证。
