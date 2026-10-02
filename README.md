@@ -23,7 +23,9 @@
 - docs/archive/：历史方案，不是当前需求。
 - AGENTS.md、README.md：协作规则与项目入口。
 
-本地主要开发目录为 /home/stargazer/workspace/finance-playground。原来的 hackthon 目录保留比赛资料和旧工作区；不要混用两个目录提交。官方资料、依赖和测试临时文件不放入本仓库。
+本机唯一开发目录为 `/home/stargazer/workspace/finance-playground`，通过 `origin` 对接本仓库。Windows 访问路径为 `\\wsl.localhost\Ubuntu-24.04\home\stargazer\workspace\finance-playground`。
+
+相邻的 `hackthon` 仅存放本地参赛资料、赛事问答、参赛准备和提交材料，不连接 GitHub，不保留游戏开发副本。目录职责见 [目录与工作边界](docs/目录与工作边界.md)。官方资料、私人问答、依赖和测试临时文件不放入本仓库。
 
 ## 当前检查
 
