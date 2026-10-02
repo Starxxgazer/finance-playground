@@ -12,12 +12,14 @@
 - 372785716aa-star、1845452331-cell：共同设计故事。
 - 会使用 Codex 的队友按约定格式整理内容；待新游戏可运行后，两位队友本地试玩，再通过工作分支提交 PR。
 
-开始前阅读 [协作指南](docs/协作指南.md) 和 [AGENTS.md](AGENTS.md)。
+开始前阅读 [协作指南](docs/协作指南.md) 和 [AGENTS.md](AGENTS.md)。A 可把 [首次配置提示词](docs/A-Codex-首次配置.md) 全部复制给自己的 Codex。
 
 ## 目录与工作位置
 
 - .github/：自动检查、审查负责人和 PR 模板。
 - docs/协作指南.md：团队工作流程。
+- docs/design/：A、B 的当前设计讨论与体验记录。
+- docs/standards/：开发负责人制定的内容格式与接口约定。
 - docs/archive/：历史方案，不是当前需求。
 - AGENTS.md、README.md：协作规则与项目入口。
 
