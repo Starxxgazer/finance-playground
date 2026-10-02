@@ -4,7 +4,8 @@
 - 项目是 Finance Playground（玩转金融）。游戏形式、推进流程与内容格式尚待确定；旧面包店原型已被用户否决并移除。docs/archive/ 仅为历史资料，不能当作当前需求或恢复旧代码的授权。
 - 用户负责程序、格式、数值模型和最终合并；两位队友共同设计故事，会使用 Codex 的队友整理内容、运行试玩并发起 PR。
 - 新游戏的故事文件位置与字段由开发负责人另行确定。不得继续使用已删除的 prototype/story.js 作为现行格式。
-- 本地主要开发目录为 /home/stargazer/workspace/finance-playground；旧 hackthon 目录保留资料和旧工作区，不混用两处提交。队友在自己电脑的克隆内工作。
+- 本机唯一游戏开发目录为 /home/stargazer/workspace/finance-playground，origin 对接 https://github.com/Starxxgazer/finance-playground。代码、游戏设计、内容标准、测试及项目 PR 都在此仓库处理；队友在自己电脑的克隆内工作。
+- /home/stargazer/workspace/hackthon 仅用于本地参赛资料、赛事问答、参赛准备和提交材料，不是开发副本，不连接 GitHub。不得把官方手册、附件、赛事问答或私人材料复制、链接或同步进本仓库。只可将核实后的必要产品约束用自己的话写入设计文档，并注明来源与确认状态。
 - 开工前查看分支和工作区；保留他人改动。禁止擅自覆盖文件、强制推送、重写共享历史或丢弃未提交工作。不同会话并行改不同分支时使用单独克隆或 worktree。
 - 普通修改在工作分支进行，经 PR 审查合并到 main。内容任务原则上只改约定的故事文件和素材；程序接口、模型或测试变更应明确分工。
 - 分支按任务新建：主开发用 dev/任务名，A 用 story/任务名，维护用 chore/任务名；合并后从最新 main 开始下一轮，不在已 squash 合并的旧分支上继续追加。
