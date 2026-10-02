@@ -1,0 +1,3 @@
+# Preserve upstream GLSL template strings and collapse the generated engine in reviews.
+vendor/** linguist-vendored
+vendor/three.js -whitespace

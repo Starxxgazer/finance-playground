@@ -5,6 +5,14 @@
   "scripts": {
     "start": "python3 -m http.server 4186 --bind 127.0.0.1",
     "test": "node --test tests/model.test.mjs",
-    "test:browser": "node tests/browser.cjs"
+    "test:browser": "node tests/browser.cjs",
+    "vendor": "node scripts/vendor.mjs",
+    "test:3d": "node tests/scene3d.cjs"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }

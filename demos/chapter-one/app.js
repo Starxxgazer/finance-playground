@@ -4,6 +4,7 @@ import { DOCUMENTS, SCENES, OPENING, ENDING } from './data.js';
 const $ = (q) => document.querySelector(q);
 const KEY = 'liudeng-chapter-one-v1';
 const PLAN = calculatePlan();
+let world3d = null, visualScene = 'opening';
 const emptyState = () => ({ version: 2, report: {}, compare: [], phase: 'title', scene: 'bakery', collected: [], solved: {}, placements: {}, visited: [], read: [], marked: [], moneyPlaced: [], monthPlaced: [], introSeen: [], settings: { labels: false, reduced: false, sound: false } });
 let state = emptyState(), storageAvailable = true;
 try {
@@ -51,7 +52,7 @@ function render() {
   document.body.classList.toggle('reduce-motion', state.settings.reduced);
   document.body.dataset.phase = state.phase;
   document.body.dataset.scene = state.scene;
-  const root = $('#screen'); root.classList.toggle('show-labels', state.settings.labels);
+  const root = $('#screen');
   if (state.phase === 'title') {
     root.innerHTML = `${hud()}<section class="title-screen"><div class="title-copy"><div class="chapter-label">一份留着空白的邀请函</div><h1>灯亮着，<br>面包还热。</h1><p>走进一家排着长队的面包店，<br>看见热闹背后的另一笔账。</p>${btn('推门进去 <span class="arrow">↗</span>','start')}</div></section><footer class="title-bottom"><span>场景调查故事 · 约 10-15 分钟 · 自动保存</span><span>公司、人物与金额均为虚构</span></footer>`;
   } else if (state.phase === 'ending') {
@@ -61,62 +62,29 @@ function render() {
     const isExplore = state.phase === 'explore';
     const docsReady = requiredHere().every(has);
     const complete = Boolean(state.solved[state.scene]);
-    root.innerHTML = `${hud()}<section class="scene-heading"><h1>${isExplore ? esc(sc.name) : '留灯烘焙 · 桌边'}</h1><p>${isExplore ? esc(sc.time) : '入夜前 / 把后面的钱也摆出来'}</p></section>${isExplore ? `<div class="hotspot-layer" aria-label="场景内可以查看的物件">${sc.hotspots.map(h => `<button type="button" class="hotspot ${state.read.includes(h.id)?'read':''}" data-action="hotspot" data-id="${h.id}" aria-label="查看${esc(h.label)}" style="--x:${h.x}%;--y:${h.y}%"><span class="hotspot-ring" aria-hidden="true"></span><span class="hotspot-label">${esc(h.label)}</span></button>`).join('')}</div>` : ''}<section class="mission"><div><div class="mission-kicker">${isExplore ? (complete ? '这一处，已经核对清楚' : '调查手记') : '原方案 / 假设贷款在明天付款前到账'}</div><h2>${isExplore ? esc(sc.question) : (state.solved.presentation ? '把今天的判断，写成有依据的报告。' : state.solved.assembly ? '缺口看见了，再把依据交给陈叔。' : '两笔付款以后，钱还接得上吗？')}</h2><p class="hint">${isExplore ? (complete ? (allScenes() ? '三处调查完成，可以回到老店把钱摆在同一张桌上。' : '打开走访地图，继续核对另一处的资料。') : '点亮处可以查看；拿到资料后，把它们放在一起核对。') : '金额由账本计算，你来判断资料与时间。'}</p></div><div><div class="mission-progress">${isExplore ? `${requiredHere().filter(has).length} / ${requiredHere().length} 份本处资料` : `${REQUIRED_DOCUMENTS.length} 份核心资料已归档`}</div><div class="mission-buttons">${isExplore ? btn('场景物件', 'objects', 'ghost') : btn('走访地图','map','ghost')}${isExplore ? (complete ? (allScenes() ? btn('回老店核对','return') : btn('继续走访','map')) : btn('摊开资料核对','puzzle','primary',docsReady ? '' : 'disabled')) : btn(state.solved.presentation ? '完成调查报告' : state.solved.assembly ? '出示依据' : '继续摆放',state.solved.presentation ? 'report' : state.solved.assembly ? 'presentation' : 'assembly')}</div></div></section>`;
+    root.innerHTML = `${hud()}<section class="scene-heading"><h1>${isExplore ? esc(sc.name) : '留灯烘焙 · 桌边'}</h1><p>${isExplore ? esc(sc.time) : '入夜前 / 把后面的钱也摆出来'}</p></section>${isExplore ? `<div class="hotspot-layer" aria-label="场景内可以查看的物件">${sc.hotspots.map(h => `<button type="button" class="hotspot ${state.read.includes(h.id)?'read':''}" data-action="hotspot" data-id="${h.id}" aria-label="查看${esc(h.label)}" style="--x:${h.x}%;--y:${h.y}%"><span class="hotspot-label">${esc(h.label)}</span></button>`).join('')}</div>` : ''}<section class="mission"><div><div class="mission-kicker">${isExplore ? (complete ? '这一处，已经核对清楚' : '调查手记') : '原方案 / 假设贷款在明天付款前到账'}</div><h2>${isExplore ? esc(sc.question) : (state.solved.presentation ? '把今天的判断，写成有依据的报告。' : state.solved.assembly ? '缺口看见了，再把依据交给陈叔。' : '两笔付款以后，钱还接得上吗？')}</h2><p class="hint">${isExplore ? (complete ? (allScenes() ? '三处调查完成，可以回到老店把钱摆在同一张桌上。' : '打开走访地图，继续核对另一处的资料。') : '移到物件上查看轮廓，点击拿近细看；也可打开场景物件。') : '金额由账本计算，你来判断资料与时间。'}</p></div><div><div class="mission-progress">${isExplore ? `${requiredHere().filter(has).length} / ${requiredHere().length} 份本处资料` : `${REQUIRED_DOCUMENTS.length} 份核心资料已归档`}</div><div class="mission-buttons">${isExplore ? btn('场景物件', 'objects', 'ghost') : btn('走访地图','map','ghost')}${isExplore ? (complete ? (allScenes() ? btn('回老店核对','return') : btn('继续走访','map')) : btn('摊开资料核对','puzzle','primary',docsReady ? '' : 'disabled')) : btn(state.solved.presentation ? '完成调查报告' : state.solved.assembly ? '出示依据' : '继续摆放',state.solved.presentation ? 'report' : state.solved.assembly ? 'presentation' : 'assembly')}</div></div></section>`;
   }
   renderDialogue(); positionHotspots();
 }
-function setSceneImage(id) {
-  const image = $('#scene-image');
-  const path = `assets/${id}.webp`;
-  if (image.getAttribute('src') !== path) { image.src = path; }
-  image.onload = positionHotspots;
-  image.onerror = () => { toast('场景图片未能加载。可继续使用“场景物件”调查，或刷新重试。'); };
+function setScene(id) {
+  visualScene = id;
+  world3d?.setScene(id);
 }
-function positionHotspots() {
-  const image = $('#scene-image'); if (!image.naturalWidth) return;
-  const box = image.getBoundingClientRect(), game = $('#game').getBoundingClientRect();
-  const contain = getComputedStyle(image).objectFit === 'contain';
-  const scale = (contain ? Math.min : Math.max)(box.width/image.naturalWidth,box.height/image.naturalHeight);
-  const w = image.naturalWidth*scale, h = image.naturalHeight*scale;
-  const headingBottom = ($('.scene-heading')?.getBoundingClientRect().bottom || 100) - game.top;
-  const missionTop = ($('.mission')?.getBoundingClientRect().top || game.bottom) - game.top;
-  for (const el of document.querySelectorAll('.hotspot')) {
-    const point = SCENES[state.scene].hotspots.find(v => v.id === el.dataset.id);
-    const x = (box.width-w)/2 + point.x/100*w + box.left-game.left;
-    const y = (box.height-h)/2 + point.y/100*h + box.top-game.top;
-    el.style.setProperty('--x',`${x}px`); el.style.setProperty('--y',`${y}px`);
-    el.style.visibility = x < 20 || x > game.width-20 || y < headingBottom+8 || y > missionTop-18 ? 'hidden' : '';
-    const label = el.querySelector('.hotspot-label');
-    el.classList.toggle('align-right', x > game.width*.68);
-    label.style.transformOrigin = x > game.width*.68 ? 'right' : 'left';
-  }
-}
+function positionHotspots() { world3d?.sync(); }
 window.addEventListener('resize', positionHotspots);
-// Track the painted object while the camera eases back from a conversation.
-// Measuring only at dialogue close leaves the markers at the previous zoom.
-let hotspotFrame = 0;
-const cameraPlane = $('#scene-plane');
-cameraPlane.addEventListener('transitionrun', event => {
-  if(event.propertyName !== 'transform') return;
-  cancelAnimationFrame(hotspotFrame);
-  const track = () => { positionHotspots(); hotspotFrame=requestAnimationFrame(track); };
-  track();
-});
-for(const eventName of ['transitionend','transitioncancel']) cameraPlane.addEventListener(eventName, event => {
-  if(event.propertyName !== 'transform') return;
-  cancelAnimationFrame(hotspotFrame); positionHotspots();
-});
-function closeModal() { if ($('#overlay').open) $('#overlay').close(); modalType = ''; selectedPiece = null; $('#world').classList.toggle('focused', Boolean(dialogue)); positionHotspots(); if (lastFocus?.isConnected) lastFocus.focus(); }
+function closeModal() { world3d?.endInspect(); if ($('#overlay').open) $('#overlay').close(); modalType = ''; selectedPiece = null; $('#world').classList.toggle('focused', Boolean(dialogue)); positionHotspots(); if (lastFocus?.isConnected) lastFocus.focus(); }
 function modal(title, subtitle, body, type) {
+  world3d?.endInspect();
   const d = $('#overlay'); if (!d.open) lastFocus = document.activeElement;
   modalType = type; d.dataset.type = type;
   $('#overlay-content').innerHTML = `<div class="overlay-head"><div><h2 id="overlay-title">${title}</h2>${subtitle ? `<p>${subtitle}</p>` : ''}</div>${btn('×','close','close','aria-label="关闭窗口"')}</div>${body}`;
   if (!d.open) { d.showModal(); $('.close').focus({preventScroll:true}); } else { $('.close').focus({preventScroll:true}); }
+  positionHotspots();
 }
 $('#overlay').addEventListener('cancel', e => { e.preventDefault(); closeModal(); });
 $('#overlay').addEventListener('click', e => { if (e.target === $('#overlay')) { const r = $('#overlay').getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) closeModal(); } });
 function focusWorld(x=50,y=45) { $('#scene-plane').style.setProperty('--focus-x',`${x}%`); $('#scene-plane').style.setProperty('--focus-y',`${y}%`); $('#world').classList.add('focused'); }
-function speak(lines, after = () => {}, { skip = true } = {}) { closeModal(); dialogue = { lines, index:0, after, skip }; $('#screen').classList.add('talking'); focusWorld(); renderDialogue(); }
+function speak(lines, after = () => {}, { skip = true } = {}) { closeModal(); dialogue = { lines, index:0, after, skip }; $('#screen').classList.add('talking'); focusWorld(); renderDialogue(); positionHotspots(); }
 const roles = { 陈叔:'留灯烘焙的老板', 小禾:'期待成为店长的店员', 老孟:'设备供应商', 上级:'银行调查组', 旁白:'现场笔记', 你:'新人调查助理' };
 function renderDialogue() {
   $('#screen').classList.toggle('talking',Boolean(dialogue));
@@ -140,7 +108,7 @@ async function travel(scene) {
   await curtain.animate([{opacity:0},{opacity:1}],{duration,fill:'forwards'}).finished.catch(()=>{});
   if (token!==travelToken) return;
   state.scene=scene; state.phase='explore'; if(!state.visited.includes(scene)) state.visited.push(scene); save();
-  setSceneImage(scene); render();
+  setScene(scene); render();
   await curtain.animate([{opacity:1},{opacity:0}],{duration,fill:'forwards'}).finished.catch(()=>{});
   if(token!==travelToken) return;
   if(!state.introSeen.includes(scene)) { state.introSeen.push(scene);save();speak(SCENES[scene].intro); }
@@ -148,11 +116,23 @@ async function travel(scene) {
 function collect(id) { if (!has(id)) { state.collected.push(id); save(); toast(`收入档案箱：${DOCUMENTS[id].title}`); } }
 function sheet(id) {
   const d=DOCUMENTS[id];
-  return `<article class="sheet" data-document="${id}"><div class="sheet-source"><span>${esc(d.source)}</span><span>${esc(d.kind)}</span></div><h3>${esc(d.title)}</h3><p class="sheet-summary">${esc(d.summary)}</p>${state.marked.includes(id)?'<span class="stamp">已标记</span>':''}<dl class="doc-lines">${d.lines.map(l=>`<div class="doc-row"><dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><small>${esc(l.note)}</small></div>`).join('')}</dl><p class="sheet-note">${esc(d.note)}</p></article>`;
+  return `<article class="sheet" data-document="${id}"><div class="sheet-source"><span>${esc(d.source)}</span><span>${esc(d.kind)}</span></div><h3>${esc(d.title)}</h3><p class="sheet-summary">${esc(d.summary)}</p>${state.marked.includes(id)?'<span class="stamp">已标记</span>':''}<dl class="doc-lines">${d.lines.map(l=>`<div class="doc-row"><dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><dd class="doc-note"><small>${esc(l.note)}</small></dd></div>`).join('')}</dl><p class="sheet-note">${esc(d.note)}</p></article>`;
 }
 function documentView(id, back='close') {
   if(!has(id)) return;
   modal('把这一页看清楚','资料已自动收入档案箱，关闭后仍可重看。',`${sheet(id)}<div class="document-actions">${btn(state.marked.includes(id)?'取消标记':'标记这页','mark','secondary',`data-id="${id}" data-back="${back}"`)}${btn(back==='puzzle'?'回到核对':'收好资料',back)}</div>`,'document');
+}
+function inspectObject(id) {
+  const h = SCENES[state.scene].hotspots.find(h => h.id === id);
+  if (!h || state.phase !== 'explore' || dialogue) return;
+  const keyboardTarget = document.activeElement?.matches('.hotspot') ? id : null;
+  if (!state.read.includes(id)) state.read.push(id);
+  if (h.doc) collect(h.doc);
+  save(); render();
+  const notes = h.dialogue.map(line => `<div class="inspection-quote"><span>${esc(line.speaker)}${line.speaker==='旁白'?' · 现场观察':' · 人物说法'}</span><p>${esc(line.text)}</p></div>`).join('');
+  modal(esc(h.label), h.doc ? '现场资料 · 已收入档案箱' : '现场观察', `<div class="inspection-layout"><section class="inspection-model" aria-label="物件预览"><div id="inspect-viewport">${world3d?'':'<p class="preview-unavailable">三维预览不可用，仍可阅读右侧资料。</p>'}</div><div class="inspection-tools"><p>拖动旋转 · 滚轮缩放</p><div>${btn('向左转','inspect-left','inspect-control',world3d?'':'disabled')}${btn('复位','inspect-reset','inspect-control',world3d?'':'disabled')}${btn('向右转','inspect-right','inspect-control',world3d?'':'disabled')}</div></div></section><section class="inspection-copy" aria-label="物件介绍">${notes}${h.doc?sheet(h.doc):''}<div class="document-actions">${btn('放回原处','close','primary')}</div></section></div>`, 'inspection');
+  lastFocus = keyboardTarget ? $(`.hotspot[data-id="${keyboardTarget}"]`) : $('[data-action="objects"]');
+  world3d?.inspect(id, $('#inspect-viewport'));
 }
 function archive(id=state.collected[0]) {
   if(!id) { modal('档案箱','这里收着你取得的资料。','<p>推门进店后，上级会把贷款申请交给你。</p>','archive'); return; }
@@ -160,10 +140,10 @@ function archive(id=state.collected[0]) {
   modal('调查档案箱',`${state.collected.length} / ${REQUIRED_DOCUMENTS.length} 份资料 · ${state.marked.length} 页标记`, `<div class="archive-layout"><div><nav class="archive-list" aria-label="已取得的档案">${list}</nav><div class="archive-toolbar">${btn(state.compare.includes(id)?'撤出比较':'放入比较','compare-add','secondary',`data-id="${id}"`)}${btn(`并排看 ${state.compare.length}/2`,'compare','secondary',state.compare.length===2?'':'disabled')}</div></div><div>${sheet(id)}<div class="document-actions">${btn(state.marked.includes(id)?'取消标记':'标记这页','archive-mark','secondary',`data-id="${id}"`)}</div></div></div>`,'archive');
 }
 function showMap() {
-  modal('今天，去哪里？','先看清老店，再走访另外两处。',`<p class="map-intro">纸面上的钱，各有各的来处。去问经手的人，也去看看还没有发生的事。</p><div class="map-locations">${Object.values(SCENES).map(sc=>`<button class="location" data-action="travel" data-id="${sc.id}" ${sc.id!=='bakery'&&!state.solved.bakery?'disabled':''}><img src="assets/${sc.id}.webp" alt="${esc(sc.name)}"><div><h3>${esc(sc.name)}</h3><p>${esc(sc.time)}</p></div><span class="route-status">${state.solved[sc.id]?'已核对 ✓':sc.id!=='bakery'&&!state.solved.bakery?'稍后开放':'去这里 ↗'}</span></button>`).join('')}</div>${allScenes()?`<div class="overlay-footer">${btn('回老店核对全部资金','return')}</div>`:''}`,'map');
+  modal('今天，去哪里？','先看清老店，再走访另外两处。',`<p class="map-intro">纸面上的钱，各有各的来处。去问经手的人，也去看看还没有发生的事。</p><div class="map-locations">${Object.values(SCENES).map(sc=>`<button class="location" data-action="travel" data-id="${sc.id}" ${sc.id!=='bakery'&&!state.solved.bakery?'disabled':''}><span class="map-stop" aria-hidden="true">${sc.id==='bakery'?'老店':sc.id==='supplier'?'设备':'新铺'}</span><div><h3>${esc(sc.name)}</h3><p>${esc(sc.time)}</p></div><span class="route-status">${state.solved[sc.id]?'已核对 ✓':sc.id!=='bakery'&&!state.solved.bakery?'稍后开放':'去这里 ↗'}</span></button>`).join('')}</div>${allScenes()?`<div class="overlay-footer">${btn('回老店核对全部资金','return')}</div>`:''}`,'map');
 }
 function objects() {
-  modal('看看周围','亮处都可以查看，也可以用 Tab 和 Enter 操作。',`<div class="presentation-grid">${SCENES[state.scene].hotspots.map(h=>btn(`${esc(h.label)}<small>${state.read.includes(h.id)?'再看一眼':'走近看看'}</small>`,'hotspot','evidence-choice',`data-id="${h.id}"`)).join('')}</div>`,'objects');
+  modal('看看周围','点击物件拿近查看；也可以用 Tab 和 Enter 操作。',`<div class="presentation-grid">${SCENES[state.scene].hotspots.map(h=>btn(`${esc(h.label)}<small>${state.read.includes(h.id)?'再看一眼':'走近看看'}</small>`,'hotspot','evidence-choice',`data-id="${h.id}"`)).join('')}</div>`,'objects');
 }
 // Each scene asks the player to classify evidence, never to guess arithmetic.
 const PUZZLES = {
@@ -194,7 +174,7 @@ function place(slot) {
   state.placements[state.scene][piece.id]=slot; selectedPiece=null;save();puzzle('这张资料的位置核对好了。');
 }
 function returnToBakery() {
-  if(!allScenes())return; closeModal(); state.scene='bakery';state.phase='assembly';save();setSceneImage('bakery');render();
+  if(!allScenes())return; closeModal(); state.scene='bakery';state.phase='assembly';save();setScene('bakery');render();
   if(!state.moneyPlaced.length&&!state.solved.assembly) speak([{speaker:'旁白',text:'客流终于缓下来。陈叔擦出一张桌子，你把各处带回的资料一页页铺开。'},{speaker:'陈叔',text:'现有两万，申请二十万。尾款十万，新店首期十二万。我的打算，都在这儿了。'},{speaker:'你',text:'先假设贷款能在明天付款前到账。我们把付款之后的日子，也算进去。'}],()=>assembly());
   else if(state.solved.presentation) showReport(); else if(state.solved.assembly) presentation(); else assembly();
 }
@@ -235,7 +215,7 @@ function reportQuestion(feedback='',error=false) {
 }
 
 function settings() {
-  modal('按自己的节奏调查','不计时；判断可以修正。',`<div class="settings-list"><label class="settings-row"><span>始终显示物件名称</span><input type="checkbox" data-setting="labels" ${state.settings.labels?'checked':''}></label><label class="settings-row"><span>减少镜头移动与动画</span><input type="checkbox" data-setting="reduced" ${state.settings.reduced?'checked':''}></label><label class="settings-row"><span>轻声环境音</span><input type="checkbox" data-setting="sound" ${state.settings.sound?'checked':''}></label><p class="settings-help">点击亮处调查，或打开“场景物件”逐项查看。<br>Tab 切换焦点，Enter 确认；对话中按空格继续；Esc 关闭资料。全部整理都能点选完成，不需要拖动。<br>${storageAvailable?'进度保存在当前浏览器，可刷新后继续。':'当前浏览器不允许保存，仍可完成本次试玩。'}<br>本章公司、人物、金额及贷款条件均为虚构。</p><div class="overlay-footer">${btn('重新开始','restart','secondary')}${btn('回到故事','close')}</div></div>`,'settings');
+  modal('按自己的节奏调查','不计时；判断可以修正。',`<div class="settings-list"><label class="settings-row"><span>减少镜头移动与动画</span><input type="checkbox" data-setting="reduced" ${state.settings.reduced?'checked':''}></label><label class="settings-row"><span>轻声环境音</span><input type="checkbox" data-setting="sound" ${state.settings.sound?'checked':''}></label><p class="settings-help">移动鼠标到物件上显示边框，点击拿近查看，或打开“场景物件”逐项查看。<br>Tab 切换焦点，Enter 确认；对话中按空格继续；Esc 关闭资料。查看物件时拖动旋转、滚轮缩放；也可用左右旋转按钮或方向键，Home 复位。<br>${storageAvailable?'进度保存在当前浏览器，可刷新后继续。':'当前浏览器不允许保存，仍可完成本次试玩。'}<br>本章公司、人物、金额及贷款条件均为虚构。</p><div class="overlay-footer">${btn('重新开始','restart','secondary')}${btn('回到故事','close')}</div></div>`,'settings');
 }
 function restart() { modal('重新走进这家店？','这会清除本章保存在当前浏览器的进度。',`<p>你可以取消，接着眼下的调查继续。</p><div class="overlay-footer">${btn('继续当前调查','close','secondary')}${btn('确认重新开始','confirm-restart')}</div>`,'restart'); }
 
@@ -246,12 +226,13 @@ document.addEventListener('click', e => {
   if(action==='close')return closeModal();
   if(action==='next')return advance();
   if(action==='skip-dialogue')return advance(true);
-  if(action==='start') { setSceneImage('bakery');state.phase='explore';state.visited=['bakery'];collect('application');collect('repayment');save();render();speak(OPENING,()=>{state.introSeen.push('bakery');save();toast('点击亮处调查；资料会自动收入档案箱。');});return; }
+  if(action==='start') { setScene('bakery');state.phase='explore';state.visited=['bakery'];collect('application');collect('repayment');save();render();speak(OPENING,()=>{state.introSeen.push('bakery');save();toast('移到物件上显示轮廓，点击拿近查看。');});return; }
   if(action==='hotspot') {
-    const h=SCENES[state.scene].hotspots.find(h=>h.id===id);if(!h)return;
-    if(!state.read.includes(id))state.read.push(id);save();
-    speak(h.dialogue,()=>{if(h.doc){collect(h.doc);render();documentView(h.doc);}else render();});focusWorld(h.x,h.y);return;
+    return inspectObject(id);
   }
+  if(action==='inspect-left')return world3d?.rotate(-1);
+  if(action==='inspect-right')return world3d?.rotate(1);
+  if(action==='inspect-reset')return world3d?.resetInspect();
   if(action==='archive')return archive();
   if(action==='archive-doc')return archive(id);
   if(action==='mark'||action==='archive-mark') { state.marked=state.marked.includes(id)?state.marked.filter(d=>d!==id):[...state.marked,id];save();return action==='mark'?documentView(id,target.dataset.back):archive(id); }
@@ -292,12 +273,27 @@ document.addEventListener('click', e => {
   }
   if(action==='report')return showReport();
   if(action==='review-assembly')return assembly();
-  if(action==='submit') { if(!canSubmit(state))return;closeModal();state.phase='ending';save();render();speak(ENDING.slice(1,3),()=>{setSceneImage('ending');render();speak([{speaker:'旁白',text:'当晚，小禾发来一张照片。邀请函放在收支本旁，店长的名字还在，日期仍然空着。'},{speaker:'小禾',text:'陈叔说，明天跟老孟继续把付款安排谈清楚。今晚先教我一起看账。下次先把钱算清楚，再写日期。'}],()=>render());});return; }
+  if(action==='submit') { if(!canSubmit(state))return;closeModal();state.phase='ending';save();render();speak(ENDING.slice(1,3),()=>{setScene('ending');render();speak([{speaker:'旁白',text:'当晚，小禾发来一张照片。邀请函放在收支本旁，店长的名字还在，日期仍然空着。'},{speaker:'小禾',text:'陈叔说，明天跟老孟继续把付款安排谈清楚。今晚先教我一起看账。下次先把钱算清楚，再写日期。'}],()=>render());});return; }
   if(action==='settings')return settings();
   if(action==='restart')return restart();
-  if(action==='confirm-restart') { travelToken++;dialogue=null;selectedEvidence=[];const previous=state.settings;state=emptyState();state.settings=previous;save();closeModal();setSceneImage('opening');$('#world').classList.remove('focused');$('#transition').getAnimations().forEach(a=>a.cancel());render();return; }
+  if(action==='confirm-restart') { travelToken++;dialogue=null;selectedEvidence=[];const previous=state.settings;state=emptyState();state.settings=previous;save();closeModal();setScene('opening');$('#world').classList.remove('focused');$('#transition').getAnimations().forEach(a=>a.cancel());render();return; }
 });
 document.addEventListener('change', e=>{const setting=e.target.dataset.setting;if(!setting)return;if(setting==='sound')setSound(e.target.checked);else{state.settings[setting]=e.target.checked;save();render();}});
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&dialogue&&!$('#overlay').open&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();if(!e.repeat)advance();}});
-setSceneImage(state.phase==='title'?'opening':state.phase==='ending'?'ending':state.scene);render();
+setScene(state.phase==='title'?'opening':state.phase==='ending'?'ending':state.scene);render();
 if(state.phase==='report')showReport();
+
+// Keep story playable when WebGL or the local engine cannot load.
+function sceneError(message) {
+  $('#scene-status').textContent = message;
+  $('#scene-status').hidden = false;
+  document.body.classList.add('scene-unavailable');
+}
+import('./scene3d.js').then(({ createWorld }) => {
+  world3d = createWorld({ host: $('#scene-plane'), onInspect: inspectObject, onError: sceneError, onRestore: () => { $('#scene-status').hidden = true; document.body.classList.remove('scene-unavailable'); } });
+  world3d.setScene(visualScene);
+  $('#scene-status').hidden = true;
+}).catch(error => {
+  console.warn('3D scene unavailable:', error.message);
+  sceneError('三维场景未能启动。可通过“场景物件”继续调查，或刷新重试。');
+});

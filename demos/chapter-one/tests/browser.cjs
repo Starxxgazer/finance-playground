@@ -71,7 +71,7 @@ async function tabTo(page, selector) {
 }
 async function start(page, keyboard = false) {
   await page.goto(BASE, { waitUntil: 'networkidle' });
-  await page.locator('#scene-image').evaluate(img => img.decode());
+  await page.waitForFunction(() => document.querySelector('#scene-plane').dataset.ready === 'true');
   if (keyboard) { await tabTo(page, '[data-action="start"]'); await page.keyboard.press('Enter'); }
   else await action(page, 'start').click();
   await fits(page, 'opening-dialogue-buttons', ['[data-action="next"]']);
@@ -84,42 +84,49 @@ async function start(page, keyboard = false) {
   await close(page);
 }
 async function openObject(page, id) {
+  await close(page);
   await action(page, 'objects').click();
   await page.locator(`#overlay [data-action="hotspot"][data-id="${id}"]`).click();
   await settleDialogue(page);
 }
 async function imageHotspots(page, scene) {
-  await page.locator('#scene-image').evaluate(img => img.decode());
-  // Wait for the camera to finish before measuring native image coordinates.
-  await page.locator('#scene-plane').evaluate(el => Promise.all(el.getAnimations().map(a => a.finished.catch(() => {}))));
-  const points = await page.evaluate(async scene => {
-    const { SCENES } = await import('./data.js');
-    const img = document.querySelector('#scene-image'), r = img.getBoundingClientRect();
-    const scale = (getComputedStyle(img).objectFit === 'contain' ? Math.min : Math.max)(r.width/img.naturalWidth, r.height/img.naturalHeight);
-    return SCENES[scene].hotspots.map(h => {
-      const el = document.querySelector(`.hotspot[data-id="${h.id}"]`), box = el.querySelector('.hotspot-ring').getBoundingClientRect();
-      return { id:h.id, visible:getComputedStyle(el).visibility !== 'hidden', x:box.x+box.width/2, y:box.y+box.height/2,
-        expectedX:r.x+(r.width-img.naturalWidth*scale)/2+h.x/100*img.naturalWidth*scale,
-        expectedY:r.y+(r.height-img.naturalHeight*scale)/2+h.y/100*img.naturalHeight*scale };
-    });
-  }, scene);
-  assert(points.some(p => p.visible), `${scene}: at least one on-image target reachable`);
-  for (const point of points.filter(p => p.visible)) {
-    assert(Math.abs(point.x-point.expectedX) < 3 && Math.abs(point.y-point.expectedY) < 3, `Image anchor mismatch: ${JSON.stringify(point)}`);
-    const hit = await page.evaluate(({x,y,id}) => document.elementFromPoint(x,y)?.closest('.hotspot')?.dataset.id === id, point);
-    assert(hit, `${scene}: hotspot obscured: ${point.id}`);
-  }
+  await page.waitForFunction(() => document.querySelector('#scene-plane').dataset.ready === 'true');
+  await page.mouse.move(10, 10);
+  assert.equal(await page.locator('#object-tooltip').isVisible(), false, 'No permanent object highlight');
+  const points = await page.locator('.hotspot').evaluateAll(nodes => nodes.map(el => {
+    const r = el.getBoundingClientRect(); return { id:el.dataset.id, x:r.x+r.width/2, y:r.y+r.height/2 };
+  }));
+  assert.equal(points.length, 6, `${scene}: every story object has a modeled target`);
   await snap(page, `normal-${scene}-hotspots`);
-  for (const point of points.filter(p => p.visible)) {
-    // Obtain each coordinate afresh: opening a clue may move the camera.
-    const box = await page.locator(`.hotspot[data-id="${point.id}"] .hotspot-ring`).boundingBox();
-    await page.mouse.click(box.x+box.width/2, box.y+box.height/2);
-    await settleDialogue(page);
-    assert((await state(page)).read.includes(point.id), `Actual image click opened ${point.id}`);
+  for (const point of points) {
+    // Raycast a visible surface near the projected object center; never dispatch synthetic clicks.
+    let found = false;
+    for (const dy of [0,-18,-35,18,35,-55]) {
+      await page.mouse.move(point.x, point.y + dy);
+      if (await page.locator('#scene-plane').getAttribute('data-hovered') === point.id) { found = true; break; }
+    }
+    assert(found, `${scene}: model must be reachable by raycast: ${point.id}`);
+    assert.equal(await page.locator('#object-tooltip').isVisible(), true);
+    if (point.id.endsWith('book')) await snap(page, 'hover-outline-book');
+    await page.mouse.down(); await page.mouse.up();
+    await page.waitForSelector('#overlay[data-type="inspection"][open]');
+    assert.equal(await page.locator('#scene-canvas').getAttribute('data-inspected'), point.id);
+    assert((await state(page)).read.includes(point.id), `Real 3D click opened ${point.id}`);
+    assert.equal(await page.locator('#dialogue').textContent(), '', 'Object introduction stays in central inspector');
+    const before = await page.locator('#scene-canvas').getAttribute('data-rotation');
+    const view = await page.locator('#inspect-viewport').boundingBox();
+    await page.mouse.move(view.x + view.width*.45, view.y + view.height*.5); await page.mouse.down();
+    await page.mouse.move(view.x + view.width*.7, view.y + view.height*.6, {steps:8}); await page.mouse.up();
+    await page.waitForFunction(before => document.querySelector('#scene-canvas').dataset.rotation !== before, before);
+    await action(page, 'inspect-reset').click();
+    await action(page, 'inspect-left').click();
+    assert.notEqual(await page.locator('#scene-canvas').getAttribute('data-rotation'), before, 'Keyboard-compatible rotation changes view');
+    await fits(page, `${point.id}-inspection`);
     await close(page);
-    await page.locator('#scene-plane').evaluate(el => Promise.all(el.getAnimations().map(a => a.finished.catch(() => {}))));
+    await page.mouse.move(10, 10);
+    assert.equal(await page.locator('#object-tooltip').isVisible(), false, 'Close removes outline');
   }
-  check(`normal-${scene}-real-image-hotspots`, { points });
+  check(`normal-${scene}-real-3d-hotspots`, { points });
 }
 async function getSceneDocs(page, scene, { repeat = false, allOptional = false } = {}) {
   for (const [hotspot, doc] of docs[scene]) {
@@ -137,7 +144,7 @@ async function getSceneDocs(page, scene, { repeat = false, allOptional = false }
       assert.deepEqual((await state(page)).collected, before, 'Repeated collection adds no duplicate');
     }
   }
-  if (allOptional) for (const id of optional.filter(id => id.startsWith(scene))) await openObject(page, id);
+  if (allOptional) for (const id of optional.filter(id => id.startsWith(scene))) { await openObject(page, id); await close(page); }
 }
 async function solveScene(page, scene, { mistake = false, keyboard = false } = {}) {
   await action(page, 'puzzle').click();
@@ -161,7 +168,7 @@ async function solveScene(page, scene, { mistake = false, keyboard = false } = {
 async function travel(page, scene) {
   await action(page, 'map').click();
   await action(page, 'travel', scene).click();
-  await page.waitForFunction(scene => document.querySelector('#scene-image').getAttribute('src') === `assets/${scene}.webp` && !document.querySelector('#overlay').open, scene);
+  await page.waitForFunction(scene => document.querySelector('#scene-plane').dataset.scene === scene && !document.querySelector('#overlay').open, scene);
   await page.locator('#transition').evaluate(el => Promise.all(el.getAnimations().map(a => a.finished.catch(() => {}))));
   await page.waitForFunction(scene => JSON.parse(localStorage.getItem('liudeng-chapter-one-v1')).introSeen.includes(scene), scene);
   await settleDialogue(page);
@@ -280,9 +287,9 @@ async function assemblyAndEnding(page, prefix, mistake = false) {
   await axe(page, `${prefix}-report`);
   await snap(page, `${prefix}-report`);
   await action(page, 'submit').click(); await settleDialogue(page);
-  await page.locator('#scene-image').evaluate(img => img.decode());
+  await page.waitForFunction(() => document.querySelector('#scene-plane').dataset.ready === 'true');
   assert.equal((await state(page)).phase, 'ending');
-  assert.equal(await page.locator('#scene-image').getAttribute('src'), 'assets/ending.webp');
+  assert.equal(await page.locator('#scene-plane').getAttribute('data-scene'), 'ending');
   assert.match(await page.locator('.end-copy').textContent(), /名字还在。日期，先留白。/);
   const final = await state(page);
   assert.equal(final.collected.length, 8);
@@ -315,7 +322,7 @@ async function rapidTravel(page) {
   await page.locator('#transition').evaluate(el => Promise.all(el.getAnimations().map(a => a.finished.catch(() => {}))));
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('liudeng-chapter-one-v1')).introSeen.includes('newshop'));
   await settleDialogue(page);
-  assert.equal(await page.locator('#scene-image').getAttribute('src'), 'assets/newshop.webp');
+  assert.equal(await page.locator('#scene-plane').getAttribute('data-scene'), 'newshop');
   assert.match(await page.locator('.scene-heading h1').textContent(), /新铺子/);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   check('rapid-map-switch-last-destination-wins');
@@ -340,7 +347,7 @@ async function scenario(browser, name, options, task) {
   } finally { await context.close(); }
 }
 (async () => {
-  const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
+  const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'], ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   try {
     await scenario(browser, 'desktop-supplier-first', {}, async page => {
       await start(page, true);

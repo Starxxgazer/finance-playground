@@ -1,5 +1,15 @@
 # 场景素材记录
 
+## 当前 Three.js 版本（2026-10-02）
+
+- 当前试玩不加载下文历史 WebP 图片。场景、人物与 18 个物件由 `scene3d.js` / `props3d.js` 程序建模，工具为 OpenAI Codex，用于用户指定的实时三维调查与物件旋转预览。没有导入第三方模型、贴图或照片。
+- 地板、旧木、墙面及纸张微表面由着色器计算；模型上的文字由本地 Canvas 绘制。所有证据和金额继续来源于 `data.js` / `model.js`，不从材质或随机生成内容推断。
+- Three.js 0.186.1：来源 [npm](https://www.npmjs.com/package/three/v/0.186.1) / [官方仓库](https://github.com/mrdoob/three)，MIT 许可，原许可保存在 `vendor/THREE-LICENSE.txt`。附加模块包括 OrbitControls、OutlinePass、EffectComposer、RenderPass、OutputPass、RoundedBoxGeometry 和 RoomEnvironment；偏写实版本新增 SSAOPass 和 UnrealBloomPass。
+- 参考：[轮廓描边官方文档](https://threejs.org/docs/pages/OutlinePass.html)、[旋转控制官方文档](https://threejs.org/docs/pages/OrbitControls.html)。引擎与附加模块通过 esbuild 0.28.2 本地打包，命令为 `npm ci && npm run vendor`。
+- 以上第三方许可仅适用于第三方库；AI 辅助制作记录不等于公共领域声明，不替团队为项目增加开源许可证。
+
+## 历史图片（保留记录，当前不使用）
+
 ## opening.webp
 
 - 文件：`assets/opening.webp`。
