@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#eef0ef">
+  <meta name="description" content="一家天天排队的面包店，为什么急着借钱？3至5分钟的中文剧情调查试玩。">
+  <link rel="icon" href="data:,">
+  <link rel="preload" as="image" href="assets/bakery.webp">
+  <title>这笔钱借给谁 · 排队的面包店</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="story.js"></script>
+  <script defer src="model.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到游戏内容</a>
+  <header class="masthead"><a href="./" class="brand" aria-label="这笔钱借给谁 首页">这笔钱<span>借给谁</span><small>一场关于钱的调查</small></a><div class="header-actions"><button id="archive-button" class="quiet" hidden>证据袋 <span id="evidence-count">0</span></button><button id="restart-button" class="quiet" hidden>重新开始</button></div></header>
+  <nav id="progress" class="progress" aria-label="剧情进度" hidden></nav>
+  <main id="main" tabindex="-1"></main>
+  <footer class="footer"><span>虚构公司 · 固定剧情 · 无真实资金操作</span><span>候选故事试玩 / 约 3–5 分钟</span></footer>
+  <dialog id="archive" aria-labelledby="archive-title"><div class="dialog-top"><h2 id="archive-title">你的证据袋</h2><button data-action="close-archive" class="quiet">关闭</button></div><div id="archive-content"></div></dialog>
+  <dialog id="restart" aria-labelledby="restart-title"><h2 id="restart-title">重新调查这家店？</h2><p>本轮调查进度会清空。已看过的结局仍保留在本次浏览器会话中。</p><div class="actions"><button data-action="cancel-restart" class="secondary">继续当前调查</button><button data-action="confirm-restart" class="primary">确认重新开始</button></div></dialog>
+  <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+  <noscript>请开启 JavaScript 后试玩。游戏无需账号或网络服务。</noscript>
+</body>
+</html>

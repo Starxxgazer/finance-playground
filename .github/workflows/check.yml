@@ -1,0 +1,29 @@
+name: 原型检查
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  prototype-check:
+    name: prototype-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 检查 JavaScript 语法
+        run: |
+          node --check prototype/app.js
+          node --check prototype/story.js
+          node --check prototype/model.js
+      - name: 验证资金与判断逻辑
+        working-directory: prototype
+        run: npm test

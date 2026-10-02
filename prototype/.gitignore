@@ -1,0 +1,3 @@
+node_modules/
+# Lighthouse on WSL may inherit a Windows TEMP path.
+C:*/

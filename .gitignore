@@ -1,0 +1,30 @@
+# 本地官方资料、下载包和个人交接文件
+/官方比赛资料/
+*.zip
+*:Zone.Identifier
+/个人背景与黑客松交流交接*
+
+# 凭证与本地环境；示例只能包含占位值
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# 依赖、构建结果、日志与浏览器测试产物
+node_modules/
+dist/
+build/
+coverage/
+test-results/
+playwright-report/
+*.log
+__pycache__/
+.venv/
+
+# 编辑器和操作系统本地文件
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
