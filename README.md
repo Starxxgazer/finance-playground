@@ -1,53 +1,38 @@
 # Finance Playground · 玩转金融
 
-通过游戏了解金融。首个候选原型《这笔钱借给谁》是一款中文剧情调查游戏：一家天天排队的面包店为什么急着借钱？通过人物对话、证据和资金对比，判断这笔贷款会带来什么后果。
+通过游戏帮助普通人理解金融。当前正在确定游戏形式、推进流程和故事格式。
+
+**旧面包店试玩原型已否决并移除，目前没有可运行的游戏。** 历史方案仅作讨论记录，不代表当前需求。
 
 仓库：<https://github.com/Starxxgazer/finance-playground>
 
-当前目标是制作约 3—5 分钟的试玩，验证故事吸引力、操作体验和金融推理。面包店是候选案例，完整产品方案和故事格式尚未定稿。公司、人物与资金均为虚构。
-
-## 本地试玩
-
-需要 Python 3。从仓库根目录启动：
-
-```bash
-python3 -m http.server 4173 --bind 127.0.0.1 --directory prototype
-```
-
-Windows 可使用：
-
-```powershell
-py -m http.server 4173 --bind 127.0.0.1 --directory prototype
-```
-
-在浏览器打开 <http://127.0.0.1:4173>；关闭时在终端按 `Ctrl+C`。当前原型不需要账号、API Key 或后端。
-
-## 自动检查
-
-安装 Node.js 22 后，在仓库根目录运行：
-
-```bash
-node --test prototype/tests/model.test.cjs
-```
-
-该检查覆盖资金模型与部分判断逻辑；浏览器实际试玩另行执行。GitHub 每次推送及 PR 会运行 `prototype-check`。
-
 ## 分工
 
-| 成员 | 负责内容 |
-| --- | --- |
-| 开发负责人 Starxxgazer | 游戏程序、数据格式、数值模型、审查与合并 |
-| A、B | 共同设计故事、人物、证据、选项与结局，亲自试玩 |
-| A（372785716aa-star） | 用 Codex 整理内容，在自己电脑验证后推送工作分支并发起 PR |
+- Starxxgazer：程序、内容格式、数值模型与最终合并。
+- 372785716aa-star、1845452331-cell：共同设计故事。
+- 会使用 Codex 的队友按约定格式整理内容；待新游戏可运行后，两位队友本地试玩，再通过工作分支提交 PR。
 
-详细步骤见 [协作指南](docs/协作指南.md)，AI 编程会话必须遵守 [AGENTS.md](AGENTS.md)。
+开始前阅读 [协作指南](docs/协作指南.md) 和 [AGENTS.md](AGENTS.md)。
 
-## 目录
+## 目录与工作位置
 
-- `prototype/`：可运行的游戏原型、素材与测试。
-- `docs/`：团队协作说明。
-- `.github/`：自动检查、审查负责人和 PR 模板。
-- 根目录产品说明与策划案：讨论背景，不能当作已锁定的完整需求。
-- `官方比赛资料/`：仅在原始电脑保留，未上传 GitHub。
+- .github/：自动检查、审查负责人和 PR 模板。
+- docs/协作指南.md：团队工作流程。
+- docs/archive/：历史方案，不是当前需求。
+- AGENTS.md、README.md：协作规则与项目入口。
 
-本次制作使用 Codex 辅助编程和内容整理。其他素材与 AI 使用记录由制作人员在原型文档中补充。尚未选定开源许可证。
+本地主要开发目录为 /home/stargazer/workspace/finance-playground。原来的 hackthon 目录保留比赛资料和旧工作区；不要混用两个目录提交。官方资料、依赖和测试临时文件不放入本仓库。
+
+## 当前检查
+
+安装 Git 和 Python 3 后，在仓库根目录运行：
+
+    python3 .github/scripts/check_repository.py
+
+Windows 可将 python3 替换为 py。当前只检查文档链接和仓库文件，不代表游戏验收。GitHub 检查项沿用 prototype-check 名称以兼容现有主分支保护；新方案实现后补充对应测试和启动说明。
+
+## 下一步
+
+先确定一种游戏形式和一段可演示流程，再定义内容格式，队友据此制作故事。[历史方案](docs/archive/README.md)仅供回顾。
+
+本项目使用 Codex 辅助协作。新代码、图片及 AI 生成素材需记录来源和用途；尚未选定开源许可证。
