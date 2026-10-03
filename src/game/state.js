@@ -37,6 +37,7 @@ export const initialState = {
   submitted: false,
   submittedIds: [],
   complete: false,
+  chapterCleared: false,
 };
 const initialPlaced = (p) =>
   p?.cash === "available" &&
@@ -310,7 +311,7 @@ export function reducer(s, a) {
         ? { ...s, submitted: true, submittedIds: [...s.seen] }
         : s;
     case "END":
-      return s.submitted ? { ...s, complete: true } : s;
+      return s.submitted ? { ...s, complete: true, chapterCleared: true } : s;
     case "FILM":
       return a.index === s.scene && !s.films.includes(a.index)
         ? { ...s, films: [...s.films, a.index] }
@@ -381,6 +382,9 @@ export function restoreState(raw) {
       ["aRequested", "b", "c"].some((k) => typeof s.branches[k] !== "boolean")
     )
       return reset();
+    if (!Object.hasOwn(s, "chapterCleared")) s.chapterCleared = s.complete === true;
+    if (typeof s.chapterCleared !== "boolean" || (s.complete && !s.chapterCleared) ||
+      (s.chapterCleared && s.unlocked !== 3)) return reset();
     if (!Object.hasOwn(s, "revisit")) s.revisit = null;
     if (s.revisit !== null) {
       const r = s.revisit;

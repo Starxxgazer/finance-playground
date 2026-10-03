@@ -1,0 +1,9 @@
+/* Keep the two receipts paired above their optional full originals. */
+html[data-ui="notebook"] .trace-receipt-summary { display: grid; gap: 8px; }
+html[data-ui="notebook"] .trace-receipt-summary p { margin: 0; padding: 8px 10px; border-left: 2px solid var(--line); font: 14px/1.6 var(--font-clean); }
+html[data-ui="notebook"] .trace-receipt-summary strong { font-weight: 600; }
+html[data-ui="notebook"] .trace-originals > summary { font: 12px/1.5 var(--font-clean); padding: 5px 0; cursor: pointer; }
+@media (max-width: 650px) {
+  html[data-ui="notebook"] .trace-receipt-summary { gap: 4px; }
+  html[data-ui="notebook"] .trace-receipt-summary p { font-size: 12px; padding: 4px 7px; }
+}

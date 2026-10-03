@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./office-review.css";
 import { byId, dimensions, findings } from "../game/content.js";
 import { needsRevisit } from "../game/revisit.js";
 import { canSubmit } from "../game/state.js";
@@ -14,15 +15,29 @@ const shortFindings = {
   risk: "按原计划，11月10日预计缺5万元。",
 };
 
-export default function Findings({ state, dispatch, onSource }) {
+export default function Findings({ state, dispatch, onSource, onEnding }) {
   const [editing, setEditing] = useState(false);
   const [tab, setTab] = useState("finance");
   const ready = canSubmit(state);
   if (!state.submitted)
     return (
-      <section className="handover simple-handover">
+      <section className="handover simple-handover office-review">
         <div className="handover-context side-paper">
-        <Dialogue person="lin">资料给我，没查清的我接着问。</Dialogue>
+        <p className="office-instruction"><strong>林姐</strong>资料给我，没查清的我接着问。</p>
+        <div className="section-title">
+          <h2>{state.chapterCleared ? "补查资料，交给林姐" : "整理好了，交给林姐"}</h2>
+          <span className="section-caption">{state.solved.length} 条已确认发现 · {state.seen.length} 份资料</span>
+        </div>
+        <div className="handover-action primary-handover-action">
+          <span>{state.chapterCleared ? "第一章已通关 · 本次只补交资料" : "交接后还需点击“完成调查”通关。"}</span>
+          <Button disabled={!ready} onClick={() => dispatch({ type: "SUBMIT" })}>交给林姐</Button>
+        </div>
+        {!ready && <div className="citation-recovery">
+          <Feedback>依据未对齐，请恢复或调整引用。</Feedback>
+          <Button secondary onClick={() => dispatch({ type: "RESTORE_REFS" })}>恢复昨晚的依据</Button>
+        </div>}
+        </div>
+        <div className="handover-records side-paper">
         {state.branches.aRequested && !state.seen.includes("alternative") && (
           <button
             className="receipt-notice"
@@ -39,20 +54,7 @@ export default function Findings({ state, dispatch, onSource }) {
 
           </button>
         )}
-        <div className="section-title">
-          <h2>调查手记</h2>
-          <span className="stamp">{state.solved.length}条发现</span>
-        </div>
-        <div className="handover-action primary-handover-action">
-          <span>全部 {state.seen.length} 份资料</span>
-          <Button data-idle-hint={ready ? "0" : undefined} disabled={!ready} onClick={() => dispatch({ type: "SUBMIT" })}>交给林姐</Button>
-        </div>
-        {!ready && <div className="citation-recovery">
-          <Feedback>依据未对齐，请恢复或调整引用。</Feedback>
-          <Button data-idle-hint="0" secondary onClick={() => dispatch({ type: "RESTORE_REFS" })}>恢复昨晚的依据</Button>
-        </div>}
-        </div>
-        <div className="handover-records side-paper">
+
         <div className="handover-notes">
           {findings
             .filter((f) => state.solved.includes(f.id))
@@ -113,11 +115,9 @@ export default function Findings({ state, dispatch, onSource }) {
   const dimension = dimensions.find((d) => d.id === tab);
   const finding = findings.find((f) => f.id === tab);
   return (
-    <section className="company-view simple-company" aria-label="公司透视图">
+    <section className="company-view simple-company office-review" aria-label="公司透视图">
       <div className="company-context side-paper">
-      <Dialogue person="lin">
-        点灰色资料补查，回来再交给我。
-      </Dialogue>
+      <p className="office-instruction"><strong>林姐</strong>{state.chapterCleared ? "第一章已通关。这里是回看与选看补查，不需要重新通关。" : "资料已接收。还差最后一步：点击“完成调查”，第一章就通关了。"}</p>
       <div className="section-title">
         <div>
           <span className="section-caption">
@@ -132,7 +132,10 @@ export default function Findings({ state, dispatch, onSource }) {
       </div>
       <div className="handover-action primary-handover-action">
         <span>贷款未批准，备选分期未生效。</span>
-        <Button data-idle-hint="0" onClick={() => dispatch({ type: "END" })}>完成调查</Button>
+        <Button onClick={() => {
+          if (state.chapterCleared && state.complete) onEnding();
+          else dispatch({ type: "END" });
+        }}>{state.chapterCleared ? "返回通关画面" : "完成调查"}</Button>
       </div>
       </div>
       <div className="company-layout">
@@ -168,6 +171,7 @@ export default function Findings({ state, dispatch, onSource }) {
           id={`panel-${tab}`}
           aria-labelledby={`tab-${tab}`}
         >
+          <div className="company-conclusions">
           <h3>查到了什么</h3>
           <p>
             {state.solved.includes(tab)
@@ -207,7 +211,13 @@ export default function Findings({ state, dispatch, onSource }) {
               ? "老店顾客怎么评价？这些评价能否代表新铺的需求？"
               : finding.question}
           </p>
-          <h3>收到的资料</h3>
+          </div>
+          <div className="company-documents">
+          <div className="office-evidence-heading">
+            <h3>收到的资料</h3>
+            <span>{dimension.sources.filter(id => state.submittedIds.includes(id)).length} / {dimension.sources.length}</span>
+          </div>
+          <p className="office-evidence-help">亮色可回看，灰色可补查；补查后需重新交给林姐。</p>
           <div className="dimension-evidence">
             {dimension.sources.map((id) => {
               const collected = state.submittedIds.includes(id);
@@ -235,6 +245,7 @@ export default function Findings({ state, dispatch, onSource }) {
                 </button>
               );
             })}
+          </div>
           </div>
         </article>
       </div>
@@ -294,9 +305,9 @@ export function Ending({ onReview }) {
         <p className="ending-note">
           调查完成，剩下的问题由林姐继续核实。贷款尚未批准，分期安排尚未生效。
         </p>
-        <p className="ending-note">未查支线不影响通关；可回看交接，继续补查。</p>
+        <p className="ending-note">本章已结束，可以关闭游戏。回看与补查仅供选看，不影响已通关状态。</p>
         <Button secondary onClick={onReview}>
-          回看调查交接
+          通关后回看（可选）
           <Icon name="notebook" />
         </Button>
       </div>

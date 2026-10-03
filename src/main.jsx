@@ -16,9 +16,8 @@ import simpleActivities from "./simple-activities.css?inline";
 import simpleFunds from "./simple-funds.css?inline";
 import simpleReading from "./simple-reading.css?inline";
 import sideUi from "./side-ui.css?inline";
-import idleHints from "./idle-hints.css?inline";
 import storySound from "./story-sound.css?inline";
-const simpleStyles = simpleUi + simpleActivities + simpleFunds + simpleReading + storySound + sideUi + idleHints;
+const simpleStyles = simpleUi + simpleActivities + simpleFunds + simpleReading + storySound + sideUi;
 function addStyles(text) {
   const style = document.createElement("style");
   style.textContent = text;

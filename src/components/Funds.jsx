@@ -22,21 +22,20 @@ export function EvidencePicker({ seen, refs, onChange, max = 2, label = "选取�
       {refs.length < max && <>
         <label className="evidence-select">
           {suggestedDoc ? "引用原文" : label}
-          <select data-idle-hint={suggestedCanonical && !lines.some((line) => line.canonical === suggestedCanonical) ? "1" : undefined} aria-label="选择原资料" value={doc} onChange={(event) => { setDoc(event.target.value); setShowAll(true); }}>
+          <select aria-label="选择原资料" value={doc} onChange={(event) => { setDoc(event.target.value); setShowAll(true); }}>
             <option value="">选资料，点原文</option>
             {seen.filter((id) => byId[id]).map((id) => <option key={id} value={id}>{byId[id].title}</option>)}
           </select>
-          {suggestedDoc && <small className="idle-select-help">选《{byId[suggestedDoc].title}》</small>}
         </label>
         {doc && <div className="selectable-lines">
           <div className="document-source">
             {byId[doc].title} · {byId[doc].nature} / {byId[doc].date}
             {onSource && <button className="text-button" onClick={() => onSource(doc)}>完整原件</button>}
           </div>
-          {lines.filter((line) => !focused || line.canonical === suggestedCanonical).map((line) => <button data-idle-hint={suggestedCanonical && line.canonical === suggestedCanonical ? "1" : undefined} key={line.id} onClick={() => {
+          {lines.filter((line) => !focused || line.canonical === suggestedCanonical).map((line) => <button className="funds-action funds-quote" data-next-action={line.canonical === suggestedCanonical || undefined} key={line.id} onClick={() => {
             onChange([...refs, { doc, line: line.id }]);
             if (!suggestedDoc) setDoc("");
-          }}><span>{line.text}</span><Icon name="link" size={16} /></button>)}
+          }}><span>{line.text}</span>{suggestedDoc ? <strong className="funds-action-label">点此引用 <Icon name="link" size={16} /></strong> : <Icon name="link" size={16} />}</button>)}
           {focused && <button className="text-button" onClick={() => setShowAll(true)}>展开其他原文</button>}
         </div>}
       </>}
@@ -65,7 +64,7 @@ function ProofDesk({ state, dispatch, onSource, error }) {
       <button className="text-button" onClick={() => onSource("budget")}>完整原件与来源</button>
     </details>
     <div className="simple-date-choice">
-      <button data-idle-hint={f.day !== 10 ? "0" : undefined} className="funds-date-shortcut" aria-pressed={f.day === 10} onClick={() => dispatch({ type: "DAY", day: 10 })}>选11月10日</button>
+      <button className="funds-date-shortcut funds-action" data-next-action={f.day !== 10 || undefined} aria-pressed={f.day === 10} onClick={() => dispatch({ type: "DAY", day: 10 })} aria-label="选11月10日">{f.day === 10 ? "✓ 已选11月10日" : "点这里 · 选11月10日"}</button>
     <details className="proof-date" open={calendarOpen} onToggle={(event) => setCalendarOpen(event.currentTarget.open)}>
       <summary>{f.day ? `已选11月${f.day}日 · 修改` : "其他日期"}</summary>
       <Month day={f.day} onDay={(day) => { dispatch({ type: "DAY", day }); setCalendarOpen(false); }} />
@@ -74,7 +73,6 @@ function ProofDesk({ state, dispatch, onSource, error }) {
     {f.day && <div className="proof-work">
       <div className="proof-targets">
         {["① 前十天能攒多少", "② 10日要付多少"].map((label, index) => <button
-          data-idle-hint={target !== index && f.refs[index] && getLine(f.refs[index])?.canonical !== (index === 0 ? "old-early" : "new-later") ? "0" : undefined}
           key={label} className={`proof-target ${target === index ? "current" : ""}`} aria-pressed={target === index}
           disabled={index === 1 && !f.refs[0]} onClick={() => { setTarget(index); setPickerVersion((value) => value + 1); }}>
           <strong>{label}</strong>
@@ -112,7 +110,6 @@ function OrderDesk({ state, dispatch, onSource }) {
         {Array.from({ length: 4 }, (_, i) => {
           const card = chain.find((c) => c.id === f.order[i]);
           return <button key={i} className={card ? "filled" : ""} disabled={!card}
-            data-idle-hint={wrongIndex !== -1 && i >= wrongIndex && card ? "0" : undefined}
             aria-label={card ? `收回${card.label}` : `第${i + 1}步`}
             onClick={() => dispatch({ type: "ORDER", order: f.order.filter((id) => id !== card.id) })}>
             <small>{i + 1}</small><strong>{card?.label || "…"}</strong>
@@ -121,7 +118,7 @@ function OrderDesk({ state, dispatch, onSource }) {
       </div>
       <div className="paper-options">
         {chain.filter((c) => !f.order.includes(c.id)).map((c) =>
-          <button data-idle-hint={wrongIndex === -1 && c.id === chain[f.order.length]?.id ? "0" : undefined} key={c.id} onClick={() => dispatch({ type: "ORDER", order: [...f.order, c.id] })}>{c.label}</button>)}
+          <button className="funds-action" data-next-action={wrongIndex === -1 && c.id === chain[f.order.length]?.id || undefined} data-action={wrongIndex === -1 && c.id === chain[f.order.length]?.id ? "下一步 · 点击" : `第${chain.findIndex(item => item.id === c.id) + 1}步`} aria-label={c.label} key={c.id} onClick={() => dispatch({ type: "ORDER", order: [...f.order, c.id] })}>{c.label}</button>)}
       </div>
       {f.order.length > 0 && wrongIndex === -1 && <small>点已选步骤可撤回。</small>}
     </div>
@@ -180,9 +177,8 @@ export default function Funds({ state, dispatch, onSource }) {
             <button className="text-button" onClick={() => onSource(card.source)}>原件</button></div>
           <small className="money-card-hint">{card.hint}</small>
           <div className="money-choice" role="group" aria-label={card.label}>
-            {[["available", "可用"], ["payment", "要付"]].map(([side, label]) => <button key={side}
-              data-idle-hint={placements[card.id] !== card.side && side === card.side ? "0" : undefined}
-              aria-pressed={placements[card.id] === side} onClick={() => dispatch({ type: "INITIAL_PLACE", id: card.id, side })}>{label}</button>)}
+            {[["available", "可用"], ["payment", "要付"]].map(([side, label]) => <button key={side} className="funds-action" data-next-action={placements[card.id] !== card.side && side === card.side || undefined} aria-label={label}
+              aria-pressed={placements[card.id] === side} onClick={() => dispatch({ type: "INITIAL_PLACE", id: card.id, side })}><span>{label}</span><small aria-hidden="true">{placements[card.id] === side ? "已选" : side === card.side ? "点这里" : "另选"}</small></button>)}
           </div>
           {placements[card.id] && <small className={`money-check ${placements[card.id] === card.side ? "correct" : "retry"}`}>{placements[card.id] === card.side ? "✓ 已核对" : `${card.side === "available" ? "这是手头或假设到账的钱，选“可用”。" : "这是支出，选“要付”。"}`}</small>}
         </div>)}</div>
@@ -193,10 +189,10 @@ export default function Funds({ state, dispatch, onSource }) {
         <div className="desk-total">11月{f.day}日：月初 {plan.initial / 10000} ＋ 前十天 {(amounts.oldReceipts[0] - amounts.oldPayments[0]) / 10000} − 到期款 {amounts.followup / 10000}<strong>预计缺 {Math.abs(plan.day10) / 10000} 万元</strong></div>
         <p className="muted">单位：万元。经营收支为预测，贷款假设到账。</p>
         <h3>陈叔：“老店整月预计能剩6万，为什么还不够？”</h3>
-        <div className="choices">{f.refs.filter((ref) => getLine(ref)?.canonical === "old-early").map((ref, i) => <button data-idle-hint="0" className="sentence-choice" key={i} onClick={() => {
+        <div className="choices">{f.refs.filter((ref) => getLine(ref)?.canonical === "old-early").map((ref, i) => <button className="sentence-choice funds-action funds-quote" data-next-action="true" key={i} onClick={() => {
           if (getLine(ref)?.canonical !== "old-early") { setFeedback("这句是付款。改点“11月1至10日：预计经营收款6万元，日常现金支出5万元。”"); return; }
           dispatch({ type: "EXPLAIN", ref });
-        }}>{getLine(ref)?.text}</button>)}</div>
+        }}><span>{getLine(ref)?.text}</span><strong className="funds-action-label">点此说明原因 <Icon name="link" size={16} /></strong></button>)}</div>
         <Feedback>{feedback}</Feedback>
       </>}
       {stage === "order" && <><OrderDesk state={state} dispatch={dispatch} onSource={onSource} /><Feedback>{chainError}</Feedback></>}

@@ -1,4 +1,3 @@
-import IdleHint from "./components/IdleHint.jsx";
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { scenes, byId, oldMainTasks, calendarNotes } from "./game/content.js";
 import {
@@ -314,7 +313,6 @@ export default function App({ preview = null }) {
         "--art-fiber": `url("${asset("ui/notebook-fiber.webp")}")`,
       }}
     >
-      <IdleHint paused={!!((film && !atHome) || ending || departing || bag || settings || source || guide)} progress={state} screen={`${active || ""}-${workOpen}`} />
       <main
         id="main"
         aria-hidden={
@@ -365,7 +363,7 @@ export default function App({ preview = null }) {
             />
             <header className="scene-hud">
               <div className="scene-location">
-                <span>第一章 · {scene.time}</span>
+                <span>{state.chapterCleared ? "第一章已通关 · 回看与选看补查" : `第一章 · ${scene.time}`}</span>
                 <h1 ref={heading} tabIndex={-1}>
                   {scene.place}
                 </h1>
@@ -399,21 +397,21 @@ export default function App({ preview = null }) {
                 </div>
               </div>
               {state.revisit ? (
-                <Button data-idle-hint="2" onClick={returnFromRevisit}>返回林姐 · 补交资料</Button>
+                <Button onClick={returnFromRevisit}>返回林姐 · 补交资料</Button>
               ) : state.scene < 2 ? (
                 <div className={`scene-next ${done ? "is-ready" : ""}`}>
                   <small role="status">{done ? "主线已完成，支线没查完也能走" : mainProgress}</small>
-                  <Button data-idle-hint={done ? "0" : undefined} disabled={!done} onClick={advance}>
+                  <Button disabled={!done} onClick={advance}>
                     {scene.next}
                   </Button>
                 </div>
               ) : state.scene === 2 ? (
-                <Button data-idle-hint="0" onClick={done ? advance : openWork}>
+                <Button onClick={done ? advance : openWork}>
                   {done ? scene.next : "开始核对资金"}
 
                 </Button>
               ) : (
-                <Button data-idle-hint="0" onClick={openWork}>
+                <Button onClick={openWork}>
                   {state.submitted ? "回看公司透视图" : "打开交接资料"}
 
                 </Button>
@@ -450,6 +448,7 @@ export default function App({ preview = null }) {
                 state={state}
                 dispatch={dispatch}
                 onSource={setSource}
+                onEnding={() => setRevisitEnding(false)}
               />
             )}
             {state.scene === 2 && done && (
@@ -459,12 +458,6 @@ export default function App({ preview = null }) {
 
                 </Button>
               </div>
-            )}
-            {state.complete && (
-              <Button onClick={() => setRevisitEnding(false)}>
-                回看邀请函
-
-              </Button>
             )}
           </div>
         </Modal>
@@ -486,7 +479,7 @@ export default function App({ preview = null }) {
           <div className="inspection-panels">
             <div className="inspection-body" key={active}>
               {state.revisit && <p className="choice-guidance revisit-guidance">
-                补查：{byId[state.revisit.id].title}。{revisitTarget(state, state.revisit.id)?.instruction}
+                {state.chapterCleared ? "已通关 · 选看补查：" : "补查："}{byId[state.revisit.id].title}。{revisitTarget(state, state.revisit.id)?.instruction}
                 <span> 完成后返回林姐补交；也可随时返回，已收集资料会保留。</span>
               </p>}
               {!state.revisit && spots.find((spot) => spot.id === active)?.optional && (

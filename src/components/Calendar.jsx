@@ -8,7 +8,6 @@ export function Month({
   disabled = false,
   onDrop,
   markers = {},
-  hintDay,
 }) {
   return (
     <div className="month">
@@ -27,7 +26,6 @@ export function Month({
         ))}
         {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
           <button
-            data-idle-hint={n === hintDay ? "0" : undefined}
             key={n}
             type="button"
             className={day === n ? "selected" : ""}
@@ -102,7 +100,6 @@ export default function Calendar({ state, dispatch, onSource, sources }) {
         <Month
           day={attempt?.id === current.id ? attempt.day : null}
           onDay={place}
-          hintDay={current.day}
         />
       </div>}
       <Feedback success={complete}>
