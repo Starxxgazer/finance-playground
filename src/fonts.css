@@ -33,3 +33,43 @@
   font-weight: 400 900;
   font-display: swap;
 }
+/* User-supplied 朝时体. The user confirmed a purchased commercial license on
+   2026-10-03; original metadata and confirmation accompany the font files. */
+@font-face {
+  font-family: "Spring Hand";
+  src: url("/fonts/ui/eleyang-spring-thin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Spring Hand";
+  src: url("/fonts/ui/eleyang-spring-light.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Spring Hand";
+  src: url("/fonts/ui/eleyang-spring-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Spring Hand";
+  src: url("/fonts/ui/eleyang-spring-bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+/* The supplied Regular has decorative numeral outlines. Use the same family's
+   clearer Light numerals at regular weight; money headings use actual Bold. */
+@font-face {
+  font-family: "Spring Hand";
+  src: url("/fonts/ui/eleyang-spring-light.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}

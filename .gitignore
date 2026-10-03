@@ -15,6 +15,8 @@
 /public/*
 !/public/scenes/
 !/public/characters/
+!/public/items/
+!/public/ui/
 !/public/fonts/
 
 # Design, instructions, references, exported masters, tests and worktrees stay local.

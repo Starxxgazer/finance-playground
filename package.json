@@ -2,7 +2,7 @@
   "name": "finance-playground",
   "version": "1.0.0",
   "private": true,
-  "description": "这笔钱借给谁：第一章写实场景调查游戏",
+  "description": "账面之下：排队的面包店，写实场景调查游戏",
   "scripts": {
     "start": "vite --host 127.0.0.1 --open",
     "dev": "vite --host 0.0.0.0",

@@ -1,0 +1,315 @@
+/* Shared objects from the investigation kit. Artwork is supplied by App so the
+   same surfaces work from both the web build and the offline launcher. */
+.scene-location h1 {
+  font-size: clamp(27px, 3vw, 36px);
+  letter-spacing: 0.06em;
+}
+.scene-location > span {
+  padding-bottom: 7px;
+  border-bottom: 1px solid #dfc79b70;
+}
+.scene-tools .satchel-icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 2px #100c0980);
+}
+.scene-tools .toolbar-button {
+  padding: 0 8px 0 0;
+  border-bottom: 0;
+}
+.scene-controls .button-secondary,
+.scene-controls .button-primary,
+.scene-overlay .button-primary,
+.modal:not(.inventory-modal):not(.scene-overlay) .button-primary {
+  background: var(--art-brass) center / 100% 170% no-repeat;
+  color: #302217;
+  border: 0;
+  border-radius: 0;
+  padding: 13px 24px;
+  font-family: "UI Song", serif;
+  font-weight: 600;
+  text-shadow: 0 1px #edd6a579;
+  filter: drop-shadow(0 3px 3px #100c0980);
+  backdrop-filter: none;
+  transition: filter 160ms;
+}
+.scene-controls .button-secondary:hover:not(:disabled),
+.scene-controls .button-primary:hover:not(:disabled),
+.scene-overlay .button-primary:hover:not(:disabled),
+.modal:not(.inventory-modal):not(.scene-overlay)
+  .button-primary:hover:not(:disabled) {
+  background: var(--art-brass) center / 100% 170% no-repeat;
+  filter: brightness(1.13) drop-shadow(0 4px 4px #100c0970);
+}
+.scene-controls small {
+  color: #403222;
+}
+.scene-controls .button-secondary {
+  background-image: var(--art-paper);
+  background-size: 100% 100%;
+  padding-inline: 18px;
+  font-size: 12px;
+}
+.scene-controls .button-secondary:hover:not(:disabled) {
+  background: var(--art-paper) center / 100% 100% no-repeat;
+}
+.scene-controls-left {
+  gap: 12px;
+}
+
+/* The frame belongs to portable kit windows, never to scene-reading overlays. */
+.modal:not(.inventory-modal):not(.scene-overlay) {
+  --ink: #302b22;
+  --muted: #655a48;
+  --accent: #754c30;
+  --accent-bg: #74563616;
+  --paper: #72533008;
+  --line: #77644935;
+  color: var(--ink);
+  padding: clamp(10px, 2vw, 16px);
+  background: transparent;
+  border: 24px solid transparent;
+  border-image: var(--art-case) 125 fill / 24px / 0 stretch;
+  border-radius: 7px;
+  box-shadow: 0 18px 55px #090805b3;
+  backdrop-filter: none;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) > .modal-heading {
+  position: relative;
+  background: transparent;
+  padding: 0 5px 15px;
+  gap: 12px;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) > .modal-heading h2 {
+  background: var(--art-brass) center / 100% 170% no-repeat;
+  color: #302217;
+  padding: 12px 34px;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  filter: drop-shadow(0 3px 2px #06070470);
+}
+.modal:not(.inventory-modal):not(.scene-overlay) > .modal-heading .icon-button {
+  color: #e9d4a9;
+  background: transparent;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) > .modal-body {
+  background: var(--art-paper) center / 100% 100% no-repeat;
+  padding: clamp(20px, 4vw, 35px);
+  filter: drop-shadow(0 4px 5px #080b0870);
+}
+.modal:not(.inventory-modal):not(.scene-overlay)
+  :is(.open-question, .document-meta, .stamp) {
+  color: #755035;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) .notes-list .note {
+  padding: 20px 0;
+  background: transparent;
+  border-bottom: 1px solid #8c745742;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) .note > .section-title {
+  border-bottom-color: #8c745742;
+}
+.modal:not(.inventory-modal):not(.scene-overlay)
+  :is(.note-choice, .sentence-choice, .choice) {
+  background: #8063470a;
+  border-color: #87644255;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) .feedback.success {
+  color: #354b30;
+  background: #56683b12;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) .chapter-nav {
+  gap: 0;
+  border-block: 1px solid #836e4e55;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) .chapter-nav button {
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid #836e4e33;
+  padding-block: 14px;
+}
+.modal:not(.inventory-modal):not(.scene-overlay)
+  .chapter-nav
+  button[aria-current] {
+  text-decoration: underline;
+  text-decoration-color: #9a5343;
+  text-underline-offset: 6px;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) select {
+  color: #302b22;
+  background: #836e4e14;
+  border-bottom: 1px solid #836e4e80;
+}
+.modal:not(.inventory-modal):not(.scene-overlay) .button-secondary {
+  color: #594330;
+  background: transparent;
+  border-bottom: 1px solid #836e4e77;
+}
+.floating-hint {
+  color: #342b1f;
+  background: var(--art-paper) center / 100% 100% no-repeat;
+  box-shadow: none;
+  filter: drop-shadow(0 5px 8px #100d0966);
+  border-left: 3px solid #947645;
+  backdrop-filter: none;
+}
+.floating-hint :is(p, .icon-button) {
+  color: #342b1f;
+}
+
+/* Actual paper can be handled on the money table; its surrounding room stays
+   transparent, including the introduction and inspection reading panels. */
+.guided-desk :is(.money-card, .month, .desk-kept-note),
+.scene-overlay .sticky-note,
+.scene-overlay .reference-slot.filled,
+.guided-desk .sequence-slots > button.filled,
+.guided-desk .paper-options > button,
+.object-picker .selectable-lines {
+  --ink: #342d22;
+  --muted: #665a46;
+  --accent: #7c4a2e;
+  --accent-bg: #875b2820;
+  --line: #816c4940;
+  color: var(--ink);
+  background: var(--art-paper) center / 100% 100% no-repeat;
+  border: 0;
+  border-radius: 1px;
+  box-shadow: none;
+  filter: drop-shadow(2px 4px 4px #0b0b0860);
+}
+.guided-desk .money-card strong {
+  color: #664329;
+}
+.guided-desk .money-card small {
+  opacity: 1;
+  color: #665a46;
+}
+.guided-desk .money-card:nth-child(even) {
+  transform: rotate(0.65deg);
+}
+.guided-desk .money-card.selected {
+  outline: 2px solid #caa46d;
+  outline-offset: 3px;
+}
+.guided-desk .money-card .text-button,
+.guided-desk .desk-kept-note small {
+  color: #6e4d30;
+}
+.guided-desk .month .days button {
+  color: #342d22;
+}
+.guided-desk .month .days button.selected {
+  outline: 2px solid #93553c;
+  outline-offset: -3px;
+  background: #9b6e3120;
+  border-color: transparent;
+  color: #6b3928;
+}
+.guided-desk .month .month-title {
+  border-bottom: 1px solid #80654065;
+  padding-bottom: 14px;
+}
+.guided-desk .money-trays > button,
+.object-picker .evidence-objects > button,
+.guided-desk .desk-payment-slot,
+.guided-desk .sequence-slots > button:not(.filled) {
+  background: var(--art-pocket) center / 100% 100% no-repeat;
+  border: 0;
+  border-radius: 0;
+  padding: 20px 12px;
+  color: #ecdfc7;
+}
+.object-picker .evidence-objects > button[aria-pressed="true"] {
+  outline: 1px solid #dbc08a;
+  outline-offset: -5px;
+}
+.object-picker .selectable-lines > button {
+  background: transparent;
+  border-top: 1px solid #816c4940;
+}
+.object-picker .selectable-lines > button:hover {
+  background: #875b2815;
+}
+.object-picker .selectable-lines > button.hint-line {
+  background: #875b2820;
+  outline-color: #805238;
+}
+.guided-desk .desk-payment-slot.available {
+  background-image: var(--art-paper);
+  color: #68452b;
+  box-shadow: 2px 4px 8px #080a0760;
+}
+@media (max-width: 699px) {
+  .modal:not(.inventory-modal):not(.scene-overlay) {
+    border-width: 16px;
+    border-image-width: 16px;
+  }
+  .scene-controls .button-primary {
+    padding-inline: 15px;
+  }
+  .scene-controls .scene-controls-left .button-secondary {
+    padding-inline: 7px;
+  }
+  .modal:not(.inventory-modal):not(.scene-overlay) > .modal-heading h2 {
+    font-size: 19px;
+    padding: 11px 24px;
+  }
+  .modal:not(.inventory-modal):not(.scene-overlay) > .modal-body {
+    padding: 20px 17px;
+  }
+  .guided-desk .money-trays > button {
+    padding: 18px 12px;
+  }
+}
+/* Short landscape screens need a single document flow: the footer must never
+   float over the continue control when the introduction runs out of height. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .film {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 20px 7vw;
+    overflow-y: auto;
+  }
+  .film-content {
+    flex-shrink: 0;
+  }
+  .film-kicker {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+  .film h1 {
+    font-size: 34px;
+    margin-bottom: 8px;
+  }
+  .film-content > p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .film .film-role {
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .film .button-primary {
+    min-height: 42px;
+    padding: 10px 22px;
+    margin-top: 12px;
+  }
+  .film-footnote {
+    position: static;
+    flex-shrink: 0;
+    margin-top: 14px;
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-controls .button-primary,
+  .scene-controls .button-secondary,
+  .scene-overlay .button-primary,
+  .modal:not(.inventory-modal):not(.scene-overlay) .button-primary {
+    transition: none;
+  }
+}

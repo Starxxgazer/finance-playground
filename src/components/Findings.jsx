@@ -31,26 +31,28 @@ export default function Findings({ state, dispatch, onSource }) {
         )}
         <div className="section-title">
           <h2>昨晚的记录，已经摊开。</h2>
-          <span className="stamp">4条发现</span>
+          <span className="stamp">{state.solved.length}条发现</span>
         </div>
         <div className="handover-notes">
-          {findings.map((f) => (
-            <article key={f.id}>
-              <h3>{f.title}</h3>
-              <p>{f.correct}</p>
-              <p className="open-question">还要问：{f.question}</p>
-              <div className="proof-links">
-                {f.sources
-                  .filter((id) => state.seen.includes(id))
-                  .map((id) => (
-                    <button key={id} onClick={() => onSource(id)}>
-                      <Icon name="link" size={14} />
-                      {byId[id].title}
-                    </button>
-                  ))}
-              </div>
-            </article>
-          ))}
+          {findings
+            .filter((f) => state.solved.includes(f.id))
+            .map((f) => (
+              <article key={f.id}>
+                <h3>{f.title}</h3>
+                <p>{f.correct}</p>
+                <p className="open-question">还要问：{f.question}</p>
+                <div className="proof-links">
+                  {f.sources
+                    .filter((id) => state.seen.includes(id))
+                    .map((id) => (
+                      <button key={id} onClick={() => onSource(id)}>
+                        <Icon name="link" size={14} />
+                        {byId[id].title}
+                      </button>
+                    ))}
+                </div>
+              </article>
+            ))}
         </div>
         <section className="review-citations">
           <div className="section-title">
@@ -163,7 +165,11 @@ export default function Findings({ state, dispatch, onSource }) {
           aria-labelledby={`tab-${tab}`}
         >
           <h3>查到了什么</h3>
-          <p>{finding.correct}</p>
+          <p>
+            {state.solved.includes(tab)
+              ? finding.correct
+              : "顾客口碑还没有充分核实，暂不作结论。"}
+          </p>
           {tab === "finance" && state.branches.b && (
             <p className="extended-finding">
               陈叔投过的6万元，已用于旧设备首款；现在的可用现金仍是2万元。
@@ -188,7 +194,11 @@ export default function Findings({ state, dispatch, onSource }) {
             <p className="extended-finding">与陈叔的具体带班安排尚未确定。</p>
           )}
           <h3>还要问什么</h3>
-          <p className="open-question">{finding.question}</p>
+          <p className="open-question">
+            {tab === "reputation" && !state.solved.includes(tab)
+              ? "老店顾客怎么评价？这些评价能否代表新铺的需求？"
+              : finding.question}
+          </p>
           <h3>收到的资料</h3>
           <div className="dimension-evidence">
             {dimension.sources.map((id) => {

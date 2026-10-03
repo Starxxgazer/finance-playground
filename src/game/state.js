@@ -21,6 +21,7 @@ export const initialState = {
     day: null,
     refs: [],
     initial: false,
+    placements: {},
     gap: false,
     explained: false,
     order: [],
@@ -34,6 +35,11 @@ export const initialState = {
   submittedIds: [],
   complete: false,
 };
+const initialPlaced = (p) =>
+  p?.cash === "available" &&
+  p?.loan === "available" &&
+  p?.oldDebt === "payment" &&
+  p?.startup === "payment";
 const has = (s, ids) => ids.every((id) => s.seen.includes(id));
 const collect = (s, ids) => ({ ...s, seen: [...new Set([...s.seen, ...ids])] });
 const updateFunds = (s, data) => ({ ...s, funds: { ...s.funds, ...data } });
@@ -46,7 +52,7 @@ export function sceneDone(s, index = s.scene) {
     return (
       has(s, oldRequired) &&
       Object.values(s.tasks).every(Boolean) &&
-      ["finance", "credit", "reputation"].every((id) => s.solved.includes(id))
+      ["finance", "credit"].every((id) => s.solved.includes(id))
     );
   if (index === 1)
     return (
@@ -75,13 +81,13 @@ const sceneReads = [
     debt: ["debt"],
     receipt: ["receipt"],
     contract: ["contract"],
-    transfer: ["transfer"],
+    transfer: ["transfer", "receipt"],
   },
   {
     rent: ["rent", "lease"],
     renovation: ["renovation"],
     equipment: ["equipment"],
-    preparation: ["preparation"],
+    preparation: ["preparation", "opening", "forecast"],
     lease: ["lease"],
     opening: ["opening"],
     forecast: ["forecast"],
@@ -97,7 +103,7 @@ export function reducer(s, a) {
       if (s.scene === 2 && a.id === "calculation") ids = ["calculation"];
       if (s.scene === 3 && a.id === "alternative" && s.branches.aRequested)
         ids = ["alternative"];
-      if (!ids || (a.id === "transfer" && !has(s, ["receipt"]))) return s;
+      if (!ids) return s;
       let next = collect(s, ids);
       if (has(next, ["rent", "renovation", "equipment", "preparation"]))
         next = collect(next, ["budget"]);
@@ -117,7 +123,12 @@ export function reducer(s, a) {
             : a.id === "receipt"
               ? a.amount && a.date && a.status === "paid"
               : false;
-      return correct ? { ...s, tasks: { ...s.tasks, [a.id]: true } } : s;
+      if (!correct) return s;
+      const next = { ...s, tasks: { ...s.tasks, [a.id]: true } };
+      const earned = [];
+      if (next.tasks.ledger) earned.push("finance");
+      if (next.tasks.debt && next.tasks.receipt) earned.push("credit");
+      return { ...next, solved: [...new Set([...next.solved, ...earned])] };
     }
     case "NOTE": {
       const f = findings.find((f) => f.id === a.id && f.id !== "risk");
@@ -175,10 +186,22 @@ export function reducer(s, a) {
         ? { ...s, calendar: { ...s.calendar, [note.id]: a.day } }
         : s;
     }
+    case "INITIAL_PLACE":
+      if (
+        s.scene !== 2 ||
+        s.funds.initial ||
+        !has(s, ["calculation"]) ||
+        !["cash", "loan", "oldDebt", "startup"].includes(a.id) ||
+        ![null, "available", "payment"].includes(a.side)
+      )
+        return s;
+      return updateFunds(s, {
+        placements: { ...s.funds.placements, [a.id]: a.side },
+      });
     case "INITIAL":
       return s.scene === 2 &&
         has(s, ["calculation"]) &&
-        String(a.value).trim() === "0"
+        initialPlaced(s.funds.placements)
         ? updateFunds(s, { initial: true })
         : s;
     case "DAY":
@@ -345,6 +368,27 @@ export function restoreState(raw) {
     )
       return reset();
     const f = s.funds;
+    // 旧存档已完成的月初核对保留；未核对的不补答案。
+    if (!Object.hasOwn(f, "placements"))
+      f.placements = f.initial
+        ? {
+            cash: "available",
+            loan: "available",
+            oldDebt: "payment",
+            startup: "payment",
+          }
+        : {};
+    if (
+      !f.placements ||
+      Array.isArray(f.placements) ||
+      Object.entries(f.placements).some(
+        ([id, side]) =>
+          !["cash", "loan", "oldDebt", "startup"].includes(id) ||
+          ![null, "available", "payment"].includes(side),
+      ) ||
+      (f.initial && !initialPlaced(f.placements))
+    )
+      return reset();
     if (
       ["initial", "gap", "explained", "chainDone", "noted"].some(
         (k) => typeof f[k] !== "boolean",
@@ -435,7 +479,8 @@ export function restoreState(raw) {
     )
       return reset();
     if (
-      (f.initial && !has(s, ["calculation"])) ||
+      ((f.initial || Object.keys(f.placements).length) &&
+        !has(s, ["calculation"])) ||
       (f.gap && !evaluateProof(f.day, f.refs, f.initial, s.seen).ok) ||
       (f.explained && !f.gap) ||
       (f.chainDone &&
@@ -449,6 +494,10 @@ export function restoreState(raw) {
       (f.noted && !f.chainDone)
     )
       return reset();
+    // 旧版需要手选笔记；已有核对依据的主线发现可直接补记。
+    if (s.tasks.ledger) s.solved = [...new Set([...s.solved, "finance"])];
+    if (s.tasks.debt && s.tasks.receipt)
+      s.solved = [...new Set([...s.solved, "credit"])];
     for (let i = 0; i < s.unlocked; i++) if (!sceneDone(s, i)) return reset();
     if (
       (s.submitted &&

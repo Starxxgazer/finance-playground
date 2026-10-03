@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { byId, findings } from "../game/content.js";
+import ItemIcon from "./ItemIcon.jsx";
 import { Icon, Button, Dialogue } from "./Ui.jsx";
 
 export default function Evidence({ id, children, compact = false }) {
@@ -8,7 +9,7 @@ export default function Evidence({ id, children, compact = false }) {
     <article className={`document ${compact ? "compact" : ""}`}>
       <div className="document-meta">
         <span>{item.nature}</span>
-        <Icon name="file" />
+        <ItemIcon id={id} small />
       </div>
       <h3>{item.title}</h3>
       <div className="document-source">
@@ -32,7 +33,7 @@ export function Feedback({ children, success = false }) {
     </p>
   ) : null;
 }
-export function OldActivity({ id, state, dispatch, onOpen }) {
+export function OldActivity({ id, state, dispatch }) {
   const [values, setValues] = useState({});
   const [feedback, setFeedback] = useState("");
   const set = (k, v) => {
@@ -49,7 +50,7 @@ export function OldActivity({ id, state, dispatch, onOpen }) {
           : values.amount && values.date && values.status === "paid";
     if (okay) {
       dispatch({ type: "CLASSIFY", id, ...values, day: Number(values.day) });
-      setFeedback("核对好了。可以去调查笔记里，选出资料支持的发现。");
+      setFeedback("核对好了。有依据的发现与待查问题已记入手记。");
     } else
       setFeedback(
         id === "ledger"
@@ -193,20 +194,6 @@ export function OldActivity({ id, state, dispatch, onOpen }) {
           <Feedback>{feedback}</Feedback>
         </section>
       )}
-      {id === "debt" && (
-        <button className="optional-link" onClick={() => onOpen("contract")}>
-          <Icon name="file" />
-          继续看看完整合同<span>支线A</span>
-          <Icon name="arrow" />
-        </button>
-      )}
-      {id === "receipt" && (
-        <button className="optional-link" onClick={() => onOpen("transfer")}>
-          <Icon name="receipt" />
-          夹着一张陈叔的旧回执<span>支线B</span>
-          <Icon name="arrow" />
-        </button>
-      )}
     </>
   );
 }
@@ -241,9 +228,14 @@ export function Notes({ state, dispatch }) {
   const [feedback, setFeedback] = useState("");
   return (
     <div className="notes-list">
-      <p className="muted">资料能支持哪句话？每条发现都留一个还要问的问题。</p>
+      <p className="muted">只记下有依据的发现。还没查清的事，留着继续问。</p>
       {findings
-        .filter((f) => f.id !== "risk" || state.solved.includes("risk"))
+        .filter(
+          (f) =>
+            state.solved.includes(f.id) ||
+            (f.id === "reputation" &&
+              ["taste", "queue"].every((id) => state.seen.includes(id))),
+        )
         .map((f) => {
           const done = state.solved.includes(f.id);
           const ready =
@@ -318,7 +310,7 @@ export function SideActivity({ id, state, dispatch }) {
           </Feedback>
         ) : (
           <Button onClick={() => dispatch({ type: "CONTACT_MENG" })}>
-            打电话追问：尾款能不能晚一点付？
+            当面追问：尾款能不能晚一点付？
           </Button>
         )}
       </>
@@ -355,7 +347,7 @@ export function SideActivity({ id, state, dispatch }) {
                   ["parties", "核对收付款双方"],
                   ["order", "转入早于设备首款付款"],
                   ["amount", "两张回执金额均为6万元"],
-                  ["purpose", "去向是主线看过的旧设备首款"],
+                  ["purpose", "去向是这台旧设备的首款"],
                 ].map(([key, text]) => (
                   <label className="choice" key={key}>
                     <input
@@ -451,22 +443,46 @@ export function SideActivity({ id, state, dispatch }) {
     );
   return (
     <>
-      <Dialogue person="xiaohe">不开新店，也能让我试着带班吗？</Dialogue>
-      <div className="choices">
-        {[
-          ["wish", "你最想试着负责什么？"],
-          ["talk", "你和陈叔聊过吗？"],
-        ].map(([key, text]) => (
-          <Button
-            key={key}
-            secondary
-            onClick={() => dispatch({ type: "ASK_XIAOHE", id: key })}
-          >
-            {text}
-            {state.seen.includes(key) && <Icon name="check" />}
-          </Button>
-        ))}
+      <div className="invitation-card">
+        <small>留灯烘焙</small>
+        <strong>邀请函</strong>
+        <p>
+          开业日期 <span className="blank-date" aria-label="日期空白" />
+        </p>
       </div>
+      <Dialogue person="xiaohe">
+        {v.dateAsked ||
+        state.seen.includes("wish") ||
+        state.seen.includes("talk")
+          ? "设备哪天到、什么时候能开门还没定，我怕写早了。其实我还想问……不开新店，也能让我试着带班吗？"
+          : "邀请函做好了，日期还没敢填。"}
+      </Dialogue>
+      {!v.dateAsked &&
+        !state.seen.includes("wish") &&
+        !state.seen.includes("talk") && (
+          <Button onClick={() => set("dateAsked", true)}>
+            日期为什么还空着？
+          </Button>
+        )}
+      {(v.dateAsked ||
+        state.seen.includes("wish") ||
+        state.seen.includes("talk")) && (
+        <div className="choices">
+          {[
+            ["wish", "你最想试着负责什么？"],
+            ["talk", "你和陈叔聊过吗？"],
+          ].map(([key, text]) => (
+            <Button
+              key={key}
+              secondary
+              onClick={() => dispatch({ type: "ASK_XIAOHE", id: key })}
+            >
+              {text}
+              {state.seen.includes(key) && <Icon name="check" />}
+            </Button>
+          ))}
+        </div>
+      )}
       {["wish", "talk"]
         .filter((key) => state.seen.includes(key))
         .map((key) => (
