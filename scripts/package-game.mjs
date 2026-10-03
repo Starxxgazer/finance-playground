@@ -97,10 +97,11 @@ const expectedUi = [
   "document-paper.webp",
   "field-case.webp",
   "item-pocket.webp",
+  "notebook-fiber.webp",
   "satchel.webp",
 ];
 if (JSON.stringify(uiFiles) !== JSON.stringify(expectedUi)) {
-  throw new Error("The offline game must include all five UI material images.");
+  throw new Error("The offline game must include the complete UI material set.");
 }
 await writeFile(resolve(root, "开始游戏.html"), html);
 console.log("已生成 开始游戏.html：双击即可游玩，无需 Node.js 或本地服务器。");

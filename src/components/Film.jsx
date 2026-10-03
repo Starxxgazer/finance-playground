@@ -37,7 +37,7 @@ export default function Film({ index, onContinue }) {
       <div className="film-content">
         <span className="film-kicker">
           {index === 0
-            ? "第一章 / 一次有依据的调查"
+            ? "账面之下 · 第一章"
             : ["", "10月29日 下午", "10月29日 晚", "10月30日 上午"][index]}
         </span>
         <h1>{film.title}</h1>

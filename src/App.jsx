@@ -31,9 +31,9 @@ function readSave() {
 }
 function readTheme() {
   try {
-    return localStorage.getItem("finance-playground.theme") || "auto";
+    return localStorage.getItem("finance-playground.theme") || "light";
   } catch {
-    return "auto";
+    return "light";
   }
 }
 const extraTitles = {
@@ -42,14 +42,16 @@ const extraTitles = {
   calendar: "把便签贴到日历上",
   invitation: "还没填日期的邀请函",
 };
-export default function App() {
-  const [state, dispatch] = useReducer(reducer, undefined, readSave);
+export default function App({ preview = null }) {
+  const [state, dispatch] = useReducer(reducer, undefined, () =>
+    preview ? structuredClone(preview.state) : readSave(),
+  );
   const [active, setActive] = useState(null);
   const [source, setSource] = useState(null);
   const [bag, setBag] = useState(false);
   const [settings, setSettings] = useState(false);
   const [resetting, setResetting] = useState(false);
-  const [theme, setTheme] = useState(readTheme);
+  const [theme, setTheme] = useState(() => preview ? "light" : readTheme());
   const [hint, setHint] = useState("");
   const [saveFailed, setSaveFailed] = useState(false);
   const [revisitEnding, setRevisitEnding] = useState(false);
@@ -91,6 +93,7 @@ export default function App() {
   const ending = state.complete && !revisitEnding;
   const done = sceneDone(state);
   useEffect(() => {
+    if (preview) return;
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(state));
       setSaveFailed(false);
@@ -100,6 +103,7 @@ export default function App() {
   }, [state]);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    if (preview) return;
     try {
       localStorage.setItem("finance-playground.theme", theme);
     } catch {
@@ -113,6 +117,16 @@ export default function App() {
     setClues(false);
     setObserving(false);
   }, [state.scene, film, ending]);
+  useEffect(() => {
+    if (!preview) return;
+    setActive(preview.active || null);
+    setSource(preview.source || null);
+    setBag(!!preview.bag);
+    setClues(!!preview.clues);
+    setSettings(!!preview.settings);
+    setWorkOpen(!!preview.workOpen);
+    setTutorial(false);
+  }, [preview]);
   const open = (id) => {
     setObserving(false);
     lastInvestigation.current = id;
@@ -289,6 +303,7 @@ export default function App() {
         "--art-pocket": `url("${asset("ui/item-pocket.webp")}")`,
         "--art-paper": `url("${asset("ui/document-paper.webp")}")`,
         "--art-brass": `url("${asset("ui/brass-tab.webp")}")`,
+        "--art-fiber": `url("${asset("ui/notebook-fiber.webp")}")`,
       }}
     >
       <main
@@ -358,7 +373,7 @@ export default function App() {
                   onClick={() => {
                     setTutorial(false);
                     try {
-                      localStorage.setItem(
+                      if (!preview) localStorage.setItem(
                         "finance-playground.observation",
                         "seen",
                       );
@@ -378,7 +393,7 @@ export default function App() {
                     setObserving(!observing);
                     setTutorial(false);
                     try {
-                      localStorage.setItem(
+                      if (!preview) localStorage.setItem(
                         "finance-playground.observation",
                         "seen",
                       );
@@ -574,7 +589,8 @@ export default function App() {
           </div>
         </Modal>
       )}
-      {bag && <Inventory state={state} onClose={() => setBag(false)} />}
+      {bag && <Inventory state={state} onClose={() => setBag(false)}
+        initialSection={preview?.bagSection} initialSelected={preview?.bagItem} />}
       {source && state.seen.includes(source) && (
         <Modal
           key={`source-${source}`}
@@ -642,7 +658,7 @@ export default function App() {
                   onChange={(e) => {
                     setMotion(e.target.checked);
                     try {
-                      localStorage.setItem(
+                      if (!preview) localStorage.setItem(
                         "finance-playground.motion",
                         e.target.checked ? "on" : "off",
                       );

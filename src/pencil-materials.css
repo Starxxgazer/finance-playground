@@ -1,0 +1,256 @@
+/* Physical finish for the selected pencil-notebook UI. The generated fiber
+   image is supplied by App so the same materials work over HTTP and file://.
+   Paper grain is a translucent, non-interactive layer, never baked-in text. */
+:root[data-ui="notebook"] {
+  --panel: #eee4cfd6;
+  --panel-soft: #eee4cfcf;
+  --ink: #363024;
+  --muted: #695c49;
+  --accent: #785237;
+  --line: #816b483c;
+  --field: #785a3210;
+  --field-hover: #785a3223;
+  --accent-bg: #a0744520;
+  --button: #69513a;
+  --paper-edge: #fdf5df80;
+  --pencil-line: #795f425c;
+  --paper-shadow: #2c231e3d;
+  --grain-opacity: .40;
+}
+
+/* A paper face, side lighting, and a thin compressed edge. The scene remains
+   visible through the reading surface; no wooden frame or opaque navigation. */
+html[data-ui="notebook"] :is(.modal:not(.scene-overlay), .inspection-body, .work-glass, .ending-content, .film-content) {
+  isolation: isolate;
+  border-radius: 2px 3px 2px 3px;
+  background-color: var(--panel-soft);
+  background-image: linear-gradient(100deg, #fff7df12, transparent 28%, #8a6b2d08 84%, #fff7df1c);
+  box-shadow: inset 1px 0 var(--paper-edge), inset -1px 0 #74604428, 0 7px 24px var(--paper-shadow);
+}
+html[data-ui="notebook"] :is(.inspection-body, .film-content, .ending-content) { position: relative; }
+html[data-ui="notebook"] :is(.modal:not(.scene-overlay), .inspection-body, .work-glass, .ending-content, .film-content)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: var(--art-fiber) center / 440px 440px repeat;
+  opacity: var(--grain-opacity); mix-blend-mode: multiply; pointer-events: none;
+  border-radius: inherit;
+}
+html[data-ui="notebook"] .modal:not(.scene-overlay) { background-color: var(--panel); }
+html[data-ui="notebook"] .modal::backdrop { background: #25241652; backdrop-filter: blur(3px); }
+html[data-ui="notebook"] .scene-overlay::backdrop { background: transparent; backdrop-filter: none; }
+html[data-ui="notebook"] .inspection-intro { background: transparent; box-shadow: none; }
+html[data-ui="notebook"] .inspection-intro h2 { text-shadow: 0 2px 8px #221b139e; }
+html[data-ui="notebook"] .inspection-body { padding: 30px 34px; }
+html[data-ui="notebook"] .document-lines p { border-color: var(--pencil-line); border-bottom-style: solid; line-height: 2.08; }
+html[data-ui="notebook"] .document.compact { position: relative; background: var(--field); padding: 19px; box-shadow: 0 2px 0 #816b4820; }
+html[data-ui="notebook"] .document h3 { font-family: "Spring Hand", serif; font-size: 28px; }
+html[data-ui="notebook"] .document-meta { letter-spacing: .06em; font-size: 10px; }
+html[data-ui="notebook"] .document-source { border-bottom: 1px solid var(--line); padding-bottom: 13px; }
+html[data-ui="notebook"] .open-question { font-family: "Spring Hand", serif; font-size: 18px; line-height: 1.75; }
+html[data-ui="notebook"] .note > .section-title h3 { font-size: 25px; }
+html[data-ui="notebook"] .note { border-bottom: 1px dashed var(--pencil-line); }
+html[data-ui="notebook"] .note .open-question { padding-left: 11px; border-left: 2px solid var(--pencil-line); }
+
+/* Handwritten tabs and pencil strokes also carry selected and focus states. */
+html[data-ui="notebook"] :is(.button-primary, .button-secondary) {
+  position: relative; font-family: "Spring Hand", serif; font-size: 19px;
+  letter-spacing: .045em; padding: 11px 23px; min-height: 46px;
+  border: 0; transition: box-shadow 180ms, background 180ms, transform 180ms;
+}
+html[data-ui="notebook"] .button-primary {
+  color: #fff6dc; background: #6c553b;
+  box-shadow: inset 0 1px #bba07d66, inset 0 -2px #3526194d, 1px 3px 6px #3c2e2430;
+}
+html[data-ui="notebook"] .button-primary::before {
+  content: ""; position: absolute; inset: 0; background: var(--art-fiber) center / 380px; opacity: .17; mix-blend-mode: soft-light; pointer-events: none;
+}
+html[data-ui="notebook"] .button-primary:hover:not(:disabled) { background: #755d42; box-shadow: inset 0 1px #d1b99766, 1px 5px 9px #3c2e2440; transform: translateY(-1px); filter: none; }
+html[data-ui="notebook"] .button-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 2px 3px #3526194d; }
+html[data-ui="notebook"] .button-secondary { background: #b69b6520; border-bottom: 1px solid var(--pencil-line); box-shadow: inset 0 1px #fff9e526; }
+html[data-ui="notebook"] .button-secondary:hover:not(:disabled) { background: var(--field-hover); }
+html[data-ui="notebook"] :is(.button-secondary, .inventory-sections button[aria-pressed="true"])::after {
+  content: ""; position: absolute; left: 15%; right: 12%; bottom: 4px; height: 1px; background: var(--pencil-line); transform: rotate(-1.2deg); pointer-events: none;
+}
+html[data-ui="notebook"] .modal .modal-heading .icon-button { border: 1px solid var(--line); background: #f8eccb17; border-radius: 47% 44% 46% 49%; }
+html[data-ui="notebook"] .modal.scene-overlay > .modal-heading .icon-button { border: 0; border-bottom: 1px solid #eadbc181; border-radius: 0; background: #302a2066; }
+html[data-ui="notebook"] .scene-controls .button-primary {
+  background: #e9dcc7de; color: #423522; padding-inline: 26px; min-height: 45px;
+  box-shadow: inset 0 1px #fff9dfb3, 0 3px 8px #16150e36;
+}
+html[data-ui="notebook"] .scene-controls .button-primary::before { mix-blend-mode: multiply; opacity: .38; }
+html[data-ui="notebook"] .scene-controls .button-primary:hover:not(:disabled) { background: #f3e7d3; }
+html[data-ui="notebook"] .scene-controls .button-secondary { position: relative; padding-inline: 17px; color: #fff2db; text-shadow: 0 2px 6px #23180d; background: #38302224; border: 0; box-shadow: none; }
+html[data-ui="notebook"] .scene-controls .button-secondary:first-child { padding-left: 0; }
+html[data-ui="notebook"] .scene-controls .button-secondary::after { background: #ecdabb70; left: 16px; right: 16px; bottom: 4px; }
+html[data-ui="notebook"] .scene-controls .button-secondary:first-child::after { left: 0; }
+html[data-ui="notebook"] .scene-tools .satchel-icon { filter: drop-shadow(0 3px 3px #1c110b70); width: 33px; height: 35px; }
+html[data-ui="notebook"] .scene-location > span { position: relative; }
+html[data-ui="notebook"] .scene-location > span::after { content: ""; position: absolute; left: 0; right: 8px; height: 1px; bottom: -3px; background: #dfcba880; transform: rotate(-.6deg); }
+html[data-ui="notebook"] .scene-subtitle strong { padding: 6px 8px; border-bottom: 1px solid #e3cba573; }
+
+/* The inventory is an opened field notebook. Items keep their own accurate
+   artwork; paper pockets and pencil ticks express collection without spoilers. */
+html[data-ui="notebook"] .inventory-modal { padding: 30px 36px 24px; width: min(850px, calc(100vw - 44px)); }
+html[data-ui="notebook"] .inventory-modal::after {
+  content: ""; position: absolute; inset: 18px 17px; border-left: 1px solid var(--pencil-line); border-right: 1px solid #7b674121; z-index: -1; pointer-events: none;
+}
+html[data-ui="notebook"] .inventory-modal .modal-heading { padding-bottom: 15px; }
+html[data-ui="notebook"] .inventory-modal .modal-heading h2 { font-size: 42px; letter-spacing: .12em; }
+html[data-ui="notebook"] .inventory-sections { gap: 12px; margin-bottom: 15px; padding-bottom: 10px; border-bottom-style: double; border-bottom-width: 3px; }
+html[data-ui="notebook"] .inventory-sections button { position: relative; background: #b69b6514; padding: 8px 13px; font-size: 16px; border-bottom: 1px solid #8c734231; border-radius: 1px 4px 0 0; box-shadow: inset 0 1px #fff5d661, 1px 2px 2px #4433240d; }
+html[data-ui="notebook"] .inventory-sections button[aria-pressed="true"] { background: #fff6df38; text-decoration: none; box-shadow: inset 0 1px #fff5d680, 1px 2px 3px #4433241c; }
+html[data-ui="notebook"] .inventory-sections button:hover { transform: translateY(-1px); }
+html[data-ui="notebook"] .inventory-total { border: 1px solid var(--pencil-line); padding: 5px 8px; transform: rotate(-3deg); color: var(--accent); }
+html[data-ui="notebook"] .inventory-board { column-gap: 28px; }
+html[data-ui="notebook"] .inventory-column-1::before { display: block; width: 1px; left: -14px; background: #7c69442b; box-shadow: 1px 0 #ffffe626; }
+html[data-ui="notebook"] .inventory-group-label { margin-bottom: 7px; }
+html[data-ui="notebook"] .inventory-group-label > span { position: relative; padding: 0 3px 4px; font-size: 19px; }
+html[data-ui="notebook"] .inventory-group-label > span::after { content: ""; position: absolute; height: 1px; bottom: 0; left: 0; right: -3px; background: var(--pencil-line); transform: rotate(-1.7deg); }
+html[data-ui="notebook"] .inventory-slot { background: linear-gradient(150deg, #fff4d523, #76512e08); border: 0; border-bottom: 1px solid #816b4830; box-shadow: inset 0 1px #ffffe657, inset 1px 0 #ffffe633, 1px 2px 2px #50391614; }
+html[data-ui="notebook"] .inventory-slot.is-collected .item-art { width: 84%; height: 77%; filter: drop-shadow(1px 4px 3px #48331e5c); }
+html[data-ui="notebook"] .inventory-slot:hover { background: #fff9e23b; box-shadow: inset 0 1px #ffffe68c, 1px 4px 7px #50391628; }
+html[data-ui="notebook"] .inventory-slot.is-collected:hover .item-art { filter: drop-shadow(2px 6px 3px #48331e70); transform: translateY(-3px) rotate(-2deg); }
+html[data-ui="notebook"] .inventory-slot.is-uncollected { box-shadow: inset 0 1px 4px #5f4b2f0c; background: #83664104; border-bottom-style: dashed; }
+html[data-ui="notebook"] .inventory-slot.is-uncollected .item-art { opacity: .26; filter: grayscale(1) contrast(.8); }
+html[data-ui="notebook"] .slot-status { top: 4px; right: 4px; width: 11px; height: 11px; background: transparent; color: var(--accent); transform: rotate(-10deg); }
+html[data-ui="notebook"] .inventory-slot strong { font-family: "UI Song", serif; font-size: 10px; color: var(--ink); }
+html[data-ui="notebook"] .inventory-footnote { font-family: "Spring Hand", serif; font-size: 13px; margin-top: 15px; letter-spacing: .06em; }
+html[data-ui="notebook"] .inventory-original { position: relative; background: #fff9e527; box-shadow: 1px 3px 0 #aa95711a, 3px 5px 0 #aa95710e; border-top: 1px solid var(--paper-edge); padding: 26px; margin: 10px 3px; }
+html[data-ui="notebook"] .inventory-original .document-lines p { border-bottom-color: var(--pencil-line); }
+html[data-ui="notebook"] .original-heading { border-bottom: 1px dashed var(--pencil-line); }
+html[data-ui="notebook"] .original-note { font-family: "Spring Hand", serif; font-size: 15px; color: var(--muted); }
+html[data-ui="notebook"] .inventory-note { background: #fff6dd24; box-shadow: 1px 3px 0 #80633b1a; padding: 23px; }
+html[data-ui="notebook"] .inventory-note .open-question { font-family: "Spring Hand", serif; font-size: 18px; }
+html[data-ui="notebook"] .inventory-people > div { background: #fff4d331; box-shadow: 1px 3px 4px #4e35181c; border-top: 1px solid #fffce655; padding: 12px 10px 20px; }
+html[data-ui="notebook"] .inventory-people .portrait { box-shadow: 0 1px 2px #523e2444; border: 4px solid #eadcc2; }
+html[data-ui="notebook"] .inventory-people h3 { font-size: 26px; }
+html[data-ui="notebook"] .inventory-people p { padding-top: 9px; border-top: 1px solid var(--line); }
+
+/* Forms remain clean enough to read. Pencil rings, shallow paper stacks and
+   stamped source labels carry the material through all financial activities. */
+html[data-ui="notebook"] :is(fieldset, .receipt-pair > div) { background: #a5875820; box-shadow: inset 0 1px 3px #755a2910; }
+html[data-ui="notebook"] legend { font-size: 28px; color: var(--accent); }
+html[data-ui="notebook"] .choice { background: #fff5d511; }
+html[data-ui="notebook"] .choice:has(input:checked) { background: #c1a57826; box-shadow: inset 2px 0 var(--accent); }
+html[data-ui="notebook"] select { border: 0; border-bottom: 1px solid var(--pencil-line); box-shadow: inset 0 1px 3px #3d2e1610; background: #99815a13; }
+html[data-ui="notebook"] .sentence-choice, html[data-ui="notebook"] .note-choice { background: #fff5d519; border-bottom: 1px solid var(--pencil-line); padding: 14px; }
+html[data-ui="notebook"] .feedback { padding: 13px 16px; background: #9b764e13; border-left: 2px solid var(--accent); font-family: "UI Song", serif; }
+html[data-ui="notebook"] .stamp { transform: rotate(-2deg); border-color: var(--pencil-line); font-family: "Spring Hand", serif; font-size: 14px; padding: 5px 10px; }
+html[data-ui="notebook"] .work-glass { padding: 31px 40px; }
+html[data-ui="notebook"] .guided-desk .desk-chapter h2 { font-size: 37px; }
+html[data-ui="notebook"] .guided-desk .desk-chapter { border-bottom: 1px solid var(--pencil-line); padding-bottom: 15px; }
+html[data-ui="notebook"] .money-card { position: relative; background: #fff7df31; border: 0; border-top: 1px solid var(--paper-edge); box-shadow: 1px 3px 0 #9d86622b, 2px 5px 0 #9d866212; }
+html[data-ui="notebook"] .money-card:nth-child(2n) { transform: rotate(.5deg); }
+html[data-ui="notebook"] .money-card.selected { outline: 1px solid var(--accent); outline-offset: 4px; background: #fff7df57; }
+html[data-ui="notebook"] .money-card strong { position: relative; padding-bottom: 7px; font-size: 34px; }
+html[data-ui="notebook"] .money-card strong::after { content: ""; position: absolute; bottom: 0; left: 4px; right: -4px; height: 1px; background: var(--pencil-line); transform: rotate(-2deg); }
+html[data-ui="notebook"] .money-card .item-art { width: 46px; height: 46px; filter: drop-shadow(1px 3px 2px #513d2945); }
+html[data-ui="notebook"] .money-trays > button { background: #89714b0a; border: 1px dashed var(--pencil-line); box-shadow: inset 0 2px 6px #6e542019; }
+html[data-ui="notebook"] .money-trays > button strong { font-family: "Spring Hand", serif; font-size: 24px; font-weight: 400; }
+html[data-ui="notebook"] .desk-kept-note { background: #b39a6021; border-left: 2px solid var(--accent); box-shadow: 1px 2px 0 #7a623820; }
+html[data-ui="notebook"] :is(.month, .sticky-note, .reference-slot.filled, .paper-options button, .sequence-slots > button.filled) { background: #fff9e02b; box-shadow: inset 0 1px #fff9e985, 1px 3px 0 #7a623820, 2px 5px 4px #7a62380d; }
+html[data-ui="notebook"] .month-title { border-bottom: 3px double var(--pencil-line); padding-bottom: 13px; }
+html[data-ui="notebook"] .month-title strong { font-family: "Spring Hand", serif; font-size: 31px; }
+html[data-ui="notebook"] .month-title > span { color: var(--muted); }
+html[data-ui="notebook"] .month .days button { position: relative; }
+html[data-ui="notebook"] .month .days button.selected { background: var(--accent-bg); outline: 0; border-color: transparent; }
+html[data-ui="notebook"] .month .days button.selected::after { content: ""; position: absolute; inset: 3px; border: 1.5px solid var(--accent); border-radius: 45% 48% 42% 49%; transform: rotate(-9deg); pointer-events: none; }
+html[data-ui="notebook"] .sticky-note { border-top: 1px solid var(--paper-edge); }
+html[data-ui="notebook"] .sticky-note > button:first-child strong { font-family: "Spring Hand", serif; font-size: 24px; }
+html[data-ui="notebook"] .object-picker .evidence-objects > button { background: #fff8db1c; border: 0; border-bottom: 1px solid var(--pencil-line); box-shadow: 0 1px #fff9e526; }
+html[data-ui="notebook"] .object-picker .evidence-objects > button[aria-pressed="true"] { background: #a6864a26; box-shadow: inset 0 -2px var(--accent); }
+html[data-ui="notebook"] .object-picker .selectable-lines { background: #fff6e024; box-shadow: 1px 2px 0 #93784b25; }
+html[data-ui="notebook"] .company-nav button { font-family: "Spring Hand", serif; font-size: 22px; border-bottom: 1px solid var(--line); background: #fff7de13; }
+html[data-ui="notebook"] .company-nav button[aria-selected="true"] { background: #ac8e5733; box-shadow: inset 2px 0 var(--accent); }
+html[data-ui="notebook"] .company-panel h3 { font-family: "Spring Hand", serif; font-size: 22px; }
+html[data-ui="notebook"] .dimension-evidence .collected { background: #b39a6021; box-shadow: inset 2px 0 var(--accent), 1px 2px 0 #9d866218; }
+html[data-ui="notebook"] .invitation-card { box-shadow: inset 0 1px #fff9e580, 2px 3px 0 #8d734125; padding: 24px; background: #fff4d41c; }
+html[data-ui="notebook"] .invitation-card strong { font-size: 42px; }
+html[data-ui="notebook"] .film-content { border-left: 1px solid #fff4d842; padding: 44px; }
+html[data-ui="notebook"] .film-content > p { color: var(--ink); }
+html[data-ui="notebook"] .film-kicker { display: inline-block; border-bottom: 1px solid var(--pencil-line); padding-bottom: 10px; }
+html[data-ui="notebook"] .film h1 { font-size: clamp(40px, 4.6vw, 62px); letter-spacing: .06em; }
+html[data-ui="notebook"] .film .film-role { border-left: 1px solid var(--pencil-line); padding-left: 14px; color: var(--muted); }
+
+/* 朝时体: four actual cuts, never synthesized. Thin is reserved for a large
+   invitation title; small controls and financial text never use hairlines. */
+html[data-ui="notebook"] :is(.film h1, .scene-location h1, .inspection-intro h2, .modal .modal-heading h2, .ending h1) {
+  font-family: "Spring Hand", "UI Song", serif; font-weight: 700; letter-spacing: .025em;
+}
+html[data-ui="notebook"] :is(h3, h4, .inventory-group-label > span, .guided-desk .desk-chapter h2) { font-weight: 400; }
+html[data-ui="notebook"] :is(.button-primary, .button-secondary, .inventory-sections button) { font-weight: 400; letter-spacing: .025em; }
+html[data-ui="notebook"] :is(.money-card strong, legend, .sticky-note > button:first-child strong, .desk-total strong) { font-family: "Spring Hand", "UI Sans", sans-serif; font-weight: 700; letter-spacing: .025em; }
+html[data-ui="notebook"] .scene-subtitle p { font-family: "Spring Hand", "UI Song", serif; font-weight: 300; font-size: 23px; line-height: 1.85; }
+html[data-ui="notebook"] .dialogue p { font-family: "Spring Hand", "UI Song", serif; font-weight: 300; font-size: 20px; line-height: 1.8; }
+html[data-ui="notebook"] :is(.open-question, .inventory-note .open-question) { font-family: "Spring Hand", serif; font-weight: 300; font-size: 20px; }
+html[data-ui="notebook"] :is(.original-note, .inventory-footnote) { font-family: "Spring Hand", serif; font-weight: 300; }
+html[data-ui="notebook"] .invitation-card > strong { font-family: "Spring Hand", serif; font-weight: 100; font-size: 48px; letter-spacing: .16em; }
+html[data-ui="notebook"] .desk-payment-proof > p { color: var(--muted); }
+
+/* Preserve the selected notebook language in an optional low-light reading mode. */
+:root[data-ui="notebook"][data-theme="dark"] {
+  color-scheme: dark; --ink: #eadfc9; --muted: #c2b498; --accent: #dab989;
+  --panel: #302b23e8; --panel-soft: #302b23d9; --line: #d3ba8638;
+  --field: #d3ba8610; --field-hover: #d3ba8622; --accent-bg: #d3ba861b;
+  --paper-edge: #d3ba8640; --pencil-line: #ceb3826b; --paper-shadow: #17120d50;
+  --grain-opacity: .18;
+}
+:root[data-ui="notebook"][data-theme="dark"] select option { background: #302b23; color: #eadfc9; }
+@media (prefers-color-scheme: dark) {
+  :root[data-ui="notebook"][data-theme="auto"] {
+    color-scheme: dark; --ink: #eadfc9; --muted: #c2b498; --accent: #dab989;
+    --panel: #302b23e8; --panel-soft: #302b23d9; --line: #d3ba8638;
+    --field: #d3ba8610; --field-hover: #d3ba8622; --accent-bg: #d3ba861b;
+    --paper-edge: #d3ba8640; --pencil-line: #ceb3826b; --paper-shadow: #17120d50;
+    --grain-opacity: .18;
+  }
+}
+@media (max-width: 699px) {
+  html[data-ui="notebook"] .modal:not(.scene-overlay) { padding: 24px; }
+  html[data-ui="notebook"] .modal .modal-heading h2 { font-size: 32px; }
+  html[data-ui="notebook"] .inventory-modal { width: calc(100vw - 20px); max-width: calc(100vw - 20px); padding: 20px 17px 14px; --slot-gap: 4px; --slot-size: min(calc((100vw - 76px) / 6), calc((94dvh - 256px) / 5)); }
+  html[data-ui="notebook"] .inventory-modal::after { inset: 12px 9px; }
+  html[data-ui="notebook"] .inventory-sections { gap: 8px; padding-bottom: 7px; margin-bottom: 7px; min-height: 35px; }
+  html[data-ui="notebook"] .inventory-sections button { font-size: 13px; padding: 5px 6px; }
+  html[data-ui="notebook"] .inventory-total { font-size: 9px; padding: 3px 5px; }
+  html[data-ui="notebook"] .inventory-group-label { height: 24px; margin-bottom: 5px; }
+  html[data-ui="notebook"] .inventory-group-label > span { font-size: 15px; }
+  html[data-ui="notebook"] .inventory-slot strong { font-size: 8px; }
+  html[data-ui="notebook"] .inventory-slot { padding: 2px; }
+  html[data-ui="notebook"] .slot-status { top: 2px; right: 1px; }
+  html[data-ui="notebook"] .slot-status svg { width: 8px; height: 8px; }
+  html[data-ui="notebook"] .inventory-footnote { margin-top: 8px; font-size: 11px; }
+  html[data-ui="notebook"] .inventory-original { margin: 8px 0; padding: 14px; }
+  html[data-ui="notebook"] .inventory-column-1::before { display: none; }
+  html[data-ui="notebook"] .inspection-panels { background: #30291e21; backdrop-filter: none; }
+  html[data-ui="notebook"] .inspection-body { padding: 20px 22px; }
+  html[data-ui="notebook"] .work-glass { padding: 24px 20px; }
+  html[data-ui="notebook"] .guided-desk .desk-chapter h2 { font-size: 29px; }
+  html[data-ui="notebook"] .money-card strong { font-size: 29px; }
+  html[data-ui="notebook"] :is(.button-primary, .button-secondary) { font-size: 17px; padding: 10px 17px; }
+  html[data-ui="notebook"] .scene-controls .button-secondary { font-size: 15px; padding: 7px 5px; }
+  html[data-ui="notebook"] .scene-controls .button-primary { font-size: 18px; padding: 9px 16px; }
+  html[data-ui="notebook"] .scene-controls .button-secondary::after { left: 7px; right: 7px; }
+  html[data-ui="notebook"] .film-content { padding: 25px; }
+  html[data-ui="notebook"] .film h1 { font-size: 38px; }
+  html[data-ui="notebook"] .company-nav button { font-size: 18px; }
+  html[data-ui="notebook"] .original-note { font-size: 13px; }
+  html[data-ui="notebook"] .scene-subtitle p { font-size: 19px; }
+  html[data-ui="notebook"] .dialogue p { font-size: 18px; }
+  html[data-ui="notebook"] :is(.open-question, .inventory-note .open-question) { font-size: 18px; }
+}
+@media (max-height: 520px) and (min-width: 700px) {
+  html[data-ui="notebook"] .inventory-modal { padding: 12px 25px; --slot-gap: 3px; --slot-size: min(62px, calc((92dvh - 175px) / 4)); }
+  html[data-ui="notebook"] .inventory-modal .modal-heading h2 { font-size: 26px; }
+  html[data-ui="notebook"] .inventory-sections { margin-bottom: 6px; padding-bottom: 5px; }
+  html[data-ui="notebook"] .inventory-sections button { padding: 4px 10px; font-size: 13px; }
+  html[data-ui="notebook"] .inventory-group-label { height: 21px; margin-bottom: 3px; }
+  html[data-ui="notebook"] .inventory-group-label > span { font-size: 15px; }
+  html[data-ui="notebook"] .inventory-footnote { margin-top: 6px; font-size: 10px; }
+  html[data-ui="notebook"] .film-content { padding: 24px; }
+  html[data-ui="notebook"] .film h1 { font-size: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ui="notebook"] .inventory-slot.is-collected:hover .item-art,
+  html[data-ui="notebook"] .inventory-sections button:hover,
+  html[data-ui="notebook"] .button-primary:hover:not(:disabled) { transform: none; }
+}

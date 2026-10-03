@@ -5,9 +5,9 @@ import { Icon, Modal, Portrait, characters } from "./Ui.jsx";
 import Evidence from "./Evidence.jsx";
 import ItemIcon from "./ItemIcon.jsx";
 
-export default function Inventory({ state, onClose }) {
-  const [section, setSection] = useState("items");
-  const [selected, setSelected] = useState(null);
+export default function Inventory({ state, onClose, initialSection = "items", initialSelected = null }) {
+  const [section, setSection] = useState(initialSection);
+  const [selected, setSelected] = useState(initialSelected);
   const lastItem = useRef(null);
   const board = useRef(null);
   const preview = useRef(null);
@@ -121,7 +121,7 @@ export default function Inventory({ state, onClose }) {
                           >
                             <ItemIcon id={id} />
                             <strong>{itemAppearance(id).label}</strong>
-                            <span className="slot-status" aria-hidden="true" />
+                            <span className="slot-status" aria-hidden="true">{seen && <Icon name="check" size={10} />}</span>
                           </button>
                         );
                       })}

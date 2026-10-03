@@ -1,0 +1,13 @@
+ELEYANG Spring 朝时体
+
+Source: User-provided ELEYANG-Spring-{Thin,Light,Regular,Bold}.ttf
+Original font metadata (name IDs 0 and 13):
+Copyright © 2023 ELEYANG E-commerce Co., Ltd. (Qingdao, China). All rights reserved.
+Free for personal use but not free for commercial use.
+
+The original TTF files are retained locally in 字体/ELEYANG-Spring/.
+The WOFF2 copies preserve all glyphs, outlines and original metadata.
+The OS/2 fsType field is 4 (Preview & Print embedding).
+User confirmation on 2026-10-03: the user has purchased a commercial-use license for these fonts and authorized their use in this project.
+The original embedded notice above is retained for provenance; the user-purchased commercial license governs the authorized use.
+This notice records the supplied font metadata; it does not grant a license.
