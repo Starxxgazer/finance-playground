@@ -139,9 +139,7 @@ input[type="radio"] {
 .immersive-scene:has(.world-meng-meeting) > .scene-controls,
 .immersive-scene:has(.world-invitation-closeup) > .scene-hud,
 .immersive-scene:has(.world-invitation-closeup) > .scene-subtitle,
-.immersive-scene:has(.world-invitation-closeup) > .scene-controls,
-.world-meng-meeting .scene-pan-controls,
-.world-invitation-closeup .scene-pan-controls {
+.immersive-scene:has(.world-invitation-closeup) > .scene-controls {
   visibility: hidden;
   pointer-events: none;
 }

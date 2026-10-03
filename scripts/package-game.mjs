@@ -3,7 +3,8 @@
 import { readFile, writeFile, readdir, stat } from "node:fs/promises";
 import { resolve, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { evidence } from "../src/game/content.js";
+import { evidence, films } from "../src/game/content.js";
+import { musicTracks } from "../src/game/music.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
@@ -75,6 +76,8 @@ async function checkAssets(dir) {
       const name = relative(resolve(root, "public"), p).split(sep).join("/");
       if (
         !/^(scenes|characters|items|ui)\/[a-z0-9-]+\.webp$/.test(name) &&
+        !/^videos\/[a-z0-9-]+\.(mp4|webp)$/.test(name) &&
+        !/^audio\/(?:[a-z0-9-]+\.mp3|music-credits\.txt)$/.test(name) &&
         !/^fonts\/ui\/[\w.-]+\.(woff2|txt)$/.test(name)
       ) {
         throw new Error(`Non-runtime file in public/: ${name}`);
@@ -84,6 +87,15 @@ async function checkAssets(dir) {
   }
 }
 await checkAssets(resolve(root, "public"));
+for (const clip of films.flatMap((film) => film.clips)) {
+  for (const file of [clip.src, clip.poster]) {
+    if (!(await stat(resolve(root, "public", file))).size)
+      throw new Error(`Missing video asset: ${file}`);
+  }
+}
+for (const file of [...musicTracks.map(track => track.src), "audio/music-credits.txt"]) {
+  if (!(await stat(resolve(root, "public", file))).size) throw new Error(`Missing music asset or attribution: ${file}`);
+}
 const itemFiles = (await readdir(resolve(root, "public/items"))).sort();
 const expectedItems = evidence.map(({ id }) => `${id}.webp`).sort();
 if (JSON.stringify(itemFiles) !== JSON.stringify(expectedItems)) {

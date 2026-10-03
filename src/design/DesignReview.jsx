@@ -50,7 +50,6 @@ export default function DesignReview() {
         {[...new Set(surfaces.map(s => s[2]))].map(group => <optgroup key={group} label={group}>{surfaces.filter(s => s[2] === group).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</optgroup>)}
       </select><span>{index + 1} / {surfaces.length}</span></div>
       <div className="review-quick">{quick.map(id => <button key={id} aria-pressed={surface === id} onClick={() => changeScreen(id)}>{surfaces.find(s => s[0] === id)[1]}</button>)}</div>
-      <div className="review-paging"><button aria-label="上一个界面" onClick={() => changeScreen(surfaces[(index - 1 + surfaces.length) % surfaces.length][0])}><Icon name="back" size={17} /></button><button aria-label="下一个界面" onClick={() => changeScreen(surfaces[(index + 1) % surfaces.length][0])}><Icon name="arrow" size={17} /></button></div>
     </nav>
     <div className="review-stage">
       {loading && <div className="review-loading" role="status">正在打开{surfaces[index][1]}…</div>}

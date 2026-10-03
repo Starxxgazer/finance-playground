@@ -1,5 +1,5 @@
-import { useEffect, useReducer, useRef, useState } from "react";
-import { scenes, byId } from "./game/content.js";
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
+import { scenes, byId, oldMainTasks, calendarNotes } from "./game/content.js";
 import {
   initialState,
   reducer,
@@ -7,20 +7,25 @@ import {
   SAVE_KEY,
   sceneDone,
 } from "./game/state.js";
-import { Icon, Button, Modal, characters, asset } from "./components/Ui.jsx";
+import { Icon, Button, Modal, asset } from "./components/Ui.jsx";
 import Evidence, {
   OldActivity,
   CustomerActivity,
-  Notes,
   SideActivity,
 } from "./components/Evidence.jsx";
 import Film from "./components/Film.jsx";
 import Funds from "./components/Funds.jsx";
 import Findings, { Ending } from "./components/Findings.jsx";
 import Calendar from "./components/Calendar.jsx";
+import NewShopActivity from "./components/NewShopActivity.jsx";
+import { newShopSources, investigationDone, completionMessage } from "./game/investigation.js";
 import SceneView from "./components/SceneView.jsx";
 import Inventory from "./components/Inventory.jsx";
-import { oldSpots, newSpots, currentQuestion } from "./game/exploration.js";
+import FieldGuide from "./components/FieldGuide.jsx";
+import Soundtrack, { SoundSettings } from "./components/Soundtrack.jsx";
+import { musicFor } from "./game/music.js";
+import { revisitTarget } from "./game/revisit.js";
+import { oldSpots, newSpots } from "./game/exploration.js";
 
 function readSave() {
   try {
@@ -29,17 +34,9 @@ function readSave() {
     return structuredClone(initialState);
   }
 }
-function readTheme() {
-  try {
-    return localStorage.getItem("finance-playground.theme") || "light";
-  } catch {
-    return "light";
-  }
-}
 const extraTitles = {
   customer: "和门口的顾客聊聊",
-  notes: "我的调查笔记",
-  calendar: "把便签贴到日历上",
+  calendar: "付款日历",
   invitation: "还没填日期的邀请函",
 };
 export default function App({ preview = null }) {
@@ -50,30 +47,22 @@ export default function App({ preview = null }) {
   const [source, setSource] = useState(null);
   const [bag, setBag] = useState(false);
   const [settings, setSettings] = useState(false);
+  const [guide, setGuide] = useState(false);
+  const [filmPlayback, setFilmPlayback] = useState({ clip: "intro", playing: false });
   const [resetting, setResetting] = useState(false);
-  const [theme, setTheme] = useState(() => preview ? "light" : readTheme());
   const [hint, setHint] = useState("");
   const [saveFailed, setSaveFailed] = useState(false);
   const [revisitEnding, setRevisitEnding] = useState(false);
-  const [clues, setClues] = useState(false);
   const [observing, setObserving] = useState(false);
-  const [motion, setMotion] = useState(() => {
-    try {
-      return localStorage.getItem("finance-playground.motion") !== "off";
-    } catch {
-      return true;
-    }
-  });
-  const [tutorial, setTutorial] = useState(() => {
-    try {
-      return localStorage.getItem("finance-playground.observation") !== "seen";
-    } catch {
-      return true;
-    }
-  });
   const [workOpen, setWorkOpen] = useState(false);
+  const [filmRevealing, setFilmRevealing] = useState(false);
+  const [filmSession, setFilmSession] = useState(0);
+  const [openingStarted, setOpeningStarted] = useState(false);
+  const [departing, setDeparting] = useState(false);
   const heading = useRef(null);
   const lastInvestigation = useRef(null);
+  const previousRevisit = useRef(null);
+  const previousInvestigation = useRef(null);
   const baseScene = scenes[state.scene];
   const branchScene =
     active === "contract"
@@ -90,9 +79,10 @@ export default function App({ preview = null }) {
       }
     : baseScene;
   const film = !state.films.includes(state.scene) && !state.submitted;
+  const atHome = film && state.scene === 0 && !openingStarted;
   const ending = state.complete && !revisitEnding;
   const done = sceneDone(state);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (preview) return;
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -102,19 +92,13 @@ export default function App({ preview = null }) {
     }
   }, [state]);
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    if (preview) return;
-    try {
-      localStorage.setItem("finance-playground.theme", theme);
-    } catch {
-      /* 主题仍在本次会话生效。 */
-    }
-  }, [theme]);
+    document.documentElement.dataset.theme = "light";
+  }, []);
   useEffect(() => {
     heading.current?.focus();
+    setFilmRevealing(false);
     setWorkOpen(false);
     setActive(null);
-    setClues(false);
     setObserving(false);
   }, [state.scene, film, ending]);
   useEffect(() => {
@@ -122,59 +106,47 @@ export default function App({ preview = null }) {
     setActive(preview.active || null);
     setSource(preview.source || null);
     setBag(!!preview.bag);
-    setClues(!!preview.clues);
     setSettings(!!preview.settings);
     setWorkOpen(!!preview.workOpen);
-    setTutorial(false);
   }, [preview]);
   const open = (id) => {
     setObserving(false);
     lastInvestigation.current = id;
     dispatch({ type: "READ", id });
-    setClues(false);
     setActive(id);
     setHint("");
   };
-  const advance = () => {
-    dispatch({ type: "ADVANCE" });
-    setActive(null);
-    setWorkOpen(false);
-    setHint("");
-  };
-  const spotDone = (id) =>
-    id === "customer"
-      ? ["taste", "queue"].every((id) => state.seen.includes(id))
-      : state.scene === 0
-        ? Object.hasOwn(state.tasks, id)
-          ? state.tasks[id]
-          : state.seen.includes(id)
-        : state.seen.includes(id);
-  const showHint = () => {
-    if (state.scene === 2) {
-      if (state.funds.gap)
-        setHint(
-          state.funds.explained
-            ? "纸条可以收回重排。除了先后顺序，还要引用设备采购资料里的发货条件。"
-            : "陈叔问的是前十天能留下多少钱。点你刚才用过的那条经营收支记录。",
-        );
-      else
-        setHint(
-          state.funds.initial
-            ? "翻翻付款单，再对照付款之前的经营收支。先看日期，不要把整个月的结余提前算进来。"
-            : "先到桌前，把已有和假设到账的钱、要付出去的钱分开放。小禾会帮你算余额。",
-        );
-      return;
+  useEffect(() => {
+    const previous = previousRevisit.current;
+    previousRevisit.current = state.revisit;
+    if (state.revisit) {
+      setWorkOpen(false);
+      setSource(null);
+      setBag(false);
+      setSettings(false);
+      setRevisitEnding(false);
+      open(state.revisit.activity);
+    } else if (previous && state.scene === 3) {
+      setActive(null);
+      setSource(null);
+      setWorkOpen(true);
+      setHint("补查资料已保留，请交给林姐更新透视图。");
     }
-    if (state.scene === 0)
-      setHint(
-        "我是小禾。账本就在柜台上，旧设备付款的单子在烤箱旁；先把现在的钱和已付、未付的分清。",
-      );
-    else if (state.scene === 1)
-      setHint(
-        "我是小禾。陈叔把租赁、装修、设备和筹备资料留在现场了。筹备资料里还夹着开业与收入测算，翻到后可以一起对日期。",
-      );
-    else setHint("昨晚的记录已保留。可以直接交接，或从设置中的地点返回补查。");
-  };
+  }, [state.revisit]);
+  const returnFromRevisit = () => dispatch({ type: "RETURN_REVISIT" });
+  useEffect(() => {
+    if (!departing) return;
+    const timer = setTimeout(() => {
+      dispatch({ type: "ADVANCE" });
+      setActive(null);
+      setWorkOpen(false);
+      setHint("");
+      setDeparting(false);
+    }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 360);
+    return () => clearTimeout(timer);
+  }, [departing]);
+  const advance = () => setDeparting(true);
+  const spotDone = (id) => investigationDone(state, id);
   const spots =
     state.scene === 0
       ? oldSpots
@@ -192,6 +164,22 @@ export default function App({ preview = null }) {
               shape: "folder",
             },
           ];
+  // Only the old shop teaches exploration one object at a time. Later scenes
+  // state the question and let the player decide what to inspect next.
+  const nextSpot = state.scene === 0
+    ? oldMainTasks.map((id) => spots.find((spot) => spot.id === id))
+      .find((spot) => spot && !spotDone(spot.id))
+    : null;
+  const nextTask = nextSpot ? ({
+    ledger: "点开柜台账本",
+    debt: "核对烤箱旁的付款清单",
+    receipt: "核对首款回执",
+  })[nextSpot.id] : done
+    ? state.scene < 3 ? scene.next : "调查已交接"
+    : scene.heading;
+  const mainProgress = state.scene === 0
+    ? `主线 ${oldMainTasks.filter((id) => spotDone(id)).length} / ${oldMainTasks.length}`
+    : `日期 ${calendarNotes.filter((note) => state.calendar[note.id] === note.day).length} / ${calendarNotes.length}`;
   // These new worktable photographs already frame people closely.
   // Keep the slow approach, but leave their faces in view.
   const focus = branchScene
@@ -209,7 +197,6 @@ export default function App({ preview = null }) {
           (state.scene === 0 ? oldSpots[1] : newSpots[3])
         : null;
   const openWork = () => {
-    setClues(false);
     setWorkOpen(true);
     setHint("");
   };
@@ -246,7 +233,22 @@ export default function App({ preview = null }) {
       );
     });
   };
+  useEffect(() => {
+    const id = active || (workOpen && state.scene === 2 ? "workbench" : null);
+    const previous = previousInvestigation.current;
+    previousInvestigation.current = { id, state };
+    // Close only on a newly verified result, never merely on opening a saved item.
+    if (id && previous?.id === id && previous.state.scene === state.scene &&
+      !investigationDone(previous.state, id) && investigationDone(state, id)) {
+      setSource(null);
+      if (state.revisit) returnFromRevisit();
+      else if (id === "workbench") closeWork();
+      else closeInspection();
+      setHint(completionMessage(id));
+    }
+  }, [state, active, workOpen]);
   const goTo = (index) => {
+    if (index !== state.scene) setOpeningStarted(false);
     dispatch({ type: "GOTO", index });
     setSettings(false);
     setWorkOpen(false);
@@ -263,8 +265,10 @@ export default function App({ preview = null }) {
       setHint("当前浏览器暂不支持全屏，横屏也可以完整看现场。");
     }
   };
+  const musicTrack = musicFor({ scene: state.scene, active, film, clip: filmPlayback.clip, ending, atHome });
   const tools = (
     <div className="scene-tools">
+      <button className="icon-button" aria-label="任务与道具" onClick={() => setGuide(true)}><Icon name="book" /></button>
       <button
         className="toolbar-button"
         aria-label="资料包"
@@ -296,8 +300,11 @@ export default function App({ preview = null }) {
     </div>
   );
   return (
-    <div
-      className="immersive-app"
+    <Soundtrack track={musicTrack} persist={!preview}
+      paused={!!(settings || guide || bag || source || (film && !filmPlayback.playing))}
+      quiet={!!film} reading={!!(active || workOpen)}>
+      {sound => <div
+      className={`immersive-app ${departing ? "is-departing" : ""}`}
       style={{
         "--art-case": `url("${asset("ui/field-case.webp")}")`,
         "--art-pocket": `url("${asset("ui/item-pocket.webp")}")`,
@@ -309,31 +316,47 @@ export default function App({ preview = null }) {
       <main
         id="main"
         aria-hidden={
-          !!(active || workOpen || bag || settings || clues || source)
+          !!(active || workOpen || bag || settings || source || guide)
         }
       >
         {ending ? (
           <Ending onReview={() => setRevisitEnding(true)} />
-        ) : film ? (
+        ) : null}
+        {!ending && film && (
           <Film
-            key={state.scene}
+            key={`${state.scene}-${filmSession}`}
             index={state.scene}
-            onContinue={() => dispatch({ type: "FILM", index: state.scene })}
+            paused={!!(bag || settings || source || guide)}
+            muted={sound.muted}
+            onMutedChange={sound.setMuted}
+            onPlaybackChange={setFilmPlayback}
+            onStart={() => setOpeningStarted(true)}
+            onSettings={() => setSettings(true)}
+            onReveal={() => setFilmRevealing(true)}
+            onContinue={() => {
+              dispatch({ type: "FILM", index: state.scene });
+              setFilmRevealing(false);
+            }}
           />
-        ) : (
+        )}
+        {!ending && (!film || filmRevealing) && (
           <section
-            className={`immersive-scene ${active || workOpen ? "has-focus" : ""}`}
+            className={`immersive-scene ${active || workOpen ? "has-focus" : ""} ${film ? "scene-revealing" : ""}`}
+            inert={film || undefined}
+            aria-hidden={film || undefined}
           >
             <SceneView
               key={scene.id}
               scene={scene}
               spots={branchScene ? [] : spots}
               observing={observing}
-              motion={motion}
               paused={
-                !!(active || workOpen || bag || settings || clues || source)
+                !!(film || active || workOpen || bag || settings || source || guide)
               }
-              guidedId={tutorial && state.scene === 0 ? "ledger" : undefined}
+              guidedId={nextSpot?.id}
+              guideText={nextTask}
+              guideNote={state.scene === 0 && !done ? "主线查完就能走，支线想看再看。" : ""}
+              resultMessage={hint}
               focus={focus}
               onOpen={(id) => (id === "workbench" ? openWork() : open(id))}
               isDone={(id) => (id === "workbench" ? done : spotDone(id))}
@@ -344,124 +367,71 @@ export default function App({ preview = null }) {
                 <h1 ref={heading} tabIndex={-1}>
                   {scene.place}
                 </h1>
-                <p>{currentQuestion(state)}</p>
               </div>
               {tools}
             </header>
-            <div className="scene-subtitle">
-              <strong>
-                {characters[state.scene < 2 ? "xiaohe" : scene.person].name}
-              </strong>
-              <div>
-                <p>
-                  {tutorial && state.scene === 0
-                    ? "东西都还在原来的地方，你可以四处看看。账本就摊在柜台上。"
-                    : state.scene < 2
-                      ? currentQuestion(state)
-                      : scene.quote}
-                </p>
-                {tutorial && state.scene === 0 && (
-                  <small className="observation-help">
-                    移动鼠标寻找轮廓，点击查看。触屏可点“观察现场”；键盘用
-                    Tab、回车。
-                  </small>
-                )}
-              </div>
-              {tutorial && state.scene === 0 && (
-                <button
-                  className="text-button"
-                  onClick={() => {
-                    setTutorial(false);
-                    try {
-                      if (!preview) localStorage.setItem(
-                        "finance-playground.observation",
-                        "seen",
-                      );
-                    } catch {}
-                  }}
-                >
-                  知道了，开始观察
-                </button>
-              )}
-            </div>
             <footer className="scene-controls">
-              <div className="scene-controls-left">
-                <Button
-                  secondary
-                  aria-pressed={observing}
-                  onClick={() => {
-                    setObserving(!observing);
-                    setTutorial(false);
-                    try {
-                      if (!preview) localStorage.setItem(
-                        "finance-playground.observation",
-                        "seen",
-                      );
-                    } catch {}
-                  }}
-                >
-                  <Icon name="search" size={17} />
-                  观察现场
-                </Button>
-                <Button secondary onClick={() => setClues(true)}>
-                  当前手记
-                </Button>
-                <Button secondary onClick={showHint}>
-                  {state.scene < 2 ? "问问小禾" : "想一想"}
-                </Button>
-                {state.scene === 1 && (
-                  <Button secondary onClick={() => open("calendar")}>
-                    <Icon name="calendar" size={17} />
-                    付款日历
+              <div className="scene-explore-tools">
+                <small className="scene-explore-help">
+                  点击物品调查
+                  <span className="explore-mouse"> · 鼠标靠近两侧看全景</span>
+                  <span className="explore-touch"> · 左右滑动看全景</span>
+                </small>
+                <div className="scene-controls-left">
+                  <Button
+                    secondary
+                    aria-pressed={observing}
+                    onClick={() => {
+                      setObserving(!observing);
+                    }}
+                  >
+                    <Icon name="search" size={17} />
+                    观察现场
                   </Button>
-                )}
+                  {state.scene === 1 && (
+                    <Button secondary onClick={() => open("calendar")}>
+                      <Icon name="calendar" size={17} />
+                      付款日历
+                    </Button>
+                  )}
+                </div>
               </div>
-              {state.scene < 2 ? (
-                <Button disabled={!done} onClick={advance}>
-                  {scene.next}
-                  <Icon name="arrow" size={17} />
-                </Button>
+              {state.revisit ? (
+                <Button onClick={returnFromRevisit}>返回林姐 · 补交资料</Button>
+              ) : state.scene < 2 ? (
+                <div className={`scene-next ${done ? "is-ready" : ""}`}>
+                  <small role="status">{done ? "主线已完成，支线没查完也能走" : mainProgress}</small>
+                  <Button disabled={!done} onClick={advance}>
+                    {scene.next}
+                  </Button>
+                </div>
               ) : state.scene === 2 ? (
                 <Button onClick={done ? advance : openWork}>
                   {done ? scene.next : "开始核对资金"}
-                  <Icon name="arrow" size={17} />
+
                 </Button>
               ) : (
                 <Button onClick={openWork}>
                   {state.submitted ? "回看公司透视图" : "打开交接资料"}
-                  <Icon name="arrow" size={17} />
+
                 </Button>
               )}
             </footer>
           </section>
         )}
       </main>
-      {(film || ending) && (
+      {!atHome && (film || ending) && (
         <div
           className="outside-tools"
-          aria-hidden={!!(bag || settings || source)}
+          aria-hidden={!!(bag || settings || source || guide)}
         >
           {tools}
         </div>
       )}
-      {hint && (
-        <div className="hint-banner floating-hint" role="status">
-          <Icon name="hint" size={18} />
+      {hint && (film || ending) && (
+        <div key={hint} className="hint-banner floating-hint" role="status">
           <p>{hint}</p>
-          <button
-            className="icon-button"
-            onClick={() => setHint("")}
-            aria-label="收起提示"
-          >
-            <Icon name="close" size={16} />
-          </button>
         </div>
-      )}
-      {clues && (
-        <Modal title="当前手记" onClose={() => setClues(false)}>
-          <p className="open-question">{currentQuestion(state)}</p>
-          <Notes state={state} dispatch={dispatch} />
-        </Modal>
       )}
       {workOpen && !ending && !film && (
         <Modal
@@ -484,19 +454,20 @@ export default function App({ preview = null }) {
               <div className="work-next">
                 <Button onClick={advance}>
                   {scene.next}
-                  <Icon name="arrow" />
+
                 </Button>
               </div>
             )}
             {state.complete && (
               <Button onClick={() => setRevisitEnding(false)}>
                 回看邀请函
-                <Icon name="arrow" />
+
               </Button>
             )}
           </div>
         </Modal>
       )}
+      {departing && <div className="scene-departure" role="status" aria-label="正在前往下一处" />}
       {saveFailed && (
         <div className="save-error" role="alert">
           浏览器暂时不能保存进度，请不要关闭或刷新页面。
@@ -506,41 +477,22 @@ export default function App({ preview = null }) {
         <Modal
           key={active}
           title={extraTitles[active] || byId[active]?.title || "调查资料"}
-          className={`scene-overlay inspection-overlay ${branchScene ? "branch-overlay" : ""} ${active === "calendar" ? "calendar-overlay" : ""}`}
-          closeLabel="返回全景"
-          onClose={closeInspection}
+          className={`scene-overlay inspection-overlay simple-inspection clue-${active} ${branchScene ? "branch-overlay" : ""} ${active === "calendar" ? "calendar-overlay" : ""} ${active === "transfer" ? "trace-overlay" : ""} ${newShopSources[active] ? "newshop-overlay" : ""}`}
+          closeLabel={state.revisit ? "返回林姐 · 补交资料" : "返回全景"}
+          onClose={state.revisit ? returnFromRevisit : closeInspection}
         >
           <div className="inspection-panels">
-            <aside className="inspection-intro">
-              <span className="eyebrow">
-                {byId[active]?.nature ||
-                  (active === "customer" || active === "invitation"
-                    ? "现场对话"
-                    : "调查手记")}
-              </span>
-              <h2>{extraTitles[active] || byId[active]?.title}</h2>
-              <p>
-                {byId[active]?.source ||
-                  (active === "customer"
-                    ? "站在门口，听听熟客怎么说。"
-                    : active === "calendar"
-                      ? "把每一笔付款放回它发生的那一天。"
-                      : active === "notes"
-                        ? "先记下有依据的发现，也留下还没问清的问题。"
-                        : "小禾还留着这张没有填日期的邀请函。")}
-              </p>
-              {byId[active]?.date && <small>{byId[active].date}</small>}
-              <div className="inspection-caption">
-                <Icon name="notebook" size={16} />
-                <span>
-                  看过的资料已收入资料包。
-                  <br />
-                  核对完成，再记下发现。
-                </span>
-              </div>
-            </aside>
             <div className="inspection-body" key={active}>
-              {["ledger", "debt", "receipt"].includes(active) ? (
+              {state.revisit && <p className="choice-guidance revisit-guidance">
+                补查：{byId[state.revisit.id].title}。{revisitTarget(state, state.revisit.id)?.instruction}
+                <span> 完成后返回林姐补交；也可随时返回，已收集资料会保留。</span>
+              </p>}
+              {!state.revisit && spots.find((spot) => spot.id === active)?.optional && (
+                <p className="optional-investigation">支线 · 可随时返回</p>
+              )}
+              {newShopSources[active] ? (
+                <NewShopActivity id={active} state={state} dispatch={dispatch} />
+              ) : ["ledger", "debt", "receipt"].includes(active) ? (
                 <OldActivity
                   id={active}
                   state={state}
@@ -549,8 +501,6 @@ export default function App({ preview = null }) {
                 />
               ) : active === "customer" ? (
                 <CustomerActivity state={state} dispatch={dispatch} />
-              ) : active === "notes" ? (
-                <Notes state={state} dispatch={dispatch} />
               ) : active === "calendar" ? (
                 <Calendar
                   state={state}
@@ -595,14 +545,18 @@ export default function App({ preview = null }) {
         <Modal
           key={`source-${source}`}
           title="查看原资料"
+          className="source-modal"
           onClose={() => setSource(null)}
         >
           <Evidence id={source} />
         </Modal>
       )}
+      {guide && <Modal title="任务与道具" className="field-guide-modal" onClose={() => setGuide(false)}><FieldGuide scene={state.scene} /></Modal>}
+      {["blocked", "failed"].includes(sound.status) && !settings && !guide && !sound.muted && sound.volume > 0 && <button className="music-recover" onClick={sound.retry}>{sound.status === "blocked" ? "开启背景音乐" : "重试背景音乐"}</button>}
       {settings && (
         <Modal
           title={resetting ? "重新开始本章？" : "游戏设置"}
+          className="settings-modal"
           onClose={() => {
             setSettings(false);
             setResetting(false);
@@ -618,11 +572,13 @@ export default function App({ preview = null }) {
                 <Button
                   onClick={() => {
                     dispatch({ type: "RESET" });
+                    setFilmSession((value) => value + 1);
+                    setOpeningStarted(false);
+                    setFilmRevealing(false);
                     setResetting(false);
                     setSettings(false);
                     setActive(null);
                     setWorkOpen(false);
-                    setClues(false);
                     setSource(null);
                     setBag(false);
                     setHint("");
@@ -636,12 +592,14 @@ export default function App({ preview = null }) {
           ) : (
             <>
               <p>没有倒计时，也不扣分。选错可以改，支线可以跳过。</p>
-              <nav className="chapter-nav" aria-label="调查场景">
+              <Button secondary onClick={() => { setSettings(false); setGuide(true); }}><Icon name="book" />任务与道具 · 林姐的叮嘱</Button>
+              <SoundSettings sound={sound} />
+              {!atHome && <nav className="chapter-nav" aria-label="调查场景">
                 {scenes.map((s, i) => (
                   <button
                     key={s.id}
                     disabled={
-                      i > state.unlocked || (state.submitted && i !== 3)
+                      !!state.revisit || i > state.unlocked || (state.submitted && i !== 3)
                     }
                     aria-current={state.scene === i ? "step" : undefined}
                     onClick={() => goTo(i)}
@@ -650,48 +608,23 @@ export default function App({ preview = null }) {
                     {s.title}
                   </button>
                 ))}
-              </nav>
-              <label className="choice">
-                <input
-                  type="checkbox"
-                  checked={motion}
-                  onChange={(e) => {
-                    setMotion(e.target.checked);
-                    try {
-                      if (!preview) localStorage.setItem(
-                        "finance-playground.motion",
-                        e.target.checked ? "on" : "off",
-                      );
-                    } catch {}
-                  }}
-                />
-                场景轻微动态
-              </label>
-              <label className="form-label">
-                阅读界面
-                <select
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                >
-                  <option value="auto">跟随系统</option>
-                  <option value="light">明亮</option>
-                  <option value="dark">深色</option>
-                </select>
-              </label>
+              </nav>}
               <p className="muted">
                 进度自动保存在本机。公司、人物、金额与贷款条件均为虚构。
               </p>
               <div className="modal-actions">
-                <Button onClick={() => setSettings(false)}>继续调查</Button>
-                <Button secondary onClick={() => setResetting(true)}>
+                <Button onClick={() => setSettings(false)}>{atHome ? "返回首页" : "继续调查"}</Button>
+                {atHome && <Button secondary onClick={fullscreen}><Icon name="fullscreen" />切换全屏</Button>}
+                {!atHome && <Button secondary onClick={() => setResetting(true)}>
                   <Icon name="reset" />
                   重新开始
-                </Button>
+                </Button>}
               </div>
             </>
           )}
         </Modal>
       )}
-    </div>
+    </div>}
+    </Soundtrack>
   );
 }

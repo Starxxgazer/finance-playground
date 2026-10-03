@@ -1,0 +1,363 @@
+/* Compact working surfaces share the notebook materials. Content remains
+   available at small viewport sizes and when the player expands an original. */
+:root[data-ui="notebook"] {
+  font-size: 13px;
+  --reading-size: 13px;
+  --caption-size: 11px;
+  --control-size: 15px;
+}
+html[data-ui="notebook"] :is(.modal, .ending-content) {
+  font-size: var(--reading-size);
+  line-height: 1.55;
+}
+html[data-ui="notebook"] :is(.modal, .ending-content) p { margin-block: 6px; }
+html[data-ui="notebook"] :is(.document-lines p, .inventory-original .document-lines p) {
+  font-size: var(--reading-size); line-height: 1.55; padding-block: 5px;
+}
+html[data-ui="notebook"] :is(.choice, .sentence-choice, .note-choice, .selectable-lines button, .reference-slot p, .receipt-pair p, .company-panel p, .handover-notes p, .extended-finding, .inventory-note p) {
+  font-size: var(--reading-size); line-height: 1.55;
+}
+html[data-ui="notebook"] :is(.muted, .document-meta, .document-source, .form-label, .section-caption, .assumption, .feedback, .text-button, .desk-help p, .desk-tools, .reference-slot small, .money-card small, .money-trays small, .money-trays span, .original-note, .dimension-evidence button small, .count-line, .review-citations) {
+  font-size: var(--caption-size); line-height: 1.5;
+}
+html[data-ui="notebook"] :is(.button-primary, .button-secondary) {
+  font-size: var(--control-size); line-height: 1.4; min-height: 34px; padding: 6px 12px;
+}
+html[data-ui="notebook"] :is(.icon-button, .scene-tools .icon-button) { min-width: 34px; min-height: 34px; }
+html[data-ui="notebook"] :is(.activity h3, .document h3, .note > .section-title h3) { font-size: 20px; margin-block: 6px; }
+html[data-ui="notebook"] :is(.modal, .ending-content) h2 { font-size: 24px; }
+html[data-ui="notebook"] .modal :is(.desk-chapter, .section-title) h2 { font-size: 24px; margin-block: 4px; }
+html[data-ui="notebook"] .modal .modal-heading { padding-bottom: 8px; margin-bottom: 10px; }
+html[data-ui="notebook"] .modal .modal-heading h2 { font-size: 24px; }
+html[data-ui="notebook"] .modal:not(.scene-overlay):not(.inventory-modal) { padding: 16px 20px; max-height: 90dvh; }
+html[data-ui="notebook"] :is(.film-role, .desk-assumption, .inspection-meta, .document-extra) summary { padding-block: 3px; line-height: 1.5; }
+html[data-ui="notebook"] .document { margin-block: 10px; }
+html[data-ui="notebook"] .document.compact { padding: 10px; }
+html[data-ui="notebook"] .document-meta { margin-bottom: 5px; }
+html[data-ui="notebook"] .document-meta .item-art { width: 24px; height: 26px; }
+html[data-ui="notebook"] .document-source { margin-top: 5px; padding-bottom: 5px; }
+html[data-ui="notebook"] .document-lines { margin-top: 6px; padding-top: 2px; }
+html[data-ui="notebook"] .document-lines p + p { margin-top: 0; }
+html[data-ui="notebook"] .document-extra { font-size: var(--caption-size); padding-block: 2px; }
+html[data-ui="notebook"] .activity { margin-top: 10px; padding-top: 10px; }
+html[data-ui="notebook"] .activity > .button-primary { margin-top: 10px; }
+html[data-ui="notebook"] .classify-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+html[data-ui="notebook"] .classify-grid fieldset { gap: 5px; padding: 2px 0; }
+html[data-ui="notebook"] fieldset legend { font-size: 20px; }
+html[data-ui="notebook"] .classify-grid .choice { flex-basis: 100%; margin: 0; }
+html[data-ui="notebook"] .choice { min-height: 32px; padding: 5px 8px; gap: 6px; }
+html[data-ui="notebook"] .choice + .choice { margin-top: 5px; }
+html[data-ui="notebook"] .choice-row { gap: 6px; }
+html[data-ui="notebook"] .form-label { gap: 5px; margin-block: 10px; }
+html[data-ui="notebook"] .text-button { min-height: 26px; padding-block: 3px; }
+html[data-ui="notebook"] :is(select, input[type="number"], input[type="text"]) { min-height: 32px; padding: 5px 8px; font-size: 13px; }
+html[data-ui="notebook"] .receipt-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-block: 8px; }
+html[data-ui="notebook"] .receipt-pair > div { padding: 8px; }
+html[data-ui="notebook"] .receipt-pair strong { font-size: 13px; }
+html[data-ui="notebook"] :is(.sentence-choice, .note-choice, .selectable-lines button) { padding: 7px 10px; min-height: 32px; }
+html[data-ui="notebook"] .choices { gap: 6px; margin-block: 8px; }
+html[data-ui="notebook"] .feedback { padding: 7px 9px; gap: 7px; margin-block: 8px; }
+html[data-ui="notebook"] .dialogue { gap: 10px; padding: 0; margin-block: 8px; }
+html[data-ui="notebook"] .dialogue p { font-size: 14px; line-height: 1.55; margin-block: 3px; }
+html[data-ui="notebook"] .dialogue strong { font-size: 11px; }
+html[data-ui="notebook"] .dialogue .portrait { width: 40px; height: 44px; }
+html[data-ui="notebook"] :is(.open-question, .inventory-note .open-question) { font-size: 14px; line-height: 1.5; padding: 4px 8px; }
+html[data-ui="notebook"] .section-title { gap: 10px; margin-block: 6px; }
+html[data-ui="notebook"] .proof-links { gap: 5px 10px; margin-top: 5px; }
+html[data-ui="notebook"] .proof-links button { font-size: 11px; padding-block: 3px; }
+
+/* Use the height already available in the scene without covering it in cards. */
+html[data-ui="notebook"] .scene-overlay > .modal-heading { top: 16px; left: 24px; right: 24px; }
+html[data-ui="notebook"] .scene-overlay > .modal-heading .icon-button { font-size: 12px; padding: 5px 8px; }
+html[data-ui="notebook"] .inspection-panels {
+  top: 72px; bottom: 20px; gap: 20px;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) minmax(440px, 540px);
+}
+html[data-ui="notebook"] .inspection-intro { padding: 8px 0; }
+html[data-ui="notebook"] .inspection-intro h2 { font-size: 28px; margin-block: 8px; }
+html[data-ui="notebook"] .inspection-intro .eyebrow { font-size: 11px; }
+html[data-ui="notebook"] .inspection-meta,
+html[data-ui="notebook"] .inspection-meta p { font-size: 12px; line-height: 1.55; margin-block: 5px; }
+html[data-ui="notebook"] .inspection-receipt { margin-top: 8px; font-size: 11px; }
+html[data-ui="notebook"] .inspection-body { padding: 14px 18px; }
+html[data-ui="notebook"] .branch-overlay .inspection-body { margin-top: 0; max-height: 100%; }
+html[data-ui="notebook"] .work-glass { top: 68px; bottom: 18px; width: min(900px, 76vw); padding: 16px 20px; }
+html[data-ui="notebook"] .guided-desk .desk-chapter { padding-bottom: 5px; }
+html[data-ui="notebook"] .guided-desk .desk-chapter { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; }
+html[data-ui="notebook"] .desk-chapter > .section-caption { grid-area: 1 / 2; }
+html[data-ui="notebook"] .guided-desk .desk-chapter h2 { grid-area: 1 / 1; font-size: 22px; line-height: 1.3; }
+html[data-ui="notebook"] .desk-chapter > details { grid-column: 1 / -1; }
+html[data-ui="notebook"] .guided-desk .desk-tools { gap: 6px; margin: 6px 0 10px; }
+html[data-ui="notebook"] .desk-assumption { font-size: 11px; }
+html[data-ui="notebook"] .desk-help { margin-top: 10px; padding-top: 6px; }
+html[data-ui="notebook"] .guided-desk .desk-step > .button-primary { margin-top: 10px; }
+html[data-ui="notebook"] .money-cards { gap: 8px; margin-block: 10px; }
+html[data-ui="notebook"] .money-card { padding: 6px; }
+html[data-ui="notebook"] .money-card > button:first-child { padding: 3px 0; gap: 4px; }
+html[data-ui="notebook"] .money-card > button:first-child > span { font-size: 12px; }
+html[data-ui="notebook"] .money-card strong { font-size: 22px; }
+html[data-ui="notebook"] .money-card .item-art { width: 24px; height: 24px; }
+html[data-ui="notebook"] .money-trays { gap: 10px; }
+html[data-ui="notebook"] .money-trays > button { min-height: 80px; padding: 8px; gap: 3px; }
+html[data-ui="notebook"] .money-trays > button strong { font-size: 19px; }
+html[data-ui="notebook"] .money-trays > button > svg { width: 22px; height: 22px; }
+html[data-ui="notebook"] .desk-total { margin-block: 10px; padding: 10px; font-size: 17px; line-height: 1.5; }
+html[data-ui="notebook"] .desk-total strong { font-size: 26px; }
+html[data-ui="notebook"] .date-desk { margin-top: 10px; gap: 16px; grid-template-columns: minmax(220px, 1fr) minmax(150px, .9fr); }
+html[data-ui="notebook"] .desk-documents > button { padding: 8px; gap: 8px; font-size: 12px; }
+html[data-ui="notebook"] .desk-documents .item-art { width: 30px; height: 32px; }
+html[data-ui="notebook"] .desk-kept-note { margin-block: 8px; padding: 8px; gap: 8px; line-height: 1.5; font-size: 12px; }
+html[data-ui="notebook"] .reference-slots { gap: 8px; }
+html[data-ui="notebook"] .reference-slot { min-height: 60px; padding: 8px 10px; gap: 3px; }
+html[data-ui="notebook"] .reference-slot:not(.filled) { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 8px; min-height: 48px; text-align: left; }
+html[data-ui="notebook"] .reference-slot:not(.filled) > svg { grid-row: 1 / 3; }
+html[data-ui="notebook"] .reference-slot:not(.filled) > p { margin: 0; }
+html[data-ui="notebook"] .reference-slot:not(.filled) > small { grid-column: 2; }
+html[data-ui="notebook"] .reference-slot .text-button { margin-top: 3px; }
+html[data-ui="notebook"] .object-picker .evidence-objects { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); max-height: none; overflow: visible; gap: 5px; padding: 2px; }
+html[data-ui="notebook"] .object-picker .evidence-objects > button { flex-direction: row; align-items: center; min-height: 38px; gap: 6px; padding: 5px 6px; font-size: 11px; text-align: left; }
+html[data-ui="notebook"] .evidence-objects .item-art { width: 24px; height: 27px; flex-shrink: 0; }
+html[data-ui="notebook"] .object-picker .selectable-lines { margin-top: 8px; }
+html[data-ui="notebook"] .evidence-select { display: none; }
+html[data-ui="notebook"] .object-picker.has-open-document { display: grid; grid-template-columns: minmax(190px, .85fr) minmax(0, 1.15fr); gap: 6px 12px; }
+html[data-ui="notebook"] .has-open-document > :is(.reference-slots, .section-caption, .feedback) { grid-column: 1 / -1; }
+html[data-ui="notebook"] .has-open-document .evidence-objects { grid-template-columns: repeat(3, minmax(0, 1fr)); align-content: start; }
+html[data-ui="notebook"] .has-open-document .selectable-lines { margin: 0; padding-inline: 8px; }
+html[data-ui="notebook"] .has-open-document .selectable-lines button { padding: 5px 0; }
+html[data-ui="notebook"] .object-picker .document-source { flex-direction: row; padding-block: 4px; gap: 6px; line-height: 1.4; }
+html[data-ui="notebook"] .desk-payment-proof { margin-block: 10px; }
+html[data-ui="notebook"] .desk-payment-heading h3 { font-size: 18px; }
+html[data-ui="notebook"] .desk-payment-slots { gap: 6px; margin-top: 8px; }
+html[data-ui="notebook"] .desk-payment-slot { min-height: 72px; gap: 4px; }
+html[data-ui="notebook"] .desk-payment-slot strong { font-size: 16px; }
+html[data-ui="notebook"] .desk-payment-slot svg { width: 20px; height: 20px; }
+html[data-ui="notebook"] :is(.days button, .weekdays span, .month-title > span, .desk-payment-proof > p, .desk-payment-slot small) { font-size: 12px; }
+html[data-ui="notebook"] .sequence-slots { gap: 6px; margin-block: 10px; }
+html[data-ui="notebook"] .sequence-slots > button { min-height: 60px; padding: 8px; }
+html[data-ui="notebook"] :is(.sequence-slots strong, .paper-options button) { font-size: 14px; }
+html[data-ui="notebook"] .paper-options { gap: 6px; margin-block: 8px; }
+html[data-ui="notebook"] .paper-options button { min-height: 32px; padding: 6px 10px; }
+
+/* Keep originals and date checks together; the optional source text can expand. */
+html[data-ui="notebook"] :is(.newshop-overlay, .calendar-overlay) .inspection-panels { top: 72px; bottom: 18px; }
+html[data-ui="notebook"] :is(.newshop-overlay, .calendar-overlay) .inspection-body { padding: 14px 18px; }
+html[data-ui="notebook"] .newshop-workspace { gap: 18px; }
+html[data-ui="notebook"] .newshop-documents { padding-right: 16px; }
+html[data-ui="notebook"] .newshop-documents .document h3 { margin-block: 5px; }
+html[data-ui="notebook"] .newshop-documents .document { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; margin-block: 4px; }
+html[data-ui="notebook"] .newshop-documents .document h3 { grid-area: 1 / 1; font-size: 18px; line-height: 1.3; margin-block: 2px; }
+html[data-ui="notebook"] .newshop-documents .document-meta { grid-area: 2 / 1 / auto / -1; margin: 0; font-size: 10px; }
+html[data-ui="notebook"] .newshop-documents .document-meta .item-art { display: none; }
+html[data-ui="notebook"] .newshop-documents :is(.document-extra, .document-lines) { grid-column: 1 / -1; }
+html[data-ui="notebook"] .newshop-documents .document-extra { padding-block: 0; }
+html[data-ui="notebook"] .newshop-documents .document-extra:not([open]) { grid-area: 1 / 2; }
+html[data-ui="notebook"] .newshop-documents .document-extra[open] { grid-row: 3; }
+html[data-ui="notebook"] .newshop-documents .document-lines { margin-top: 2px; padding-top: 0; }
+html[data-ui="notebook"] .newshop-dates > h3 { font-size: 20px; margin-bottom: 6px; }
+html[data-ui="notebook"] .calendar-workspace { margin-top: 8px; gap: 12px; }
+html[data-ui="notebook"] :is(.month, .scoped-calendar .month) { padding: 8px; }
+html[data-ui="notebook"] :is(.month-title, .scoped-calendar .month-title) { margin-bottom: 4px; padding-bottom: 4px; }
+html[data-ui="notebook"] .month-title strong { font-size: 20px; line-height: 1.3; }
+html[data-ui="notebook"] .weekdays { margin-bottom: 4px; }
+html[data-ui="notebook"] :is(.days button, .scoped-calendar .days button) { min-height: 30px; aspect-ratio: auto; font-size: 12px; }
+html[data-ui="notebook"] .days { gap: 3px; }
+html[data-ui="notebook"] .day-note-count { width: 12px; height: 12px; font-size: 9px; }
+html[data-ui="notebook"] .sticky-list { gap: 6px; margin-block: 6px; }
+html[data-ui="notebook"] .sticky-note { padding: 5px 8px; }
+html[data-ui="notebook"] :is(.sticky-note, .scoped-calendar .sticky-note) > button:first-child { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 3px 0; min-height: 32px; }
+html[data-ui="notebook"] :is(.sticky-note, .scoped-calendar .sticky-note) span { font-size: 12px; }
+html[data-ui="notebook"] :is(.sticky-note, .scoped-calendar .sticky-note) > button:first-child strong { font-size: 15px; }
+html[data-ui="notebook"] :is(.sticky-note, .scoped-calendar .sticky-note) small { font-size: 10px; grid-column: 1 / -1; }
+html[data-ui="notebook"] .sticky-note .text-button { font-size: 10px; padding: 2px 0; }
+html[data-ui="notebook"] .count-line { margin-top: 6px; padding-top: 5px; }
+
+/* Side investigations, handover, inventory and settings use the same scale. */
+html[data-ui="notebook"] .survey-grid { gap: 5px; margin-block: 8px; }
+html[data-ui="notebook"] .survey-grid button { min-height: 36px; padding: 5px 8px; font-size: 12px; }
+html[data-ui="notebook"] .invitation-card { padding: 10px; margin-block: 8px; min-height: 108px; gap: 4px; }
+html[data-ui="notebook"] .invitation-card > strong { font-size: 28px; line-height: 1.3; margin-block: 8px; }
+html[data-ui="notebook"] .handover-notes { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 12px; }
+html[data-ui="notebook"] .handover-notes article { padding: 8px 0; }
+html[data-ui="notebook"] .handover-notes h3 { font-size: 18px; margin-bottom: 4px; }
+html[data-ui="notebook"] .review-citations { margin-block: 10px; }
+html[data-ui="notebook"] .review-citations h3 { font-size: 17px; }
+html[data-ui="notebook"] .review-citations > summary { cursor: pointer; padding-block: 6px; font-size: 13px; }
+html[data-ui="notebook"] .review-citations .reference-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html[data-ui="notebook"] .finding-sources { font-size: 11px; margin-top: 4px; }
+html[data-ui="notebook"] .finding-sources summary { cursor: pointer; padding-block: 3px; }
+html[data-ui="notebook"] .receipt-notice { padding: 8px 10px; margin-block: 8px; gap: 10px; }
+html[data-ui="notebook"] .receipt-notice strong { font-size: 13px; margin-bottom: 3px; }
+html[data-ui="notebook"] .handover-action { margin-top: 10px; padding-top: 10px; gap: 12px; }
+html[data-ui="notebook"] .company-layout { grid-template-columns: 125px minmax(0, 1fr); gap: 14px; margin-block: 10px; }
+html[data-ui="notebook"] .company-nav { gap: 5px; }
+html[data-ui="notebook"] .company-nav button { padding: 8px; gap: 6px; }
+html[data-ui="notebook"] .company-nav button span { font-size: 14px; }
+html[data-ui="notebook"] .company-nav button > svg { width: 18px; height: 18px; }
+html[data-ui="notebook"] .company-panel > h3:not(:first-child) { margin-top: 10px; }
+html[data-ui="notebook"] .dimension-evidence { gap: 6px; margin-top: 10px; }
+html[data-ui="notebook"] .dimension-evidence button { padding: 8px; gap: 4px; }
+html[data-ui="notebook"] .dimension-evidence button span { font-size: 12px; line-height: 1.4; }
+html[data-ui="notebook"] .dimension-evidence button strong { font-size: 13px; }
+html[data-ui="notebook"] .inventory-sections button { font-size: 14px; min-height: 34px; }
+html[data-ui="notebook"] .inventory-group-label > span { font-size: 17px; }
+html[data-ui="notebook"] .inventory-note { padding: 10px 0; }
+html[data-ui="notebook"] .inventory-note h3 { font-size: 18px; }
+html[data-ui="notebook"] .inventory-people { gap: 10px; }
+html[data-ui="notebook"] .inventory-people h3 { font-size: 18px; }
+html[data-ui="notebook"] .chapter-nav { gap: 6px; margin-block: 12px; }
+html[data-ui="notebook"] .chapter-nav button { font-size: 14px; min-height: 36px; padding: 8px 10px; }
+html[data-ui="notebook"] .modal-actions { margin-top: 12px; gap: 8px; }
+html[data-ui="notebook"] .scene-location h1 { font-size: clamp(25px, 2.5vw, 34px); }
+html[data-ui="notebook"] .scene-tools .toolbar-button { font-size: 12px; }
+html[data-ui="notebook"] .scene-controls :is(.button-primary, .button-secondary) { font-size: 16px; min-height: 36px; padding: 6px 10px; }
+html[data-ui="notebook"] .film { padding-block: 64px; }
+html[data-ui="notebook"] .film h1 { font-size: 40px; margin-block: 14px; }
+html[data-ui="notebook"] .film-content > p { font-size: 15px; line-height: 1.6; }
+html[data-ui="notebook"] .film .film-role { font-size: 12px; margin-top: 12px; }
+html[data-ui="notebook"] .film-role p { font-size: 12px; }
+html[data-ui="notebook"] .film-kicker { font-size: 12px; }
+html[data-ui="notebook"] .ending-content { padding: 20px; }
+html[data-ui="notebook"] .ending-content h1 { font-size: 32px; }
+
+/* Scene feedback reads like a quiet annotation over the photograph. */
+html[data-ui="notebook"] .floating-hint {
+  left: 4vw;
+  bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  width: fit-content;
+  max-width: min(440px, calc(100vw - 8vw));
+  margin: 0;
+  padding: 10px 0;
+  gap: 12px;
+  align-items: flex-start;
+  color: #f2ece2;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  isolation: isolate;
+  pointer-events: none;
+  animation: scene-hint-fade 500ms ease 2s forwards;
+}
+@keyframes scene-hint-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ui="notebook"] .floating-hint { animation: none; }
+}
+html[data-ui="notebook"] .floating-hint::before {
+  content: "";
+  position: absolute;
+  inset: -8px -18px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 45% 50%, #211d19c9 20%, #211d1980 58%, #211d1900 76%);
+  filter: blur(8px);
+}
+html[data-ui="notebook"] .floating-hint p {
+  margin: 0;
+  font: 400 14px/1.75 "UI Sans", sans-serif;
+  text-wrap: balance;
+  text-shadow: 0 1px 4px #171410;
+}
+@media (max-width: 699px) {
+  html[data-ui="notebook"] .floating-hint {
+    left: 20px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - 40px);
+  }
+}
+
+/* Three receipts stay beside their checks instead of pushing them down. */
+html[data-ui="notebook"] .trace-overlay .inspection-panels { display: block; left: max(24px, calc((100vw - 1160px) / 2)); right: max(24px, calc((100vw - 1160px) / 2)); }
+html[data-ui="notebook"] .trace-overlay .inspection-intro { display: none; }
+html[data-ui="notebook"] .trace-workspace { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+html[data-ui="notebook"] .trace-documents { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+html[data-ui="notebook"] .trace-documents > :is(.dialogue, .document:nth-child(2)) { grid-column: 1 / -1; }
+html[data-ui="notebook"] .trace-documents .document { margin: 0; }
+html[data-ui="notebook"] .trace-documents .document h3 { font-size: 18px; line-height: 1.3; }
+html[data-ui="notebook"] .trace-documents .document-meta { margin: 0; }
+html[data-ui="notebook"] .trace-documents .document-meta .item-art { display: none; }
+html[data-ui="notebook"] .trace-check .activity { margin: 0; padding: 0; }
+html[data-ui="notebook"] .trace-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+html[data-ui="notebook"] .trace-choices .choice { margin: 0; }
+html[data-ui="notebook"] .money-trace { margin-block: 8px; padding: 8px 0; gap: 8px; font-size: 14px; }
+
+@media (min-width: 700px) and (max-width: 1100px) {
+  html[data-ui="notebook"] .inspection-panels { grid-template-columns: minmax(160px, .7fr) minmax(340px, 1.5fr); gap: 16px; }
+  html[data-ui="notebook"] .work-glass { width: 88vw; }
+  html[data-ui="notebook"] .money-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 699px) {
+  html[data-ui="notebook"] .inspection-panels { top: 62px; bottom: 10px; padding: 0 12px 10px; }
+  html[data-ui="notebook"] .inspection-intro { padding: 4px 2px 6px; margin-bottom: 4px; }
+  html[data-ui="notebook"] .inspection-intro h2 { font-size: 24px; margin-block: 4px; }
+  html[data-ui="notebook"] .inspection-receipt { margin-top: 4px; }
+  html[data-ui="notebook"] .inspection-body { padding: 12px; }
+  html[data-ui="notebook"] .branch-overlay .inspection-body { margin-top: 0; max-height: none; }
+  html[data-ui="notebook"] .work-glass { top: 62px; bottom: 12px; left: 12px; right: 12px; width: auto; padding: 12px; }
+  html[data-ui="notebook"] .money-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-ui="notebook"] .money-card > button:first-child { display: grid; grid-template-columns: 26px 1fr; text-align: left; }
+  html[data-ui="notebook"] .money-card strong { grid-column: 2; font-size: 20px; }
+  html[data-ui="notebook"] .money-card > button:first-child small { grid-column: 1 / -1; }
+  html[data-ui="notebook"] .date-desk { grid-template-columns: 1fr; gap: 8px; }
+  html[data-ui="notebook"] .desk-documents { gap: 5px; }
+  html[data-ui="notebook"] .desk-documents > button { flex-direction: row; padding: 5px 3px; text-align: left; }
+  html[data-ui="notebook"] .desk-documents .item-art { width: 22px; height: 24px; }
+  html[data-ui="notebook"] .object-picker .evidence-objects { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-ui="notebook"] .object-picker.has-open-document { display: block; }
+  html[data-ui="notebook"] .object-picker .evidence-objects { display: none; }
+  html[data-ui="notebook"] .evidence-select { display: grid; gap: 5px; font-size: 12px; margin-block: 8px; }
+  html[data-ui="notebook"] .has-open-document .selectable-lines { margin-top: 8px; }
+  html[data-ui="notebook"] .object-picker > .section-caption { display: none; }
+  html[data-ui="notebook"] .guided-desk .desk-chapter { grid-template-columns: 1fr; gap: 0; }
+  html[data-ui="notebook"] .guided-desk .desk-chapter h2 { grid-area: 2 / 1; font-size: 20px; }
+  html[data-ui="notebook"] .desk-chapter > .section-caption { grid-area: 1 / 1; font-size: 10px; }
+  html[data-ui="notebook"] .guided-desk .dialogue p { font-size: 13px; line-height: 1.5; }
+  html[data-ui="notebook"] .evidence-select select { line-height: 1.4; height: 34px; min-height: 34px; }
+  html[data-ui="notebook"] .object-picker .reference-slot:not(.filled) { min-height: 34px; padding-block: 5px; align-items: center; }
+  html[data-ui="notebook"] .object-picker .reference-slot:not(.filled) > svg { grid-row: 1; }
+  html[data-ui="notebook"] .object-picker .reference-slot:not(.filled) > small { display: none; }
+  html[data-ui="notebook"] .desk-payment-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-ui="notebook"] :is(.newshop-overlay, .calendar-overlay) .inspection-panels { top: 62px; bottom: 0; }
+  html[data-ui="notebook"] :is(.newshop-overlay, .calendar-overlay) .inspection-body { padding: 12px; }
+  html[data-ui="notebook"] .newshop-documents { padding: 0 0 8px; }
+  html[data-ui="notebook"] .newshop-dates { padding-top: 8px; }
+  html[data-ui="notebook"] .newshop-dates > h3 { font-size: 16px; line-height: 1.3; }
+  html[data-ui="notebook"] .scoped-calendar .calendar-workspace { margin-top: 6px; gap: 6px; }
+  html[data-ui="notebook"] .scoped-calendar .sticky-list { grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 4px; margin-block: 4px; }
+  html[data-ui="notebook"] .scoped-calendar .sticky-note { padding: 4px; }
+  html[data-ui="notebook"] .scoped-calendar .sticky-note > button:first-child { display: flex; flex-direction: column; align-items: flex-start; padding: 2px; gap: 2px; }
+  html[data-ui="notebook"] .scoped-calendar .days button { min-height: 28px; }
+  html[data-ui="notebook"] .full-calendar .sticky-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-ui="notebook"] .company-layout { grid-template-columns: 1fr; gap: 8px; }
+  html[data-ui="notebook"] .company-view > .section-title { flex-direction: row; align-items: center; }
+  html[data-ui="notebook"] .company-view > .section-title h2 { font-size: 20px; }
+  html[data-ui="notebook"] .company-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  html[data-ui="notebook"] .company-nav button { padding: 6px 2px; gap: 3px; justify-content: center; }
+  html[data-ui="notebook"] .company-nav button span { font-size: 12px; }
+  html[data-ui="notebook"] .company-nav button > svg { display: none; }
+  html[data-ui="notebook"] .dimension-evidence { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-ui="notebook"] .handover-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-ui="notebook"] .handover-notes h3 { font-size: 16px; }
+  html[data-ui="notebook"] .handover-notes article:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  html[data-ui="notebook"] .handover > .section-title { flex-direction: row; align-items: center; }
+  html[data-ui="notebook"] .handover > .section-title h2 { font-size: 20px; }
+  html[data-ui="notebook"] .trace-overlay .inspection-panels { left: 0; right: 0; }
+  html[data-ui="notebook"] .trace-workspace { grid-template-columns: 1fr; gap: 10px; }
+  html[data-ui="notebook"] .trace-documents { grid-template-columns: 1fr; gap: 2px; }
+  html[data-ui="notebook"] .trace-documents .dialogue { margin-block: 4px; }
+  html[data-ui="notebook"] .trace-documents .document-extra summary { padding-block: 0; line-height: 1.3; }
+  html[data-ui="notebook"] .trace-documents .document-extra { padding-block: 0; }
+  html[data-ui="notebook"] .trace-check .activity h3 { font-size: 18px; margin-block: 4px; }
+  html[data-ui="notebook"] .trace-check .money-trace { margin-block: 4px; padding-block: 4px; }
+  html[data-ui="notebook"] .trace-documents .document { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 6px; padding: 5px; }
+  html[data-ui="notebook"] .trace-documents .document-meta { grid-area: 1 / 2; font-size: 10px; }
+  html[data-ui="notebook"] .trace-documents .document h3 { grid-area: 1 / 1; font-size: 16px; margin-block: 2px; }
+  html[data-ui="notebook"] .trace-documents :is(.document-extra, .document-lines) { grid-column: 1 / -1; }
+  html[data-ui="notebook"] .trace-documents .document-lines { margin-top: 2px; padding: 0; }
+  html[data-ui="notebook"] .trace-documents .document-lines p { font-size: 12px; line-height: 1.5; padding-block: 3px; margin-block: 2px; }
+  html[data-ui="notebook"] .trace-check .sentence-choice { margin-block: 3px; }
+  html[data-ui="notebook"] .scene-controls .scene-controls-left .button-secondary { font-size: 15px; padding: 5px 0; }
+  html[data-ui="notebook"] .film h1 { font-size: 32px; }
+}

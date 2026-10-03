@@ -1,0 +1,64 @@
+.cinematic-narration {
+  position: absolute; left: 50%; bottom: max(98px, calc(env(safe-area-inset-bottom) + 84px));
+  transform: translateX(-50%); width: min(720px, calc(100% - 48px));
+  padding: 20px 26px 18px; text-align: center; pointer-events: none;
+  background: radial-gradient(ellipse at center, #100f0de0 0%, #100f0d8a 58%, transparent 75%);
+  text-shadow: 0 2px 8px #000, 0 1px 2px #000;
+}
+.cinematic-narration > div { animation: narration-appear 550ms ease both; }
+.cinematic-narration strong { display: block; font: 18px/1.5 var(--display); letter-spacing: .08em; color: #e9d6b6; }
+.cinematic-narration p { margin: 9px 0 0; font: 20px/1.65 var(--body-font); color: #fffdf9; text-wrap: balance; }
+.narration-tool { display: inline-grid; place-items: center; height: 52px; margin-bottom: 6px; }
+.narration-tool img { width: 58px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 5px #0008); }
+.cinematic.is-finishing .cinematic-narration { visibility: hidden; }
+.cinematic.awaiting-frame .cinematic-narration { visibility: hidden; }
+.field-guide { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 10vw, 160px); }
+.field-guide :is(h3,h4,p) { margin: 0 0 10px; }
+.field-guide :is(.field-brief,.field-kit) { background: #f4f0e5c4; padding: 20px; border-radius: 3px; }
+.field-guide p { font-size: 14px; line-height: 1.65; }
+.field-kicker { font-size: 12px; color: #715d47; }
+.field-guide h3 { font: 22px/1.4 var(--display); }
+.field-guide h4 { font-size: 15px; margin-bottom: 3px; }
+.field-current { border-top: 1px solid #796a5140; padding-top: 12px; margin-top: 16px; }
+.field-kit article { display: grid; grid-template-columns: 48px 1fr; gap: 10px; margin: 14px 0; }
+.field-tool-picture { display: grid; place-items: center; }
+.field-tool-picture img { width: 48px; height: 54px; object-fit: contain; }
+.field-guide .field-reminder { font-size: 12px; margin-bottom: 0; }
+html[data-ui="notebook"] .modal.field-guide-modal { width: min(1080px, calc(100vw - 32px)); background: transparent; backdrop-filter: none; border: 0; box-shadow: none; }
+html[data-ui="notebook"] .modal.field-guide-modal::before { display: none; }
+html[data-ui="notebook"] .field-guide-modal > .modal-heading { color: #fff9ee; background: none; text-shadow: 0 1px 6px #000; }
+html[data-ui="notebook"] .field-guide-modal > .modal-heading :is(h2,button) { color: inherit; }
+.sound-settings { display: grid; gap: 9px; }
+.sound-settings label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.sound-settings input { accent-color: #796348; }
+.music-volume input { flex: 1; min-width: 60px; max-width: 160px; }
+.music-volume output { min-width: 36px; font-variant-numeric: tabular-nums; }
+.music-credits { font-size: 12px; }
+.music-credits summary { cursor: pointer; }
+.music-credits p { margin: 6px 0; font-size: 12px; overflow-wrap: anywhere; }
+.music-recover { position: fixed; top: 150px; right: 16px; z-index: 35; padding: 9px 13px; background: #eee6d9ef; color: #443b31; border: 1px solid #9b8975; border-radius: 3px; }
+@keyframes narration-appear { from { opacity: 0; translate: 0 5px; } to { opacity: 1; translate: 0 0; } }
+@media (max-width: 699px) {
+  .cinematic-narration { width: calc(100% - 24px); bottom: max(98px, calc(env(safe-area-inset-bottom) + 82px)); padding: 14px 10px; }
+  .cinematic-narration strong { font-size: 16px; }
+  .cinematic-narration p { font-size: 17px; line-height: 1.6; margin-top: 6px; }
+  .field-guide { grid-template-columns: 1fr; gap: 16px; }
+  .field-guide :is(.field-brief,.field-kit) { padding: 14px; }
+  .field-guide h3 { font-size: 20px; }
+}
+@media (max-height: 440px) {
+  .cinematic-narration { bottom: 65px; padding: 8px 16px; }
+  .cinematic-narration p { font-size: 16px; line-height: 1.4; margin-top: 4px; }
+  .cinematic-narration strong { font-size: 14px; }
+  .narration-tool { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .cinematic-narration > div { animation: none; } }
+
+.cinematic[aria-hidden="true"] :is(.cinematic-caption, .cinematic-narration, .cinematic-controls) { visibility: hidden; }
+html[data-ui="notebook"] .modal.field-guide-modal:not(.scene-overlay):not(.inventory-modal) {
+  width: min(1080px, calc(100vw - 32px)); max-width: none; margin-inline: auto;
+  background: transparent; backdrop-filter: none; box-shadow: none;
+}
+html[data-ui="notebook"] .modal.field-guide-modal > .modal-heading .icon-button { color: #fff9ee; background: #24211b90; }
+
+.immersive-app:has(.modal[open]) .game-home :is(.home-content, .home-footnote) { visibility: hidden; }

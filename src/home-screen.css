@@ -1,0 +1,103 @@
+/* Pencil-note title screen: variance 6, motion 3, density 2.
+   Full-bleed native CSS scene, warm grey materials and the licensed hand font. */
+.game-home {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: center;
+  min-height: 100dvh;
+  height: 100dvh;
+  padding: 60px clamp(28px, 8vw, 150px) 80px;
+  overflow: hidden;
+  overflow-y: auto;
+  color: #f4efe6;
+  background: #302d28;
+  transition: opacity 360ms ease;
+}
+.game-home.is-starting { opacity: 0; pointer-events: none; }
+.home-art, .home-shade { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.home-art { object-fit: cover; object-position: 60% center; }
+.home-shade {
+  background: linear-gradient(90deg, #201e1bd4, #24211d72 34%, transparent 67%),
+    linear-gradient(0deg, #24211d70, transparent 25%);
+  pointer-events: none;
+}
+.home-content { width: min(100%, 460px); }
+html[data-ui] .game-home h1 {
+  margin: 0 0 14px;
+  font: 400 clamp(52px, 5.6vw, 88px)/1.25 "Spring Hand", "UI Hand", serif;
+  letter-spacing: .08em;
+  color: #faf4e8;
+  text-shadow: 0 2px 12px #18161350;
+}
+.game-home .home-chapter {
+  margin: 0;
+  font: 400 clamp(18px, 1.7vw, 23px)/1.5 "Spring Hand", "UI Hand", serif;
+  letter-spacing: .1em;
+  color: #e7ddcd;
+}
+.game-home .home-premise {
+  margin: clamp(24px, 4vh, 42px) 0;
+  font: 400 14px/1.9 "UI Sans", sans-serif;
+  color: #e2dace;
+}
+.home-menu { display: grid; gap: 12px; width: 210px; }
+html[data-ui] .home-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  min-height: 48px;
+  padding: 11px 23px;
+  border: 1px solid #dfd4c35c;
+  border-radius: 2px 3px 2px 1px;
+  font: 400 22px/1.2 "Spring Hand", "UI Hand", serif;
+  letter-spacing: .15em;
+  cursor: pointer;
+  transition: background 180ms, transform 180ms;
+}
+html[data-ui] .home-menu .home-start {
+  background: #e9e1d5ad;
+  background-image: var(--art-fiber);
+  background-size: 340px;
+  background-blend-mode: soft-light;
+  color: #302b24;
+  box-shadow: 1px 3px 0 #1c191944, inset 0 0 0 2px #f7f0e030;
+}
+html[data-ui] .home-menu .home-settings { color: #f2e9dc; background: #28241e45; border-color: #d5c8b740; }
+html[data-ui] .home-menu button:hover { transform: translateX(4px); }
+html[data-ui] .home-menu .home-settings:hover { background: #51493e8c; }
+html[data-ui] .home-menu button:focus-visible { outline: 2px solid #f2e9dc; outline-offset: 5px; }
+html[data-ui] .home-menu button:disabled { cursor: wait; }
+.game-home .home-footnote {
+  position: absolute;
+  bottom: 24px;
+  left: clamp(28px, 8vw, 150px);
+  margin: 0;
+  color: #d7cec1;
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+@media (max-width: 700px) {
+  .game-home { align-items: end; padding: 44px 28px 74px; }
+  .home-art { object-position: 68% center; }
+  .home-shade { background: linear-gradient(0deg, #24211df7, #24211dce 40%, #24211d30 73%, #24211d10); }
+  .game-home .home-premise { font-size: 13px; margin-block: 22px; }
+  .home-menu { grid-template-columns: 1.2fr 1fr; width: min(100%, 330px); gap: 12px; }
+  html[data-ui] .home-menu button { font-size: 20px; gap: 10px; padding: 12px 16px; }
+}
+@media (max-height: 520px) and (min-width: 701px) {
+  .game-home { padding-block: 28px 52px; }
+  html[data-ui] .game-home h1 { font-size: 48px; margin-bottom: 6px; }
+  .game-home .home-premise { margin-block: 16px; }
+  .home-menu { display: flex; width: auto; }
+  html[data-ui] .home-menu button { font-size: 20px; min-height: 44px; }
+  .game-home .home-footnote { bottom: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-home, html[data-ui] .home-menu button { transition: none; }
+  html[data-ui] .home-menu button:hover { transform: none; }
+}
+@media (max-height: 450px) {
+  .game-home .home-footnote { display: none; }
+}

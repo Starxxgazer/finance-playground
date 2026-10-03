@@ -1,0 +1,878 @@
+/* Unified Notebook Workspace (铅笔手记 · 一体化工作板与统一视觉规范)
+   - 彻底解决碎片化：收拢为完整一体的规整手记工作板，杜绝东一块西一块
+   - 统一尺寸层级：4级字号、统一控件高度 (36px/34px/32px)、规整间距与圆角
+   - 保证信息易读：主标题保留手记朝时体，正文与表单选项使用高辨识度无衬线字体
+   - 柔和背景遮罩：半透明暗色遮罩与景深模糊，消除背景杂色干扰，文字极高易读
+   - 保持所有调查、资金与交接逻辑门槛，无缝适配宽屏与移动端
+*/
+
+:root[data-ui="notebook"] {
+  /* 统一规范字号层级 */
+  --ui-title-size: 22px;      /* 调查标题、弹窗大标题 (Spring Hand) */
+  --ui-subtitle-size: 16px;   /* 栏目标题、卡片标题、金额重点 */
+  --ui-body-size: 13.5px;     /* 正文、原件行、问题说明、选项按钮标签 */
+  --ui-caption-size: 12px;    /* 来源、元数据标签、辅助注脚、小提示 */
+
+  /* 统一字体：标题手写体，操作与阅读无衬线易读体 */
+  --font-hand: "Spring Hand", serif;
+  --font-clean: "UI Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  /* 统一控件高度 */
+  --ui-btn-h: 36px;           /* 主操作按钮高度 */
+  --ui-btn-sub-h: 32px;       /* 次级操作按钮高度 */
+  --ui-opt-h: 34px;           /* 选项按钮/下拉框高度 */
+
+  /* 统一面板材质与纸面底色 */
+  --panel: #f5f2ecbd;
+  --panel-soft: #f7f5f0ad;
+  --notebook-board: #f4f0e8bd;
+  --notebook-card: #fcfbf947;
+  --ink: #2b2722;
+  --muted: #5e574d;
+  --line: rgba(85, 76, 65, 0.22);
+  --pencil-line: rgba(85, 76, 65, 0.35);
+  --accent: #785038;
+  --accent-bg: rgba(120, 80, 56, 0.12);
+  --grain-opacity: 0.08;
+  --ui-radius: 6px;
+  --card-radius: 4px;
+  --shadow-board: 0 16px 44px rgba(18, 15, 12, 0.28), 0 2px 10px rgba(18, 15, 12, 0.1);
+  --shadow-card: 0 1px 4px rgba(30, 25, 20, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* ==========================================================================
+   1. 背景遮罩与场景融合 (Soft Backdrop & Scene Dimming)
+   ========================================================================== */
+html[data-ui="notebook"] .modal::backdrop,
+html[data-ui="notebook"] .modal.scene-overlay::backdrop {
+  background: rgba(18, 15, 12, 0.24);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+html[data-ui="notebook"] .scene-overlay::before {
+  background: linear-gradient(180deg, rgba(18, 15, 12, 0.5) 0%, transparent 90px);
+}
+
+html[data-ui="notebook"] .world-shade {
+  background: linear-gradient(180deg, rgba(18, 15, 12, 0.45) 0%, transparent 25%, transparent 75%, rgba(18, 15, 12, 0.5) 100%);
+}
+
+/* 当弹窗打开时，暂时隐去现场探索标记，避免视觉杂乱 */
+html[data-ui="notebook"] .immersive-app:has(.modal[open]) :is(.scene-hud, .scene-controls, .investigation-guide, .outside-tools) {
+  visibility: hidden;
+}
+
+/* One centered sheet owns sizing and scrolling; no inherited scene offsets. */
+html[data-ui="notebook"] .scene-overlay > .modal-body {
+  /* The entrance transform establishes a containing block for fixed children.
+     Keep that block viewport-sized even while the animation is running. */
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+}
+html[data-ui="notebook"] .simple-inspection .inspection-panels,
+html[data-ui="notebook"] .simple-inspection.branch-overlay .inspection-panels,
+html[data-ui="notebook"] .work-glass {
+  position: fixed;
+  height: fit-content;
+  min-height: 0;
+  inset: 56px 0 20px;
+  width: min(1040px, calc(100% - 64px));
+  height: fit-content;
+  max-height: calc(100dvh - 76px);
+  margin: auto;
+  padding: 0;
+  transform: none;
+  display: block;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  overflow: visible;
+  backdrop-filter: none;
+}
+html[data-ui="notebook"] .simple-inspection .inspection-body,
+html[data-ui="notebook"] .work-glass {
+  position: relative;
+  width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 76px);
+  margin: 0;
+  padding: 20px 24px;
+  background: var(--notebook-board);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--shadow-board);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  backdrop-filter: none;
+  box-sizing: border-box;
+}
+html[data-ui="notebook"] .work-glass {
+  position: fixed;
+  height: fit-content;
+  min-height: 0;
+  width: min(1040px, calc(100% - 64px));
+  margin: auto;
+}
+html[data-ui="notebook"] :is(.inspection-body, .work-glass, .modal:not(.scene-overlay))::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--art-fiber) center / 400px repeat;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: multiply;
+  border-radius: inherit;
+}
+html[data-ui="notebook"] :is(.simple-investigation, .simple-side, .simple-newshop) {
+  height: auto;
+  min-height: 0;
+}
+html[data-ui="notebook"] :is(.simple-investigation-grid, .trace-workspace, .newshop-workspace, .side-conversation) {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  min-height: 0;
+}
+html[data-ui="notebook"] .simple-newshop { grid-template-areas: "original question"; }
+html[data-ui="notebook"] .side-conversation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); }
+html[data-ui="notebook"] :is(
+  .simple-investigation-grid > .document, .simple-investigation-grid > .simple-answer,
+  .trace-documents, .trace-check, .newshop-documents, .newshop-dates,
+  .side-conversation > .side-paper, .company-panel
+) {
+  min-width: 0;
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--notebook-card);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-card);
+  max-height: calc(100dvh - 172px);
+  overflow: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+html[data-ui="notebook"] .trace-documents { display: block; }
+html[data-ui="notebook"] .trace-documents .document + .document { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+html[data-ui="notebook"] .trace-check .simple-answer { padding: 0; border: 0; background: none; box-shadow: none; }
+html[data-ui="notebook"] .side-paper:empty::before { content: "交谈后，记录会出现在这里。"; font: 13px/1.6 var(--font-clean); color: var(--muted); }
+html[data-ui="notebook"] .full-calendar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 8px 24px;
+  align-items: start;
+}
+html[data-ui="notebook"] .full-calendar > :not(.calendar-workspace) { grid-column: 1; }
+html[data-ui="notebook"] .full-calendar > .calendar-workspace { grid-column: 2; grid-row: 1 / span 5; margin: 0; }
+html[data-ui="notebook"] .simple-calendar .date-question h3 { font: 700 22px/1.35 var(--font-hand); margin: 4px 0 8px; }
+html[data-ui="notebook"] .simple-calendar .days button { min-height: 32px; }
+html[data-ui="notebook"] .simple-newshop .newshop-documents { padding: 14px 16px; }
+html[data-ui="notebook"] .simple-newshop .newshop-dates { padding: 14px 16px; }
+
+/* Desktop notes stay beside the active work; mobile reads from top to bottom. */
+html[data-ui="notebook"] .funds-workspace,
+html[data-ui="notebook"] .simple-handover,
+html[data-ui="notebook"] .simple-company {
+  display: grid;
+  grid-template-columns: minmax(220px, .72fr) minmax(0, 1.65fr);
+  gap: 24px;
+  align-items: start;
+}
+html[data-ui="notebook"] :is(.desk-context, .handover-context, .company-context) { padding: 0 20px 0 0; border-right: 1px solid var(--line); }
+html[data-ui="notebook"] :is(.desk-step, .handover-records, .company-layout) { min-width: 0; padding: 0; }
+html[data-ui="notebook"] .simple-company .company-layout { display: block; }
+html[data-ui="notebook"] .simple-company .company-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; padding: 0; background: none; border: 0; }
+html[data-ui="notebook"] .simple-company .company-nav button { height: auto; min-height: 36px; padding: 6px; font-size: 13px; justify-content: center; }
+html[data-ui="notebook"] .simple-company .company-nav button svg { width: 18px; }
+html[data-ui="notebook"] .simple-handover .handover-notes { grid-template-columns: 1fr; }
+html[data-ui="notebook"] .work-next { margin: 10px 0 0; text-align: right; }
+html[data-ui="notebook"] .funds-workspace .desk-context { background: transparent; box-shadow: none; }
+html[data-ui="notebook"] .funds-workspace .desk-step { background: transparent; box-shadow: none; }
+
+@media (max-width: 859px) {
+  html[data-ui="notebook"] .simple-inspection .inspection-panels,
+  html[data-ui="notebook"] .simple-inspection.branch-overlay .inspection-panels,
+  html[data-ui="notebook"] .work-glass {
+    inset: 54px 0 10px;
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 64px);
+  }
+  html[data-ui="notebook"] .simple-inspection .inspection-body,
+  html[data-ui="notebook"] .work-glass { max-height: calc(100dvh - 64px); padding: 12px; }
+  html[data-ui="notebook"] :is(.simple-investigation-grid, .trace-workspace, .newshop-workspace, .side-conversation, .funds-workspace, .simple-handover, .simple-company, .full-calendar) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  html[data-ui="notebook"] :is(.simple-investigation-grid, .trace-workspace, .newshop-workspace, .side-conversation) > * { width: 100%; min-width: 0; }
+  html[data-ui="notebook"] :is(.simple-investigation-grid > .document, .simple-investigation-grid > .simple-answer, .trace-documents, .trace-check, .newshop-documents, .newshop-dates, .side-conversation > .side-paper) { padding: 10px; max-height: none; }
+  html[data-ui="notebook"] .simple-side .trace-documents { display: block; max-height: 150px; overflow-y: auto; }
+  html[data-ui="notebook"] .simple-investigation-grid > .document { max-height: 240px; overflow: auto; }
+  html[data-ui="notebook"] .simple-newshop .newshop-dates { order: 0; padding: 10px; }
+  html[data-ui="notebook"] .simple-newshop .newshop-documents { order: 1; padding: 10px; max-height: 190px; overflow: auto; }
+  html[data-ui="notebook"] :is(.desk-context, .handover-context, .company-context) { width: 100%; padding: 0 0 8px; border: 0; border-bottom: 1px solid var(--line); }
+  html[data-ui="notebook"] :is(.desk-step, .handover-records, .company-layout) { width: 100%; }
+  html[data-ui="notebook"] .simple-funds .desk-context { padding: 0 0 8px; }
+  html[data-ui="notebook"] .full-calendar > .calendar-workspace { align-self: center; width: min(360px, 100%); }
+}
+
+/* ==========================================================================
+   4. 严格统一字号体系与易读性 (Unified Typography & Readability)
+   ========================================================================== */
+
+/* Level 1: 大标题 (调查问题、弹窗主标题) - 保留朝时手写体温度 */
+html[data-ui="notebook"] :is(
+  .simple-question,
+  .modal-heading h2,
+  .desk-chapter h2,
+  .inspection-intro h2,
+  .ending-content h2
+) {
+  font-family: var(--font-hand);
+  font-size: var(--ui-title-size);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  margin: 0 0 12px;
+}
+
+/* Level 2: 栏目标题、原件标题、金额数字 */
+html[data-ui="notebook"] :is(
+  .document h3,
+  .activity h3,
+  .section-title h3,
+  .note h3,
+  .desk-payment-heading h3,
+  .money-caption strong
+) {
+  font-family: var(--font-hand);
+  font-size: var(--ui-subtitle-size);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+/* Level 3: 正文、原件段落、说明与选项文字 - 统一使用高可读性无衬线体 */
+html[data-ui="notebook"] :is(
+  .document-lines p,
+  .choice-guidance,
+  .dialogue p,
+  .simple-pick legend,
+  .form-label,
+  .funds-coach p,
+  .company-panel p,
+  .handover-notes p,
+  .simple-options button,
+  .money-choice > button,
+  select
+) {
+  font-family: var(--font-clean);
+  font-size: var(--ui-body-size);
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+html[data-ui="notebook"] .choice-guidance {
+  margin-bottom: 12px;
+  line-height: 1.55;
+  color: #38332c;
+}
+
+/* Level 4: 辅助信息、来源与注脚 */
+html[data-ui="notebook"] :is(
+  .document-meta,
+  .document-source,
+  .document-extra,
+  .optional-investigation,
+  .tutorial-note,
+  .funds-source-label,
+  .money-card-hint,
+  .money-check,
+  .feedback,
+  .caption,
+  small
+) {
+  font-family: var(--font-clean);
+  font-size: var(--ui-caption-size);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   5. 统一控件与按钮规范 (Unified Buttons & Form Controls)
+   ========================================================================== */
+
+/* 主操作按钮 (Primary Button) - 统一高度 36px */
+html[data-ui="notebook"] :is(.button-primary, .scene-controls .button-primary) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: var(--ui-btn-h);
+  padding: 7px 14px;
+  font-family: var(--font-clean);
+  font-size: var(--ui-body-size);
+  font-weight: 600;
+  color: #24201b;
+  background: #eae4d8b8;
+  border: 1px solid #736756;
+  border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgba(35, 30, 24, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 140ms ease;
+  box-sizing: border-box;
+}
+
+html[data-ui="notebook"] :is(.button-primary, .scene-controls .button-primary):hover:not(:disabled) {
+  background: #f2eee4d1;
+  border-color: #594e3f;
+  box-shadow: 0 2px 6px rgba(35, 30, 24, 0.18);
+  transform: translateY(-1px);
+}
+
+html[data-ui="notebook"] :is(.button-primary, .scene-controls .button-primary):active:not(:disabled) {
+  background: #e2dbcdc2;
+  box-shadow: inset 0 1px 2px rgba(35, 30, 24, 0.2);
+  transform: translateY(0);
+}
+
+/* 次级操作按钮 (Secondary Button) - 统一高度 32px */
+html[data-ui="notebook"] :is(.button-secondary, .text-button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: var(--ui-btn-sub-h);
+  padding: 5px 10px;
+  font-family: var(--font-clean);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition: all 140ms ease;
+  box-sizing: border-box;
+}
+
+html[data-ui="notebook"] :is(.button-secondary, .text-button):hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.48);
+  border-color: var(--pencil-line);
+}
+
+/* 二选一/多选选项按钮 (Pick Options) - 统一高度 34px，等分排列 */
+html[data-ui="notebook"] fieldset.simple-pick {
+  margin: 0 0 10px;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+}
+
+html[data-ui="notebook"] :is(.simple-pick legend, fieldset legend) {
+  font-family: var(--font-clean) !important;
+  font-size: var(--ui-body-size) !important;
+  font-weight: 600 !important;
+  color: #2b2722 !important;
+  letter-spacing: normal !important;
+  margin-bottom: 5px;
+  padding: 0;
+}
+
+html[data-ui="notebook"] .simple-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+html[data-ui="notebook"] .simple-options button,
+html[data-ui="notebook"] .money-choice > button,
+html[data-ui="notebook"] .sentence-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: var(--ui-opt-h);
+  padding: 6px 10px;
+  font-family: var(--font-clean) !important;
+  font-size: var(--ui-body-size) !important;
+  line-height: normal;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.30);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition: all 120ms ease;
+  box-sizing: border-box;
+}
+
+html[data-ui="notebook"] :is(.simple-options button, .money-choice > button):hover {
+  background: rgba(255, 255, 255, 0.52);
+  border-color: #6d6150;
+}
+
+/* 选中态：明确的深灰铅笔内陷质感与墨色边框 */
+html[data-ui="notebook"] :is(
+  .simple-options button.selected,
+  .money-choice > button[aria-pressed="true"],
+  .sentence-choice.selected
+) {
+  background: rgba(94, 82, 69, 0.16);
+  border-color: #504435;
+  color: #1a1714;
+  font-weight: 600;
+  box-shadow: inset 0 1px 3px rgba(30, 25, 20, 0.15), 0 0 0 1px #504435;
+}
+
+/* 表单下拉框 (Select) - 统一高度 36px，文字垂直居中 */
+html[data-ui="notebook"] :is(select, input:not([type="radio"]):not([type="checkbox"]):not([type="range"])) {
+  box-sizing: border-box !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 4px 10px !important;
+  font-family: var(--font-clean) !important;
+  font-size: var(--ui-body-size) !important;
+  line-height: normal !important;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  width: 100%;
+  display: block;
+}
+
+html[data-ui="notebook"] select:focus {
+  border-color: #504435;
+  outline: 2px solid rgba(80, 68, 53, 0.2);
+}
+
+html[data-ui="notebook"] .form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-family: var(--font-clean) !important;
+  font-size: var(--ui-body-size) !important;
+  font-weight: 600 !important;
+  color: #2b2722;
+}
+
+/* 返回全景与关闭按钮统一规格 */
+html[data-ui="notebook"] .modal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+html[data-ui="notebook"] .modal-heading .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+html[data-ui="notebook"] .modal-heading .icon-button:hover {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: var(--pencil-line);
+}
+
+/* 顶部全景返回按钮（右上角，手作胶囊质感） */
+html[data-ui="notebook"] .modal.scene-overlay > .modal-heading {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  left: auto;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  z-index: 10;
+}
+
+html[data-ui="notebook"] .modal.scene-overlay > .modal-heading .icon-button {
+  background: rgba(38, 32, 26, 0.46);
+  border: 1px solid rgba(255, 245, 230, 0.4);
+  color: #fff8ee;
+  border-radius: var(--card-radius);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 120ms ease;
+}
+
+html[data-ui="notebook"] .modal.scene-overlay > .modal-heading .icon-button:hover {
+  background: rgba(52, 44, 36, 0.64);
+  border-color: rgba(255, 245, 230, 0.7);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   6. 资金桌规整化 (Unified Funds Workbench)
+   ========================================================================== */
+html[data-ui="notebook"] .simple-funds { width: 100%; max-width: none; margin: 0; }
+
+/* 四张资金卡片：规整 2x2 网格，等高对齐 */
+html[data-ui="notebook"] .simple-money-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+html[data-ui="notebook"] .simple-funds .money-card {
+  background: var(--notebook-card);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+html[data-ui="notebook"] .money-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+html[data-ui="notebook"] .money-caption strong {
+  font-family: var(--font-hand);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+html[data-ui="notebook"] .money-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+html[data-ui="notebook"] .money-choice > button {
+  height: 32px;
+  min-height: 32px;
+  width: 100%;
+}
+
+/* 资金桌指引栏 (Funds Coach) */
+html[data-ui="notebook"] .funds-coach {
+  background: rgba(255, 255, 255, 0.25);
+  border-left: 3px solid #7a6b57;
+  border-radius: 0 4px 4px 0;
+  padding: 6px 12px;
+  margin: 4px 0 8px;
+}
+
+html[data-ui="notebook"] .funds-progress {
+  display: flex;
+  gap: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 6px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+}
+
+/* 资金桌第二步（对日期与引用）双栏 */
+html[data-ui="notebook"] .simple-proof-desk {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* 资金桌第四步（排先后）双栏 */
+html[data-ui="notebook"] .simple-order-desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* ==========================================================================
+   7. 弹窗统一规整（设置、透视图与资料包）
+   ========================================================================== */
+
+/* 设置弹窗：精致居中的手记面板 */
+html[data-ui="notebook"] .modal.settings-modal {
+  width: min(640px, calc(100vw - 40px));
+  max-height: calc(100dvh - 80px);
+  padding: 20px 24px;
+  background: var(--notebook-board);
+  border: 1px solid var(--line);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--shadow-board);
+  margin: auto;
+}
+
+html[data-ui="notebook"] .settings-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+html[data-ui="notebook"] .settings-modal .chapter-nav {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  background: var(--notebook-card);
+  padding: 12px;
+  border-radius: var(--card-radius);
+  border: 1px solid var(--line);
+}
+
+/* 资料包：规整典雅的分类匣子 */
+html[data-ui="notebook"] .modal.inventory-modal {
+  width: min(1040px, calc(100vw - 48px));
+  max-height: calc(100dvh - 64px);
+  padding: 20px 24px;
+  background: var(--notebook-board);
+  border: 1px solid var(--line);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--shadow-board);
+  margin: auto;
+}
+
+html[data-ui="notebook"] .inventory-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+html[data-ui="notebook"] .inventory-column {
+  background: var(--notebook-card);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card);
+}
+
+html[data-ui="notebook"] .inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+html[data-ui="notebook"] .inventory-slot {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.24);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+html[data-ui="notebook"] .inventory-slot:hover {
+  background: rgba(255, 255, 255, 0.52);
+  border-color: #6d6150;
+  transform: translateY(-1px);
+}
+
+/* 公司透视图 (Company Layout) */
+
+
+html[data-ui="notebook"] .company-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+html[data-ui="notebook"] .company-nav button {
+  width: 100%;
+  height: 36px;
+  text-align: left;
+  padding: 0 12px;
+}
+
+/* ==========================================================================
+   8. 场景标记与提示 (Scene Markers & Guidance)
+   ========================================================================== */
+.focused-clue {
+  position: absolute;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.focused-clue-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(calc(1 / var(--focus-scale, 1)));
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: #fff8eb;
+  background: rgba(48, 42, 35, 0.58);
+  border: 1px solid #fff3dc;
+  border-radius: 50%;
+  box-shadow: 0 1px 8px rgba(23, 20, 16, 0.35);
+}
+
+html[data-ui="notebook"] .cinematic-caption {
+  background: rgba(25, 23, 20, 0.28);
+}
+
+html[data-ui="notebook"] .cinematic button {
+  background: rgba(25, 23, 20, 0.44);
+}
+
+/* Consistent reading rhythm and controls, including long answer sentences. */
+html[data-ui="notebook"] :is(.inspection-body, .work-glass, .modal:not(.scene-overlay)) {
+  font-family: var(--font-clean);
+  font-size: var(--ui-body-size);
+  line-height: 1.55;
+}
+html[data-ui="notebook"] .document-lines p { margin: 5px 0; padding: 5px 0; line-height: 1.6; }
+html[data-ui="notebook"] .document-extra { padding-block: 3px; }
+html[data-ui="notebook"] .simple-question { margin: 0 0 14px; }
+html[data-ui="notebook"] .simple-question,
+html[data-ui="notebook"] .simple-funds .desk-chapter h2 { font: 700 var(--ui-title-size)/1.35 var(--font-hand); }
+html[data-ui="notebook"] .simple-options button { overflow-wrap: anywhere; }
+html[data-ui="notebook"] .sentence-choice { width: 100%; justify-content: flex-start; text-align: left; padding: 8px 10px; line-height: 1.6; }
+html[data-ui="notebook"] :is(button, select, summary):focus-visible { outline: 2px solid #785038; outline-offset: 3px; }
+html[data-ui="notebook"] .modal .modal-heading .icon-button { border-radius: 4px; }
+html[data-ui="notebook"] .modal:not(.scene-overlay) .modal-heading { margin: 0 0 12px; padding: 0 0 10px; }
+html[data-ui="notebook"] .modal:not(.scene-overlay) .modal-heading h2 { margin: 0; }
+html[data-ui="notebook"] .scene-overlay .modal-heading h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+html[data-ui="notebook"] .scene-next.is-ready .button-primary { background: #eee8dcb8; color: #302a23; border-color: #736756; }
+html[data-ui="notebook"] .investigation-guide .tutorial-note { color: #eee8df; }
+html[data-ui="notebook"] .simple-funds .funds-coach { margin: 8px 0; padding: 6px 10px; }
+html[data-ui="notebook"] .simple-funds .funds-coach p { font-size: var(--ui-body-size); line-height: 1.6; margin: 4px 0; }
+html[data-ui="notebook"] .simple-funds .funds-next-action { font-size: var(--ui-body-size); margin: 6px 0; }
+html[data-ui="notebook"] .simple-funds .money-caption { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
+html[data-ui="notebook"] .simple-funds .money-caption > span { grid-column: 1 / -1; }
+html[data-ui="notebook"] .simple-funds .money-caption strong { font-size: 22px; margin: 0; }
+html[data-ui="notebook"] .simple-funds .money-card { padding: 10px; }
+html[data-ui="notebook"] .simple-funds .money-card-hint { min-height: 36px; }
+html[data-ui="notebook"] .simple-funds .selectable-lines { max-height: 230px; }
+html[data-ui="notebook"] .simple-funds .desk-tools { margin: 8px 0 0; }
+html[data-ui="notebook"] .simple-funds .simple-proof-desk,
+html[data-ui="notebook"] .simple-funds .simple-order-desk { gap: 12px; }
+html[data-ui="notebook"] .simple-funds .funds-date-source p { font-size: 12px; }
+html[data-ui="notebook"] .simple-funds .simple-order-desk { grid-template-columns: 1fr; }
+html[data-ui="notebook"] .simple-funds .simple-order-desk .selectable-lines { max-height: 180px; }
+html[data-ui="notebook"] .simple-funds .simple-order-desk .selectable-lines button { padding: 6px; }
+
+/* All 27 slots share the available width; no legacy fixed slot can spill out. */
+html[data-ui="notebook"] .modal.inventory-modal { width: min(920px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 18px 20px; }
+html[data-ui="notebook"] .inventory-modal .modal-body { padding: 0; }
+html[data-ui="notebook"] .inventory-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; width: 100%; padding: 0; }
+html[data-ui="notebook"] .inventory-column { min-width: 0; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
+html[data-ui="notebook"] .inventory-group { min-width: 0; }
+html[data-ui="notebook"] .inventory-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+html[data-ui="notebook"] .inventory-slot { width: 100%; min-width: 0; height: 74px; min-height: 0; aspect-ratio: auto; padding: 4px 2px; gap: 3px; }
+html[data-ui="notebook"] .inventory-slot .item-art { width: 40px; height: 40px; }
+html[data-ui="notebook"] .inventory-slot strong { font: 400 12px/1.3 var(--font-clean); white-space: normal; overflow-wrap: anywhere; }
+html[data-ui="notebook"] .inventory-group-label { font: 700 17px/1.3 var(--font-hand); margin: 0 0 8px; }
+html[data-ui="notebook"] .settings-modal { overflow: auto; }
+html[data-ui="notebook"] .settings-modal .modal-body { gap: 10px; }
+html[data-ui="notebook"] .settings-modal .modal-body > p { margin: 4px 0; }
+html[data-ui="notebook"] .source-modal .document { margin: 0; }
+/* Reading a source hides the underlying sheet's text, without losing progress. */
+html[data-ui="notebook"] .immersive-app:has(.source-modal[open]) .scene-overlay { visibility: hidden; }
+
+@media (max-width: 859px) {
+  html[data-ui="notebook"] .simple-question { margin-bottom: 10px; }
+  html[data-ui="notebook"] .simple-funds .simple-proof-desk { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  html[data-ui="notebook"] .simple-funds .simple-order-desk { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  html[data-ui="notebook"] .simple-funds .funds-coach p { display: inline; font-size: 13px; }
+  html[data-ui="notebook"] .simple-funds .funds-progress { margin-bottom: 6px; padding-bottom: 4px; gap: 5px 12px; }
+  html[data-ui="notebook"] .simple-funds .funds-coach { margin: 6px 0; padding: 4px 8px; }
+  html[data-ui="notebook"] .simple-funds .money-card { padding: 8px; }
+  html[data-ui="notebook"] .simple-funds .money-card-hint { font-size: 12px; margin-top: 2px; }
+  html[data-ui="notebook"] .simple-funds .simple-money-cards { gap: 8px; margin: 8px 0 0; }
+  html[data-ui="notebook"] .simple-funds .simple-order-desk .selectable-lines { max-height: 150px; }
+  html[data-ui="notebook"] .simple-handover .handover-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  html[data-ui="notebook"] .company-panel { max-height: none; }
+}
+@media (max-width: 540px) {
+  html[data-ui="notebook"] .modal.inventory-modal { width: calc(100vw - 20px); max-width: none; padding: 12px; }
+  html[data-ui="notebook"] .inventory-board { gap: 8px; }
+  html[data-ui="notebook"] .inventory-column { padding: 0; border: 0; background: none; box-shadow: none; gap: 12px; }
+  html[data-ui="notebook"] .inventory-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  html[data-ui="notebook"] .inventory-slot { height: 70px; }
+  html[data-ui="notebook"] .inventory-slot .item-art { width: 32px; height: 32px; }
+  html[data-ui="notebook"] .inventory-slot strong { font-size: 11px; }
+  html[data-ui="notebook"] .inventory-group-label { font-size: 16px; gap: 3px; }
+  html[data-ui="notebook"] .inventory-sections { gap: 6px; }
+  html[data-ui="notebook"] .inventory-sections button { font-size: 13px; padding-inline: 6px; }
+  html[data-ui="notebook"] .modal.settings-modal { width: calc(100vw - 24px); max-height: calc(100dvh - 32px); padding: 14px; }
+  html[data-ui="notebook"] .settings-modal .chapter-nav { padding: 8px; }
+}
+@media (max-width: 359px), (max-height: 600px) {
+  html[data-ui="notebook"] .simple-inspection .inspection-body,
+  html[data-ui="notebook"] .work-glass { overflow-y: auto; }
+  html[data-ui="notebook"] .simple-handover .handover-notes { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ui="notebook"] :is(button, select) { transition: none; }
+}
+
+html[data-ui="notebook"] .modal.field-guide-modal:not(.scene-overlay):not(.inventory-modal) {
+  width: min(920px, calc(100vw - 32px)); background: var(--notebook-board);
+  border: 1px solid var(--line); box-shadow: var(--shadow-board);
+}
+html[data-ui="notebook"] .field-guide-modal > .modal-heading { color: var(--ink); text-shadow: none; }
+html[data-ui="notebook"] .field-guide-modal > .modal-heading .icon-button { color: var(--ink); background: var(--notebook-card); }
+html[data-ui="notebook"] .field-guide { gap: 20px; }
+html[data-ui="notebook"] .field-guide :is(.field-brief, .field-kit) { background: var(--notebook-card); padding: 14px; }
+@media (max-width: 859px) {
+  html[data-ui="notebook"] .simple-funds .selectable-lines { max-height: 160px; }
+  html[data-ui="notebook"] .simple-company .company-panel { padding: 10px; }
+  html[data-ui="notebook"] .simple-company .company-panel h3 { font-size: 18px; margin: 8px 0; }
+  html[data-ui="notebook"] .simple-company .dimension-evidence button { min-height: 48px; padding: 7px; }
+  html[data-ui="notebook"] .simple-company .company-context .section-title { margin: 8px 0; }
+}
+@media (max-width: 859px) {
+  html[data-ui="notebook"] .simple-funds .desk-chapter h2 { font-size: 20px; margin: 0 0 4px; }
+  html[data-ui="notebook"] .simple-funds .funds-date-source p { margin: 3px 0; }
+  html[data-ui="notebook"] .simple-funds .proof-date .month { padding: 5px; margin-top: 5px; }
+  html[data-ui="notebook"] .simple-funds .proof-date .days button { min-height: 28px; }
+  html[data-ui="notebook"] .simple-funds .desk-tools { margin-top: 4px; }
+}
+
+/* Transparent fills only: keep text, evidence art and selected-state ink solid. */
+html[data-ui="notebook"] .modal:not(.scene-overlay) .modal-heading {
+  background: transparent;
+}
+html[data-ui="notebook"] .music-recover { background: #eee6d9bd; }

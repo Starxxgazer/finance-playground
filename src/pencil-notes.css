@@ -71,7 +71,7 @@ html[data-ui] .button-secondary:hover:not(:disabled) { background: var(--field-h
 html[data-ui] button:disabled { opacity: .46; }
 html[data-ui] .icon-button { background: transparent; border: 0; box-shadow: none; color: var(--ink); min-width: 36px; min-height: 36px; }
 html[data-ui] .icon-button:hover { background: var(--field); }
-html[data-ui] :is(.scene-hud, .scene-controls, .scene-subtitle, .outside-tools, .scene-pan-controls) {
+html[data-ui] :is(.scene-hud, .scene-controls, .scene-subtitle, .outside-tools) {
   --ink: var(--photo-ink); --muted: var(--photo-muted); --accent: var(--photo-ink); --line: #fff4e040;
   color: var(--photo-ink);
 }
@@ -98,7 +98,6 @@ html[data-ui] .scene-controls .button-secondary:first-child { padding-left: 0; }
 html[data-ui] .scene-controls .button-secondary:hover { background: #edf2da13; }
 html[data-ui] .scene-controls .button-primary { background: transparent; color: var(--photo-ink); border: 0; padding-right: 0; }
 html[data-ui] .scene-controls .button-primary svg { margin-left: 14px; }
-html[data-ui] .scene-pan-controls button { background: #101a1640; backdrop-filter: none; }
 html[data-ui] .world-hotspot-label { background: #18201ddd; color: #f4f4e8; border: 0; }
 html[data-ui] .world-hotspot-label small { color: #bfc9bd; }
 html[data-ui] .modal:not(.scene-overlay) {

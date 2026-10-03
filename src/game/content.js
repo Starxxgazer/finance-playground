@@ -350,6 +350,9 @@ export const evidence = [
   ),
 ];
 export const byId = Object.fromEntries(evidence.map((d) => [d.id, d]));
+// The first-scene tutorial and exit gate use the same required investigations.
+// Optional conversations and the historical-receipt branch never replace them.
+export const oldMainTasks = ["ledger", "debt", "receipt"];
 export const oldRequired = ["ledger", "schedule", "debt", "receipt"];
 export const newRequired = [
   "rent",
@@ -487,7 +490,7 @@ export const scenes = [
     place: "打烊后的老店",
     time: "10月29日 晚",
     heading: "钱，能接得上吗？",
-    task: "自己挑一天，拿两份依据和陈叔一起核对。",
+    task: "点“开始核对资金”，跟着提示分清钱、找日期；算数交给系统。",
     person: "chen",
     quote: "照这个算，月底还能剩两千。你帮我们看看，中间接不接得上。",
     next: "次日去见林姐",
@@ -506,7 +509,11 @@ export const scenes = [
 ];
 export const films = scenes.map((scene, i) => ({
   id: i,
-  src: "",
+  clips: (i === 0 ? ["intro", scene.id] : [scene.id]).map((id) => ({
+    id,
+    src: `videos/${id}.mp4`,
+    poster: `videos/${id}-poster.webp`,
+  })),
   captions: "",
   image: scene.id,
   title: ["排队的面包店", "一间还空着的新铺", "打烊以后", "带回你的发现"][i],

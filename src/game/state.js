@@ -1,6 +1,8 @@
+import { revisitTarget, needsRevisit } from "./revisit.js";
 import {
   byId,
   oldRequired,
+  oldMainTasks,
   newRequired,
   calendarNotes,
   findings,
@@ -30,6 +32,7 @@ export const initialState = {
     noted: false,
     hint: 0,
   },
+  revisit: null,
   reviewRefs: null,
   submitted: false,
   submittedIds: [],
@@ -51,7 +54,7 @@ export function sceneDone(s, index = s.scene) {
   if (index === 0)
     return (
       has(s, oldRequired) &&
-      Object.values(s.tasks).every(Boolean) &&
+      oldMainTasks.every((id) => s.tasks[id] === true) &&
       ["finance", "credit"].every((id) => s.solved.includes(id))
     );
   if (index === 1)
@@ -65,6 +68,7 @@ export function sceneDone(s, index = s.scene) {
 export function canSubmit(s) {
   return (
     s.scene === 3 &&
+    !s.revisit &&
     [0, 1, 2].every((i) => sceneDone(s, i)) &&
     evaluateProof(
       s.funds.day,
@@ -95,9 +99,17 @@ const sceneReads = [
   },
 ];
 export function reducer(s, a) {
-  // 接收后冻结资料与发现；只允许查看、结尾与明确重开。
-  if (s.submitted && !["END", "RESET", "GOTO"].includes(a.type)) return s;
+  // 接收后仍冻结资料；仅明确补查可重新开放，并须重新交给林姐。
+  if (s.submitted && !["END", "RESET", "GOTO", "REVISIT"].includes(a.type)) return s;
   switch (a.type) {
+    case "REVISIT": {
+      const target = revisitTarget(s, a.id);
+      if (!s.submitted || !canSubmit(s) || !target || !needsRevisit(s, a.id)) return s;
+      return { ...s, scene: target.scene, revisit: { id: a.id, scene: target.scene, activity: target.activity },
+        submitted: false, submittedIds: [], complete: false };
+    }
+    case "RETURN_REVISIT":
+      return s.revisit ? { ...s, scene: 3, revisit: null } : s;
     case "READ": {
       let ids = sceneReads[s.scene]?.[a.id];
       if (s.scene === 2 && a.id === "calculation") ids = ["calculation"];
@@ -304,6 +316,7 @@ export function reducer(s, a) {
         ? { ...s, films: [...s.films, a.index] }
         : s;
     case "ADVANCE":
+      if (s.revisit) return s;
       return s.scene < 3 && sceneDone(s)
         ? {
             ...s,
@@ -312,6 +325,7 @@ export function reducer(s, a) {
           }
         : s;
     case "GOTO":
+      if (s.revisit) return s;
       return Number.isInteger(a.index) &&
         a.index >= 0 &&
         a.index <= s.unlocked &&
@@ -367,6 +381,15 @@ export function restoreState(raw) {
       ["aRequested", "b", "c"].some((k) => typeof s.branches[k] !== "boolean")
     )
       return reset();
+    if (!Object.hasOwn(s, "revisit")) s.revisit = null;
+    if (s.revisit !== null) {
+      const r = s.revisit;
+      // A contract revisit remains at the contract even after the call is made.
+      const target = revisitTarget({ ...s, branches: { ...s.branches, aRequested: r.activity === "alternative" } }, r.id);
+      if (!target || (r.activity === "alternative" && !s.branches.aRequested) || s.submitted || s.complete || s.unlocked !== 3 ||
+        r.scene !== s.scene || r.scene !== target.scene || r.activity !== target.activity)
+        return reset();
+    }
     const f = s.funds;
     // 旧存档已完成的月初核对保留；未核对的不补答案。
     if (!Object.hasOwn(f, "placements"))
