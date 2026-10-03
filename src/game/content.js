@@ -110,9 +110,9 @@ export const evidence = [
   ),
   doc(
     "meng-call",
-    "与老孟的通话",
+    "与老孟的当面沟通",
     "人物说法 / 只是答应",
-    "设备商老孟，电话沟通",
+    "设备商老孟，老店门外当面沟通",
     "10月29日",
     [
       line(
@@ -350,14 +350,7 @@ export const evidence = [
   ),
 ];
 export const byId = Object.fromEntries(evidence.map((d) => [d.id, d]));
-export const oldRequired = [
-  "ledger",
-  "schedule",
-  "debt",
-  "receipt",
-  "taste",
-  "queue",
-];
+export const oldRequired = ["ledger", "schedule", "debt", "receipt"];
 export const newRequired = [
   "rent",
   "renovation",
@@ -472,7 +465,7 @@ export const scenes = [
     place: "留灯烘焙",
     time: "10月29日 上午",
     heading: "热闹的生意，账上是什么样？",
-    task: "自由查看四处资料，核对后留下三句笔记。",
+    task: "核对现在的钱和已付、未付的单据。",
     person: "lin",
     quote: "看看这家店的20万元贷款申请。哪些事查清了，哪些还得问，回来告诉我。",
     next: "前往新铺",
@@ -483,7 +476,7 @@ export const scenes = [
     place: "街角的新铺",
     time: "10月29日 下午",
     heading: "还没开门，哪些钱要先付？",
-    task: "查看报价和三张说明，把付款与开业便签放回日历。",
+    task: "看看新铺的钱要在哪些日子付出去。",
     person: "xiaohe",
     quote: "邀请函做好了，日期还没敢填。",
     next: "等打烊，一起看账",

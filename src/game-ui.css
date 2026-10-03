@@ -1,0 +1,205 @@
+/* The scene stays open; filed paper, tabs and pencil marks connect the controls. */
+:root {
+  --field-mark: #ddbc8e;
+}
+.scene-tools .toolbar-button,
+.scene-tools .icon-button {
+  background: transparent;
+  backdrop-filter: none;
+  text-shadow: 0 1px 8px #17130d;
+}
+.scene-tools .toolbar-button:hover,
+.scene-tools .icon-button:hover {
+  background: #30291d66;
+}
+.scene-tools .toolbar-button {
+  border-bottom: 1px solid #e6c39366;
+  border-radius: 0;
+}
+.scene-location > span,
+.section-caption,
+.eyebrow {
+  letter-spacing: 0.13em;
+}
+.button-primary {
+  border-radius: 1px 5px 2px 1px;
+  background: #aa784d55;
+}
+.button-secondary {
+  border-radius: 1px;
+}
+.scene-controls .button-primary {
+  border-bottom: 1px solid #d9b78b77;
+}
+.scene-controls .button-secondary {
+  background: #29231b45;
+}
+.modal:not(.scene-overlay):not(.inventory-modal) {
+  background: #28221dd9;
+}
+.modal:not(.scene-overlay) .modal-heading {
+  background: #28221d;
+}
+.document-meta {
+  letter-spacing: 0.08em;
+}
+.inspection-body .document-lines p {
+  border-bottom: 1px solid #cfb38d17;
+}
+.stamp {
+  border-radius: 1px;
+  color: #ddc79f;
+  border-color: #ddc79f66;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.sentence-choice,
+.note-choice {
+  border-radius: 0;
+  border-left: 2px solid #d5b8903b;
+  background: #d6c19b0a;
+}
+.sentence-choice:hover,
+.note-choice:hover {
+  border-left-color: #d5b890;
+}
+.choice {
+  border-radius: 0;
+  background: #d6c19b09;
+}
+.choice:has(input:checked) {
+  box-shadow: inset 2px 0 #ddbc8e;
+  background: #d6c19b1c;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #cba879;
+}
+.note,
+.sticky-note {
+  border-radius: 1px;
+  background: #d6c19b0c;
+}
+.note > .section-title {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #d6c19b35;
+}
+.open-question {
+  font-family: "UI Song", serif;
+  color: #e0c49d;
+}
+.survey-grid button {
+  border-radius: 1px;
+  background: #d6c19b12;
+}
+.survey-grid button.selected {
+  outline: 1px solid #e0c49d;
+  outline-offset: -5px;
+  border-radius: 45% 49% 42% 46%;
+}
+.invitation-card {
+  border-radius: 1px;
+  border-top: 1px solid #d6c19b55;
+  background: #d6c19b10;
+}
+.company-nav button {
+  border-radius: 2px 2px 0 0;
+}
+.company-nav button[aria-selected="true"] {
+  box-shadow: inset 0 2px #d6b78d;
+}
+.dimension-evidence button {
+  border-radius: 1px;
+}
+.feedback {
+  border-left: 2px solid #d0ac7e66;
+  border-radius: 0;
+}
+.feedback.success {
+  border-left-color: #b8c49b;
+}
+.scene-subtitle:has(> button) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 20px;
+}
+.scene-subtitle > button {
+  grid-column: 2;
+  justify-self: start;
+  pointer-events: auto;
+  min-height: 38px;
+  padding: 5px 0;
+  color: #f4d6a9;
+  border-bottom: 1px solid #e6c39366;
+  font-size: 12px;
+  text-shadow: 0 1px 8px #17130d;
+}
+.immersive-scene:has(.world-meng-meeting) > .scene-hud,
+.immersive-scene:has(.world-meng-meeting) > .scene-subtitle,
+.immersive-scene:has(.world-meng-meeting) > .scene-controls,
+.immersive-scene:has(.world-invitation-closeup) > .scene-hud,
+.immersive-scene:has(.world-invitation-closeup) > .scene-subtitle,
+.immersive-scene:has(.world-invitation-closeup) > .scene-controls,
+.world-meng-meeting .scene-pan-controls,
+.world-invitation-closeup .scene-pan-controls {
+  visibility: hidden;
+  pointer-events: none;
+}
+@media (min-width: 1101px) {
+  .branch-overlay .inspection-body {
+    margin-top: 27dvh;
+    max-height: calc(100% - 27dvh);
+  }
+}
+@media (min-width: 700px) and (max-width: 1100px) {
+  .branch-overlay .inspection-panels {
+    top: 42%;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+    gap: 24px;
+  }
+  .branch-overlay .inspection-body {
+    grid-column: 2;
+  }
+}
+@media (max-width: 699px) {
+  .scene-controls-left {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .scene-controls .scene-controls-left .button-secondary {
+    padding: 10px 3px;
+    font-size: 11px;
+    white-space: nowrap;
+    justify-content: center;
+  }
+  .scene-controls-left .button-secondary svg {
+    display: none;
+  }
+  .scene-subtitle:has(> button) {
+    gap: 7px 12px;
+  }
+  .scene-subtitle:has(> button) p {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .scene-subtitle > button {
+    font-size: 11px;
+  }
+  .world-meng-meeting .camera-world,
+  .world-invitation-closeup .camera-world {
+    width: 100vw !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    transform: translate3d(0, 75px, 0) !important;
+  }
+  .branch-overlay .inspection-panels {
+    top: calc(75px + 56.25vw);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inventory-slot {
+    transition: none;
+  }
+}

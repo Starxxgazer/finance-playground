@@ -1,0 +1,253 @@
+/* A shared moving plane keeps the photograph and its hit regions aligned. */
+.world-view {
+  touch-action: pan-y;
+}
+.scene-parallax,
+.scene-drift {
+  position: absolute;
+  inset: 0;
+}
+/* Hold a targeted object still while the player points or tabs to inspect it. */
+.world-view:has(.world-hotspot:hover) .scene-drift,
+.world-view:has(.world-hotspot:focus) .scene-drift {
+  animation-play-state: paused;
+}
+.scene-parallax {
+  transform: translate3d(var(--look-x, 0px), var(--look-y, 0px), 0);
+  transition: transform 1.2s ease-out;
+}
+.scene-drift {
+  transform-origin: 50% 50%;
+  animation: scene-breathe 26s ease-in-out infinite alternate;
+}
+@keyframes scene-breathe {
+  from {
+    transform: scale(1.012) translate3d(-1px, 1px, 0);
+  }
+  to {
+    transform: scale(1.022) translate3d(2px, -1px, 0);
+  }
+}
+.scene-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ambient-light {
+  position: absolute;
+  left: 0;
+  top: 4%;
+  width: 42%;
+  height: 78%;
+  background: radial-gradient(ellipse at 12% 15%, #ffe6a62b, transparent 65%);
+  mix-blend-mode: screen;
+  animation: ambient-light 13s ease-in-out infinite alternate;
+}
+.world-bakery .ambient-light {
+  left: 75%;
+  top: 14%;
+  width: 25%;
+  height: 54%;
+  background: radial-gradient(ellipse, #ffba5726, transparent 70%);
+  animation-duration: 8s;
+}
+.world-desk .ambient-light {
+  left: 27%;
+  top: 3%;
+  width: 47%;
+  height: 91%;
+  background: radial-gradient(ellipse at 50% 9%, #ffda981a, transparent 62%);
+}
+.ambient-dust {
+  position: absolute;
+  left: 17%;
+  top: 30%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff3c879;
+  box-shadow:
+    38px 86px 1px #fff3c843,
+    92px 15px 1px #fff3c848,
+    -64px 65px 1px #fff3c82b;
+  animation: ambient-dust 19s linear infinite;
+}
+.dust-two {
+  left: 28%;
+  top: 63%;
+  animation-duration: 24s;
+  animation-delay: -9s;
+  opacity: 0.6;
+}
+.dust-three {
+  left: 60%;
+  top: 45%;
+  animation-delay: -13s;
+  opacity: 0.4;
+}
+.world-desk .ambient-dust,
+.world-bank .ambient-dust {
+  opacity: 0.25;
+}
+@keyframes ambient-light {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+@keyframes ambient-dust {
+  0% {
+    transform: translate3d(0, 12px, 0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.65;
+  }
+  75% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(19px, -72px, 0);
+    opacity: 0;
+  }
+}
+.world-view[data-still="true"] .scene-drift,
+.world-view[data-still="true"] .scene-atmosphere > *,
+.world-view[data-hidden="true"] .scene-drift,
+.world-view[data-hidden="true"] .scene-atmosphere > * {
+  animation-play-state: paused;
+}
+.world-view[data-still="true"] .scene-parallax {
+  transform: none;
+}
+.world-hotspot {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  min-height: 44px;
+  min-width: 44px;
+}
+.world-hotspot:hover {
+  background: transparent;
+}
+.hotspot-contour {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: #fff1c6;
+  stroke-width: 1.25;
+  opacity: 0;
+  filter: drop-shadow(0 1px 3px #32271b);
+  transition: opacity 0.35s ease;
+}
+.hotspot-contour path {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.contour-equipment {
+  stroke-dasharray: 5 5;
+  stroke-width: 1.5;
+}
+.hotspot-center {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #211b1599;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  color: #ffedc2;
+  transition: opacity 0.3s;
+}
+.world-hotspot:hover .hotspot-contour,
+.world-hotspot:focus-visible .hotspot-contour,
+.is-observing .hotspot-contour,
+.world-hotspot.is-guided .hotspot-contour {
+  opacity: 0.85;
+}
+.world-hotspot:hover .hotspot-center,
+.world-hotspot:focus-visible .hotspot-center {
+  opacity: 1;
+}
+.world-hotspot .world-hotspot-label {
+  top: 100%;
+  max-width: min(250px, 80vw);
+  white-space: normal;
+  width: max-content;
+  text-align: center;
+  border-radius: 0;
+  background: #272016bf;
+  padding: 8px 13px;
+  color: #fff4dd;
+}
+.world-hotspot:focus-visible {
+  outline: 1px solid #f6d99b;
+  outline-offset: 5px;
+}
+.scene-pan-controls {
+  position: absolute;
+  inset: 43% 10px auto;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+}
+.scene-pan-controls button {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 56px;
+  background: #211b1560;
+  color: #fff4dd;
+  backdrop-filter: blur(4px);
+}
+.scene-pan-controls button:disabled {
+  visibility: hidden;
+}
+.world-error {
+  z-index: 3;
+  background: #292219ee;
+}
+.world-error button {
+  display: block;
+  padding: 10px;
+  text-decoration: underline;
+}
+@media (max-width: 699px) {
+  .scene-drift {
+    animation-name: scene-breathe-mobile;
+  }
+  .world-hotspot .world-hotspot-label {
+    font-size: 11px;
+  }
+}
+@keyframes scene-breathe-mobile {
+  from {
+    transform: scale(1.01);
+  }
+  to {
+    transform: scale(1.017);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-drift,
+  .scene-atmosphere > * {
+    animation: none !important;
+  }
+  .scene-parallax {
+    transform: none !important;
+    transition: none;
+  }
+  .hotspot-contour,
+  .hotspot-center {
+    transition: none;
+  }
+}

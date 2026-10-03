@@ -1,0 +1,426 @@
+/* A opened field bag: cloth compartments on the left, the actual paper on the right. */
+.inventory-modal {
+  width: min(1120px, calc(100% - 40px));
+  --bag-cloth: #302c25;
+  --paper-ink: #453b2c;
+  background: #29251fee;
+  max-height: 92dvh;
+}
+.inventory-modal .modal-heading {
+  padding: 20px 30px 8px;
+}
+.inventory-modal .modal-body {
+  padding: 0 30px 28px;
+}
+.inventory-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  color: #cabeab;
+  font-size: 12px;
+}
+.inventory-topline > span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+}
+.inventory-sections {
+  display: flex;
+  gap: 6px;
+  margin: 24px 0 0;
+  border-bottom: 1px solid #baa17a3b;
+}
+.inventory-sections button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 18px;
+  color: #c5bba9;
+  border-radius: 4px 4px 0 0;
+}
+.inventory-sections button[aria-pressed="true"] {
+  background: #b9a07b26;
+  color: #f9e5c6;
+  box-shadow: inset 0 2px #d3b58a;
+}
+.inventory-sections small {
+  font-size: 10px;
+}
+.inventory-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  padding-top: 24px;
+  align-items: start;
+}
+.inventory-storage {
+  min-width: 0;
+}
+.inventory-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  margin: 0 0 20px;
+}
+.inventory-filters button {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  padding: 8px 0;
+  color: #cabeab;
+  border-bottom: 1px solid transparent;
+}
+.inventory-filters button[aria-pressed="true"] {
+  color: #f0cba7;
+  border-color: #bca27a;
+}
+.inventory-filters small {
+  font-size: 9px;
+  opacity: 0.7;
+}
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  max-height: 51dvh;
+  overflow: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+.inventory-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 13px;
+  min-height: 159px;
+  padding: 19px 8px 12px;
+  background: var(--bag-cloth);
+  border: 1px solid #b7a07d25;
+  outline-offset: -3px;
+  text-align: center;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.inventory-slot::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed #c0a78718;
+}
+.inventory-slot:hover {
+  background: #42382b;
+}
+.inventory-slot[aria-pressed="true"] {
+  border-color: #d5b184;
+  background: #493c2c;
+}
+.inventory-slot strong {
+  font-family: "UI Song", serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #f0e4ce;
+}
+.slot-number {
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  font-size: 9px;
+  color: #a2947f;
+  font-variant-numeric: tabular-nums;
+}
+.item-art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 61px;
+  height: 76px;
+  background: #dfcda9;
+  color: #6a5435;
+  border-radius: 1px;
+  box-shadow: 3px 4px 0 #100d0938;
+  transform: rotate(-4deg);
+}
+.item-art-caption {
+  font-family: "UI Song", serif;
+  font-size: 8px;
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+}
+.item-book {
+  background: #627366;
+  color: #ece1c8;
+  border-left: 5px solid #424f43;
+  border-radius: 1px 4px 4px 1px;
+}
+.item-folder {
+  background: #bb9766;
+  color: #4d3b22;
+  width: 75px;
+  height: 60px;
+  margin: 8px 0;
+  transform: rotate(3deg);
+}
+.item-folder::before {
+  content: "";
+  position: absolute;
+  width: 31px;
+  height: 7px;
+  left: 0;
+  top: -6px;
+  background: inherit;
+  border-radius: 3px 3px 0 0;
+}
+.item-receipt {
+  width: 49px;
+  background: #eee0c6;
+  transform: rotate(4deg);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 96%,
+    90% 100%,
+    80% 96%,
+    70% 100%,
+    60% 96%,
+    50% 100%,
+    40% 96%,
+    30% 100%,
+    20% 96%,
+    10% 100%,
+    0 96%
+  );
+}
+.item-slip {
+  width: 72px;
+  height: 59px;
+  margin: 8px 0 9px;
+  background: #cabca1;
+  transform: rotate(4deg);
+}
+.item-note {
+  background: #cbbb81;
+  transform: rotate(-3deg);
+}
+.item-note::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: 9px;
+  width: 9px;
+  height: 18px;
+  border: 1px solid #6e6959;
+  border-radius: 5px;
+}
+.item-art-small {
+  width: 32px;
+  height: 39px;
+  margin: 0;
+  border-left-width: 2px;
+}
+.inventory-footnote {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 10px;
+  color: #b3a793;
+  margin-top: 18px;
+  line-height: 1.7;
+}
+.inventory-preview {
+  min-width: 0;
+  max-height: 65dvh;
+  overflow: auto;
+  padding: 8px 5px 14px;
+  scrollbar-width: thin;
+}
+.inventory-original {
+  position: relative;
+  background: #e7d7b9;
+  color: var(--paper-ink);
+  padding: 26px;
+  box-shadow: 4px 5px 0 #17130e55;
+  --ink: #453b2c;
+  --muted: #73634a;
+  --accent: #85623d;
+  --line: #806b4333;
+}
+.inventory-original::before {
+  content: "";
+  position: absolute;
+  width: 46px;
+  height: 14px;
+  background: #ad946b9e;
+  top: -5px;
+  left: 43%;
+  transform: rotate(-4deg);
+}
+.original-heading {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 11px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #806b4333;
+}
+.original-heading small {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  color: #73634a;
+}
+.inventory-original .document {
+  margin-top: 24px;
+}
+.inventory-original .document-lines p {
+  border-bottom: 1px solid #806b431c;
+  font-size: 14px;
+}
+.original-note {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #73634a;
+  border-top: 1px dashed #806b4344;
+  padding-top: 15px;
+}
+.inventory-return {
+  display: none;
+}
+.inventory-empty,
+.inventory-preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  min-height: 280px;
+  padding: 28px 12px;
+  color: #cabeab;
+}
+.inventory-empty h3 {
+  font-size: 20px;
+}
+.inventory-empty p,
+.inventory-preview-empty p {
+  font-size: 12px;
+  line-height: 1.9;
+}
+.inventory-findings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding-top: 26px;
+}
+.inventory-note {
+  padding: 24px;
+  background: #c9bda11a;
+  border-top: 1px solid #c9bda155;
+}
+.inventory-note h3 {
+  margin: 17px 0 12px;
+  font-size: 21px;
+}
+.inventory-note p {
+  font-family: "UI Song", serif;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.inventory-people {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 32px 0;
+  text-align: center;
+}
+.inventory-people .portrait {
+  margin: 0 auto 18px;
+  border-radius: 2px;
+}
+.inventory-people h3 {
+  font-size: 21px;
+}
+.inventory-people p {
+  margin-top: 9px;
+  color: #cabeab;
+  font-size: 12px;
+  line-height: 1.8;
+}
+@media (max-width: 699px) {
+  .inventory-modal {
+    width: calc(100% - 20px);
+    max-height: 94dvh;
+  }
+  .inventory-modal .modal-heading {
+    padding: 17px 18px 8px;
+  }
+  .inventory-modal .modal-body {
+    padding: 0 18px 22px;
+  }
+  .inventory-topline {
+    font-size: 10px;
+    gap: 8px;
+  }
+  .inventory-sections {
+    margin-top: 15px;
+  }
+  .inventory-sections button {
+    padding: 12px 10px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .inventory-workspace {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-top: 15px;
+  }
+  .inventory-grid {
+    max-height: 54dvh;
+    gap: 7px;
+  }
+  .inventory-slot {
+    min-height: 151px;
+    padding-inline: 5px;
+  }
+  .inventory-slot strong {
+    font-size: 11px;
+  }
+  .inventory-preview {
+    display: none;
+    max-height: none;
+    overflow: visible;
+  }
+  .is-inspecting .inventory-storage {
+    display: none;
+  }
+  .is-inspecting .inventory-preview {
+    display: block;
+  }
+  .inventory-return {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    min-height: 44px;
+    color: #ead8bb;
+    margin-bottom: 14px;
+  }
+  .inventory-original {
+    padding: 23px 20px;
+  }
+  .inventory-findings {
+    grid-template-columns: 1fr;
+  }
+  .inventory-people {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 16px;
+  }
+}
