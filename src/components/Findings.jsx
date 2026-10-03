@@ -45,11 +45,11 @@ export default function Findings({ state, dispatch, onSource }) {
         </div>
         <div className="handover-action primary-handover-action">
           <span>全部 {state.seen.length} 份资料</span>
-          <Button disabled={!ready} onClick={() => dispatch({ type: "SUBMIT" })}>交给林姐</Button>
+          <Button data-idle-hint={ready ? "0" : undefined} disabled={!ready} onClick={() => dispatch({ type: "SUBMIT" })}>交给林姐</Button>
         </div>
         {!ready && <div className="citation-recovery">
           <Feedback>依据未对齐，请恢复或调整引用。</Feedback>
-          <Button secondary onClick={() => dispatch({ type: "RESTORE_REFS" })}>恢复昨晚的依据</Button>
+          <Button data-idle-hint="0" secondary onClick={() => dispatch({ type: "RESTORE_REFS" })}>恢复昨晚的依据</Button>
         </div>}
         </div>
         <div className="handover-records side-paper">
@@ -132,7 +132,7 @@ export default function Findings({ state, dispatch, onSource }) {
       </div>
       <div className="handover-action primary-handover-action">
         <span>贷款未批准，备选分期未生效。</span>
-        <Button onClick={() => dispatch({ type: "END" })}>完成调查</Button>
+        <Button data-idle-hint="0" onClick={() => dispatch({ type: "END" })}>完成调查</Button>
       </div>
       </div>
       <div className="company-layout">

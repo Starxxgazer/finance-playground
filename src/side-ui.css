@@ -876,3 +876,28 @@ html[data-ui="notebook"] .modal:not(.scene-overlay) .modal-heading {
   background: transparent;
 }
 html[data-ui="notebook"] .music-recover { background: #eee6d9bd; }
+
+/* Scene 2: keep the question and all six calendar rows on one sheet. */
+html[data-ui="notebook"] .simple-newshop .newshop-dates { padding: 10px 12px; }
+html[data-ui="notebook"] .simple-newshop .date-question { padding: 0; }
+html[data-ui="notebook"] .simple-newshop .date-question h3 { font-size: 20px; line-height: 1.3; margin: 3px 0; }
+html[data-ui="notebook"] .simple-newshop .date-progress { font-size: 12px; }
+html[data-ui="notebook"] .simple-newshop .date-question p { font-size: 15px; margin: 3px 0; }
+html[data-ui="notebook"] .simple-newshop .choice-guidance { font-size: 13px; line-height: 1.45; margin: 5px 0; }
+html[data-ui="notebook"] .simple-newshop .calendar-workspace { margin-top: 5px; }
+html[data-ui="notebook"] .simple-newshop .month { max-width: 340px; padding: 6px; margin: 0; }
+html[data-ui="notebook"] .simple-newshop .month-title { margin-bottom: 4px; padding-bottom: 3px; }
+html[data-ui="notebook"] .simple-newshop .month-title strong { font-size: 21px; }
+html[data-ui="notebook"] .simple-newshop .month-title > span,
+html[data-ui="notebook"] .simple-newshop .weekdays span { font-size: 12px; }
+html[data-ui="notebook"] .simple-newshop .weekdays { margin-bottom: 4px; }
+html[data-ui="notebook"] .simple-newshop :is(.weekdays, .days) { gap: 3px; }
+html[data-ui="notebook"] .simple-newshop .days button { aspect-ratio: auto; min-height: 30px; height: 30px; padding: 2px; font-size: 13px; }
+html[data-ui="notebook"] .simple-newshop :is(.feedback, .calendar-history) { margin-top: 6px; padding-top: 5px; }
+@media (pointer: coarse) {
+  html[data-ui="notebook"] .simple-newshop .days button { min-height: 34px; height: 34px; }
+}
+@media (min-width: 860px) {
+  html[data-ui="notebook"] .newshop-overlay .inspection-panels { width: min(920px, calc(100vw - 40px)); }
+}
+html[data-ui="notebook"] .simple-newshop .month { max-width: none; }

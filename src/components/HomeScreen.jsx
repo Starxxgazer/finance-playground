@@ -17,7 +17,7 @@ export default function HomeScreen({ opening, onStart, onSettings }) {
         </header>
         <p className="home-premise">你是刚入职的银行员工，跟着林姐做第一次企业调查。<br />留灯烘焙想借20万元开新店。排队的生意，钱够用吗？</p>
         <nav className="home-menu" aria-label="首页菜单">
-          <button type="button" className="home-start" disabled={opening} onClick={onStart}>
+          <button data-idle-hint="0" type="button" className="home-start" disabled={opening} onClick={onStart}>
             <Icon name="play" size={19} /><span>开始游戏</span>
           </button>
           <button type="button" className="home-settings" aria-label="游戏设置" disabled={opening} onClick={onSettings}>
