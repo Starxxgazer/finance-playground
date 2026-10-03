@@ -7,7 +7,7 @@ import {
   SAVE_KEY,
   sceneDone,
 } from "./game/state.js";
-import { Icon, Button, Modal, characters } from "./components/Ui.jsx";
+import { Icon, Button, Modal, characters, asset } from "./components/Ui.jsx";
 import Evidence, {
   OldActivity,
   CustomerActivity,
@@ -256,7 +256,12 @@ export default function App() {
         aria-label="资料包"
         onClick={() => setBag(true)}
       >
-        <Icon name="bag" size={18} />
+        <img
+          className="satchel-icon"
+          src={asset("ui/satchel.webp")}
+          alt=""
+          aria-hidden="true"
+        />
         <span>资料包</span>
         <small>{state.seen.length}</small>
       </button>
@@ -277,7 +282,15 @@ export default function App() {
     </div>
   );
   return (
-    <div className="immersive-app">
+    <div
+      className="immersive-app"
+      style={{
+        "--art-case": `url("${asset("ui/field-case.webp")}")`,
+        "--art-pocket": `url("${asset("ui/item-pocket.webp")}")`,
+        "--art-paper": `url("${asset("ui/document-paper.webp")}")`,
+        "--art-brass": `url("${asset("ui/brass-tab.webp")}")`,
+      }}
+    >
       <main
         id="main"
         aria-hidden={

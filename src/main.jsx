@@ -8,6 +8,7 @@ import "./game-ui.css";
 import "./inventory.css";
 import "./funds.css";
 import "./scene-effects.css";
+import "./game-materials.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

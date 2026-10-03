@@ -12,17 +12,27 @@ export default function Inventory({ state, onClose }) {
   const board = useRef(null);
   const preview = useRef(null);
   const collected = selected && state.seen.includes(selected);
+  function moveFocus(target) {
+    const previous = document.activeElement;
+    requestAnimationFrame(() => {
+      // A click or Tab on another control takes priority over deferred focus.
+      if (
+        document.activeElement === previous ||
+        document.activeElement === document.body
+      ) {
+        target()?.focus();
+      }
+    });
+  }
   function inspect(id) {
     setSelected(id);
     lastItem.current = id;
-    requestAnimationFrame(() => preview.current?.focus());
+    moveFocus(() => preview.current);
   }
   function returnToBoard() {
     setSelected(null);
-    requestAnimationFrame(() =>
-      board.current
-        ?.querySelector(`[data-item-id="${lastItem.current}"]`)
-        ?.focus(),
+    moveFocus(() =>
+      board.current?.querySelector(`[data-item-id="${lastItem.current}"]`),
     );
   }
   return (
@@ -49,8 +59,14 @@ export default function Inventory({ state, onClose }) {
             {id === "findings" && <small>{state.solved.length}</small>}
           </button>
         ))}
-        <span className="inventory-total">
-          {state.seen.length} / {evidence.length}
+        <span
+          className="inventory-total"
+          aria-label={`已收集 ${state.seen.length} 份，共 ${evidence.length} 份`}
+        >
+          <small>归档</small>
+          {state.seen.length}
+          <i>/</i>
+          {evidence.length}
         </span>
       </nav>
       {section === "items" && !selected && (
@@ -115,9 +131,7 @@ export default function Inventory({ state, onClose }) {
               })}
             </div>
           ))}
-          <p className="inventory-footnote">
-            亮起的物品可以翻阅 · 灰色轮廓尚未收集
-          </p>
+          <p className="inventory-footnote">轻触物件翻阅 · 灰暗位置等待收集</p>
         </section>
       )}
       {section === "items" && selected && (

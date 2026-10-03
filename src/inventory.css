@@ -1,64 +1,135 @@
-/* Twenty-seven real objects, filed into four compact compartments. */
+/* A field case: worn wood, cloth-lined wells and loose paper index slips. */
 .inventory-modal {
-  width: min(650px, calc(100vw - 24px));
+  --slot-size: min(74px, calc((94dvh - 204px) / 4), calc((100vw - 126px) / 7));
+  --slot-gap: 5px;
+  --paper-ink: #44392c;
+  width: min(680px, calc(100vw - 24px));
   max-width: calc(100vw - 24px);
   max-height: 94dvh;
-  background: #29251ff5;
-  --slot-size: min(80px, calc((94dvh - 220px) / 4), calc((100vw - 112px) / 7));
-  --slot-gap: 5px;
-  --paper-ink: #453b2c;
-  border: 1px solid #796144;
-  border-radius: 5px;
-  outline: 1px dashed #aa865738;
-  outline-offset: -6px;
+  padding: 0;
+  border: 20px solid #51402d;
+  border-image-source: var(--art-case);
+  border-image-slice: 12% fill;
+  border-image-width: 20px;
+  border-image-repeat: stretch;
+  border-radius: 8px;
+  background: #202d25;
+  color: #e5d4b1;
+  backdrop-filter: none;
+  box-shadow:
+    0 28px 65px #050b09a6,
+    0 3px 8px #0009;
+  scrollbar-color: #9a8764 #202d25;
 }
-.inventory-modal .modal-heading {
-  padding: 12px 18px 5px;
+.inventory-modal::backdrop {
+  background: #07100da6;
+  backdrop-filter: blur(4px);
+}
+.modal.inventory-modal .modal-heading {
+  position: relative;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 40px 5px;
+  background: transparent;
+  border: 0;
 }
 .inventory-modal .modal-heading h2 {
-  font-size: 27px;
+  min-width: 140px;
+  padding: 7px 26px;
+  background: var(--art-brass) center / 100% 170% no-repeat;
+  color: #342b1d;
+  font-family: "UI Song", serif;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-shadow: 0 1px #f7e0a96b;
+  filter: drop-shadow(0 2px 2px #0008);
 }
 .inventory-modal .modal-heading .icon-button {
-  width: 36px;
-  height: 36px;
+  position: absolute;
+  right: 0;
+  top: 1px;
+  width: 30px;
+  height: 30px;
+  color: #e7d6b8;
+  border: 1px solid #9e866953;
+  border-radius: 50%;
+  background: #201c1699;
+  box-shadow:
+    inset 0 1px 2px #0008,
+    0 1px #ffffff0e;
 }
 .inventory-modal .modal-body {
-  padding: 0 18px 13px;
+  padding: 0 10px 8px;
 }
 .inventory-sections {
   display: flex;
   align-items: center;
-  gap: 20px;
-  min-height: 38px;
-  border-bottom: 1px solid #baa17a45;
-  margin-bottom: 9px;
+  gap: 8px;
+  min-height: 42px;
+  padding-bottom: 7px;
+  margin-bottom: 2px;
 }
 .inventory-sections button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 0;
-  color: #c1b29c;
+  justify-content: center;
+  gap: 5px;
+  min-height: 29px;
+  padding: 5px 12px;
+  background:
+    var(--art-paper) center / 100% 100% no-repeat,
+    transparent;
+  color: #4d4737;
+  font-family: "UI Song", serif;
   font-size: 12px;
-  border-bottom: 2px solid transparent;
+  border-radius: 2px 3px 0 0;
+  filter: drop-shadow(0 3px 3px #0007);
+  transform: rotate(-1deg);
+}
+.inventory-sections button:nth-child(2) {
+  transform: rotate(0.8deg);
 }
 .inventory-sections button[aria-pressed="true"] {
-  color: #f3dab5;
-  border-bottom-color: #d3b58a;
+  color: #3b2d1d;
+  background-color: transparent;
+  filter: drop-shadow(0 2px 3px #0009);
+  text-decoration: underline;
+  text-decoration-color: #996a36;
+  text-underline-offset: 3px;
+  transform: translateY(-2px);
+}
+.inventory-sections button:focus-visible {
+  outline: 2px solid #eed3a0;
+  outline-offset: 3px;
 }
 .inventory-sections small {
   font-size: 10px;
 }
 .inventory-total {
+  display: flex;
+  gap: 5px;
+  align-items: baseline;
   margin-left: auto;
-  font-size: 11px;
-  color: #bead93;
+  color: #d2c3a1;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.inventory-total small {
+  font-family: "UI Song", serif;
+  font-size: 10px;
+}
+.inventory-total i {
+  font-size: 9px;
+  font-style: normal;
+  opacity: 0.55;
 }
 .inventory-board {
   display: grid;
   grid-template-columns: auto auto;
-  column-gap: 18px;
+  column-gap: 20px;
   width: max-content;
   max-width: 100%;
   margin-inline: auto;
@@ -66,7 +137,7 @@
 .inventory-column {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .inventory-column-1 {
   position: relative;
@@ -74,35 +145,42 @@
 .inventory-column-1::before {
   content: "";
   position: absolute;
-  left: -10px;
+  left: -12px;
   top: 4px;
   bottom: 0;
-  width: 1px;
-  background: #ad895741;
-  box-shadow: 1px 0 #08060388;
+  width: 4px;
+  border-radius: 2px;
+  background: #71573c;
+  box-shadow:
+    inset 1px 0 #c5a16c66,
+    inset -1px 0 #241a12,
+    2px 1px 3px #0008;
 }
 .inventory-group-label {
   display: flex;
-  gap: 10px;
   align-items: center;
-  min-height: 25px;
+  justify-content: space-between;
+  gap: 8px;
+  height: 25px;
+  margin: 0 0 3px;
+  color: #d9cbae;
   font-size: 11px;
-  font-family: "UI Sans", sans-serif;
-  color: #d0b892;
+  font-family: "UI Song", serif;
+  font-weight: 400;
 }
 .inventory-group-label > span {
-  background: #17140f;
-  padding: 2px 6px;
-  border-inline: 1px solid #98764770;
-}
-.inventory-group-label::after {
-  content: "";
-  height: 1px;
-  background: #bda47b30;
-  flex: 1;
+  display: block;
+  padding: 3px 11px;
+  color: #4e4231;
+  background:
+    var(--art-paper) center / 100% 100% no-repeat,
+    transparent;
+  filter: drop-shadow(1px 2px 2px #0005);
+  transform: rotate(-1deg);
 }
 .inventory-group-label small {
-  color: #aa987d;
+  color: #bbbaa1;
+  font-family: "UI Sans", sans-serif;
   font-size: 9px;
   font-variant-numeric: tabular-nums;
 }
@@ -118,81 +196,96 @@
   position: relative;
   width: var(--slot-size);
   height: var(--slot-size);
-  padding: 3px;
+  padding: 3px 2px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  background: #171510;
-  border: 1px solid #6d583a;
+  isolation: isolate;
+  border: 0;
+  border-radius: 3px;
+  background:
+    var(--art-pocket) center / 100% 100% no-repeat,
+    #15231d;
+  box-shadow: 0 1px #d5c38d19;
+  transition: filter 0.18s;
+}
+.inventory-slot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
   border-radius: 2px;
-  box-shadow:
-    inset 0 0 0 2px #211b14,
-    inset 0 0 14px #08070488;
-  transition:
-    border-color 0.18s,
-    background 0.18s;
+  box-shadow: inset 0 0 0 1px #dac39600;
+  transition: box-shadow 0.18s;
 }
 .inventory-slot .item-art {
   display: block;
-  width: 80%;
-  height: 76%;
+  width: 81%;
+  height: 75%;
   min-height: 0;
   object-fit: contain;
-  filter: drop-shadow(1px 3px 2px #0008);
+  filter: drop-shadow(2px 4px 2px #050a09bf);
+  transition:
+    transform 0.2s,
+    filter 0.2s;
 }
 .inventory-slot strong {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #ede2c8;
   font-family: "UI Song", serif;
-  font-size: clamp(8px, 1.9vw, 11px);
+  font-size: clamp(8px, 1.9vw, 10px);
   font-weight: 400;
   white-space: nowrap;
-  line-height: 1.5;
-  color: #dfcbaa;
+  line-height: 1.4;
+  text-shadow: 0 1px 3px #000;
 }
-.inventory-slot:hover,
-.inventory-slot:focus-visible {
-  background: #3d3021;
-  border-color: #e1c397;
+.inventory-slot:hover::after,
+.inventory-slot:focus-visible::after {
+  box-shadow: inset 0 0 0 1px #d9c49b8c;
+}
+.inventory-slot.is-collected:hover .item-art,
+.inventory-slot.is-collected:focus-visible .item-art {
+  transform: translateY(-3px) rotate(-2deg);
+  filter: drop-shadow(2px 6px 3px #030807cc);
 }
 .inventory-slot:focus-visible {
-  outline: 2px solid #edcea1;
+  outline: 2px solid #d6c49b;
   outline-offset: 1px;
   z-index: 1;
 }
-.slot-status {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 3px;
-  height: 3px;
-  background: #d0b078;
-  border-radius: 50%;
-}
-.inventory-slot.is-uncollected {
-  border-color: #5d523d77;
-  background: #1c1914;
-}
-.is-uncollected .item-art {
-  filter: grayscale(1) brightness(0.35);
-  opacity: 0.42;
+.inventory-slot.is-uncollected .item-art {
+  filter: grayscale(1) brightness(0.45);
+  opacity: 0.45;
 }
 .inventory-slot.is-uncollected strong {
-  color: #a59783;
+  color: #b1b19e;
+}
+.slot-status {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 3px;
+  height: 3px;
+  background: #c7b780;
+  border-radius: 50%;
+  box-shadow: 0 1px 1px #0008;
 }
 .is-uncollected .slot-status {
-  background: #81745c66;
+  background: #6c776866;
 }
 .inventory-footnote {
   grid-column: 1 / -1;
   margin: 9px 0 0;
+  color: #c4bfa8;
   text-align: center;
+  font-family: "UI Song", serif;
   font-size: 10px;
   line-height: 1.6;
-  color: #b3a084;
 }
+/* The shared document pictogram also appears on the funds table. */
 .item-art {
   display: block;
   width: 72px;
@@ -215,17 +308,21 @@
   display: flex;
   gap: 7px;
   align-items: center;
-  min-height: 40px;
-  margin-bottom: 10px;
-  color: #ead8bb;
+  min-height: 35px;
+  margin-bottom: 8px;
+  color: #e2d1ad;
+  font-size: 12px;
 }
 .inventory-original {
   position: relative;
-  background: #e7d7b9;
+  background:
+    var(--art-paper) center / 100% 100% no-repeat,
+    transparent;
   color: var(--paper-ink);
   padding: 26px;
-  --ink: #453b2c;
-  --muted: #73634a;
+  filter: drop-shadow(2px 5px 5px #0007);
+  --ink: #44392c;
+  --muted: #6d5e47;
   --accent: #85623d;
   --line: #806b4333;
 }
@@ -262,22 +359,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 280px;
+  min-height: 260px;
   gap: 16px;
   text-align: center;
 }
 .inventory-uncollected-detail .item-art {
   width: 100px;
   height: 100px;
-  filter: grayscale(1) brightness(0.35);
-  opacity: 0.42;
+  filter: grayscale(1) brightness(0.4);
+  opacity: 0.45;
 }
 .inventory-uncollected-detail h3 {
   font-size: 23px;
 }
 .inventory-uncollected-detail p,
 .inventory-uncollected-detail small {
-  color: #bdad94;
+  color: #c7c4ac;
   font-size: 12px;
 }
 .inventory-empty {
@@ -287,9 +384,10 @@
   flex-direction: column;
   gap: 16px;
   text-align: center;
-  min-height: 260px;
+  min-height: 240px;
   padding: 28px 12px;
-  color: #cabeab;
+  color: #d1c9af;
+  grid-column: 1 / -1;
 }
 .inventory-empty h3 {
   font-size: 20px;
@@ -302,12 +400,22 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  padding-top: 15px;
+  padding: 12px 2px;
 }
 .inventory-note {
   padding: 20px;
-  background: #c9bda11a;
-  border-top: 1px solid #c9bda155;
+  background:
+    var(--art-paper) center / 100% 100% no-repeat,
+    transparent;
+  color: #44392c;
+  filter: drop-shadow(1px 3px 4px #0007);
+}
+.inventory-note:nth-child(2n) {
+  transform: rotate(0.5deg);
+}
+.inventory-note .stamp {
+  color: #75603f;
+  border-color: #75603f66;
 }
 .inventory-note h3 {
   margin: 17px 0 12px;
@@ -318,58 +426,88 @@
   font-size: 14px;
   line-height: 1.9;
 }
+.inventory-note .open-question {
+  color: #75603f;
+}
 .inventory-people {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 25px 0;
+  gap: 14px;
+  padding: 20px 0;
   text-align: center;
 }
+.inventory-people > div {
+  padding: 10px 6px 16px;
+  background:
+    var(--art-paper) center / 100% 100% no-repeat,
+    transparent;
+  color: #473c2b;
+  filter: drop-shadow(1px 4px 4px #0008);
+  transform: rotate(-1deg);
+}
+.inventory-people > div:nth-child(2n) {
+  transform: rotate(1deg);
+}
 .inventory-people .portrait {
-  margin: 0 auto 18px;
-  border-radius: 2px;
+  margin: 0 auto 12px;
+  border-radius: 0;
+  max-width: 100%;
+  box-shadow: inset 0 0 0 3px #e9dfc7;
 }
 .inventory-people h3 {
-  font-size: 21px;
+  font-size: 19px;
 }
 .inventory-people p {
-  margin-top: 9px;
-  color: #cabeab;
-  font-size: 12px;
+  margin-top: 8px;
+  color: #6d604c;
+  font-size: 11px;
   line-height: 1.8;
 }
 @media (max-width: 699px) and (orientation: portrait) {
   .inventory-modal {
     width: calc(100vw - 16px);
     max-width: calc(100vw - 16px);
+    border-width: 13px;
+    border-image-width: 13px;
     --slot-gap: 3px;
-    --slot-size: min(calc((100vw - 57px) / 6), calc((94dvh - 245px) / 5));
-  }
-  .inventory-modal .modal-heading {
-    padding: 10px 12px 4px;
-  }
-  .inventory-modal .modal-heading h2 {
-    font-size: 24px;
+    --slot-size: min(calc((100vw - 73px) / 6), calc((94dvh - 248px) / 5));
   }
   .inventory-modal .modal-body {
-    padding: 0 12px 12px;
+    padding: 0 8px 6px;
+  }
+  .modal.inventory-modal .modal-heading {
+    min-height: 40px;
+    padding: 0 30px 4px;
+  }
+  .inventory-modal .modal-heading h2 {
+    min-width: 124px;
+    font-size: 19px;
+  }
+  .inventory-modal .modal-heading .icon-button {
+    width: 27px;
+    height: 27px;
   }
   .inventory-sections {
-    gap: 15px;
-    min-height: 34px;
-    margin-bottom: 4px;
+    gap: 5px;
+    min-height: 38px;
   }
   .inventory-sections button {
-    font-size: 11px;
-    padding: 7px 0;
+    font-size: 10px;
+    padding: 5px 7px;
+    min-height: 27px;
+    gap: 3px;
   }
   .inventory-total {
     font-size: 10px;
+    gap: 3px;
+  }
+  .inventory-total small {
+    display: none;
   }
   .inventory-board {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
   }
   .inventory-column {
     display: contents;
@@ -397,39 +535,108 @@
     grid-template-columns: repeat(6, var(--slot-size));
   }
   .inventory-group-label {
-    min-height: 24px;
+    height: 22px;
+    margin-bottom: 3px;
     font-size: 10px;
   }
+  .inventory-group-label > span {
+    padding: 2px 9px;
+  }
   .inventory-slot {
-    padding: 1px;
+    padding: 1px 1px 3px;
   }
   .inventory-slot .item-art {
-    width: 84%;
-    height: 71%;
+    width: 85%;
+    height: 72%;
   }
   .slot-status {
-    top: 3px;
-    right: 3px;
+    top: 4px;
+    right: 4px;
     width: 2px;
     height: 2px;
   }
   .inventory-footnote {
     font-size: 9px;
-    margin-top: 8px;
+    margin-top: 4px;
   }
   .inventory-original {
-    padding: 20px 17px;
+    padding: 20px 16px;
   }
   .inventory-findings {
     grid-template-columns: 1fr;
   }
   .inventory-people {
     grid-template-columns: 1fr 1fr;
-    gap: 24px 16px;
+    gap: 16px;
+  }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .inventory-modal {
+    --slot-size: min(
+      62px,
+      calc((94dvh - 180px) / 4),
+      calc((100vw - 122px) / 7)
+    );
+    --slot-gap: 3px;
+    width: min(600px, calc(var(--slot-size) * 7 + 98px));
+    border-width: 12px;
+    border-image-width: 12px;
+  }
+  .modal.inventory-modal .modal-heading {
+    min-height: 32px;
+    padding-bottom: 2px;
+  }
+  .inventory-modal .modal-heading h2 {
+    font-size: 17px;
+    padding: 5px 23px;
+  }
+  .inventory-modal .modal-heading .icon-button {
+    width: 26px;
+    height: 26px;
+  }
+  .inventory-sections {
+    min-height: 32px;
+    padding-bottom: 4px;
+  }
+  .inventory-sections button {
+    min-height: 25px;
+    padding: 4px 12px;
+    font-size: 10px;
+  }
+  .inventory-column {
+    gap: 6px;
+  }
+  .inventory-group-label {
+    height: 20px;
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+  .inventory-group-label > span {
+    padding: 2px 9px;
+  }
+  .inventory-slot {
+    padding-bottom: 2px;
+  }
+  .inventory-slot strong {
+    font-size: 8px;
+  }
+  .inventory-footnote {
+    margin-top: 5px;
+    font-size: 9px;
+  }
+  .inventory-modal .modal-body {
+    padding-bottom: 4px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .inventory-slot {
+  .inventory-slot,
+  .inventory-slot::after,
+  .inventory-slot .item-art,
+  .inventory-sections button {
     transition: none;
+  }
+  .inventory-slot.is-collected:hover .item-art,
+  .inventory-slot.is-collected:focus-visible .item-art {
+    transform: none;
   }
 }

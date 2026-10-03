@@ -74,7 +74,7 @@ async function checkAssets(dir) {
     else {
       const name = relative(resolve(root, "public"), p).split(sep).join("/");
       if (
-        !/^(scenes|characters|items)\/[a-z0-9-]+\.webp$/.test(name) &&
+        !/^(scenes|characters|items|ui)\/[a-z0-9-]+\.webp$/.test(name) &&
         !/^fonts\/ui\/[\w.-]+\.(woff2|txt)$/.test(name)
       ) {
         throw new Error(`Non-runtime file in public/: ${name}`);
@@ -90,6 +90,17 @@ if (JSON.stringify(itemFiles) !== JSON.stringify(expectedItems)) {
   throw new Error(
     "Every document must have exactly one generated inventory image.",
   );
+}
+const uiFiles = (await readdir(resolve(root, "public/ui"))).sort();
+const expectedUi = [
+  "brass-tab.webp",
+  "document-paper.webp",
+  "field-case.webp",
+  "item-pocket.webp",
+  "satchel.webp",
+];
+if (JSON.stringify(uiFiles) !== JSON.stringify(expectedUi)) {
+  throw new Error("The offline game must include all five UI material images.");
 }
 await writeFile(resolve(root, "开始游戏.html"), html);
 console.log("已生成 开始游戏.html：双击即可游玩，无需 Node.js 或本地服务器。");
