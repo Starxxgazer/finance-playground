@@ -288,6 +288,7 @@ export default function SceneView({
                 <button
                   key={spot.id}
                   className={`world-hotspot ${completed ? "is-read" : ""} ${guidedId === spot.id ? "is-guided" : ""}`}
+                  data-idle-hint={!completed && !spot.optional && !paused ? "1" : undefined}
                   data-object-id={spot.id}
                   style={{
                     left: `${spot.x}%`,

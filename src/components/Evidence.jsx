@@ -47,9 +47,9 @@ export function Feedback({ children, success = false }) {
     </p>
   ) : null;
 }
-function Pick({ label, value, options, onChange }) {
+function Pick({ label, value, options, onChange, correct }) {
   return <fieldset className="simple-pick"><legend>{label}</legend><div className="simple-options">
-    {options.map(([key, text]) => <button type="button" key={String(key)} aria-pressed={value === key} className={value === key ? "selected" : ""} onClick={() => onChange(key)}>{text}</button>)}
+    {options.map(([key, text]) => <button data-idle-hint={correct !== undefined && value !== correct && key === correct ? "0" : undefined} type="button" key={String(key)} aria-pressed={value === key} className={value === key ? "selected" : ""} onClick={() => onChange(key)}>{text}</button>)}
   </div></fieldset>;
 }
 export function OldActivity({ id, state, dispatch }) {
@@ -77,15 +77,15 @@ export function OldActivity({ id, state, dispatch }) {
       <Evidence id={id} collapsibleSource foldedLines={id === "ledger" ? ["early", "middle", "late"] : []} />
       {done ? <Feedback success>已记下，可回看原件。</Feedback> : <div className="activity simple-answer">
         <p className="choice-guidance">{guidance[id]}每项选一个，核对正确后自动记录。</p>
-        {id === "ledger" && [["cash", "2万元"], ["net", "6万元"]].map(([key, label]) => <Pick key={key} label={label} value={values[key]} options={[["now", "现在可用"], ["forecast", "预计结余"]]} onChange={(value) => choose(key, value)} />)}
+        {id === "ledger" && [["cash", "2万元"], ["net", "6万元"]].map(([key, label]) => <Pick correct={key === "cash" ? "now" : "forecast"} key={key} label={label} value={values[key]} options={[["now", "现在可用"], ["forecast", "预计结余"]]} onChange={(value) => choose(key, value)} />)}
         {id === "debt" && <>
-          <label className="form-label">尾款到期日<select value={values.day || ""} onChange={(event) => choose("day", event.target.value)}><option value="">选择日期</option>{Array.from({ length: 30 }, (_, i) => <option key={i} value={i + 1}>11月{i + 1}日</option>)}</select></label>
-          <Pick label="支付状态" value={values.status} options={[["unpaid", "未付"], ["paid", "已付"]]} onChange={(value) => choose("status", value)} />
+          <label className="form-label">尾款到期日<select data-idle-hint={Number(values.day) !== 1 ? "0" : undefined} value={values.day || ""} onChange={(event) => choose("day", event.target.value)}><option value="">选择日期</option>{Array.from({ length: 30 }, (_, i) => <option key={i} value={i + 1}>11月{i + 1}日</option>)}</select><small className="idle-select-help">选11月1日</small></label>
+          <Pick correct={id === "debt" ? "unpaid" : "paid"} label="支付状态" value={values.status} options={[["unpaid", "未付"], ["paid", "已付"]]} onChange={(value) => choose("status", value)} />
         </>}
         {id === "receipt" && <>
-          <Pick label="金额" value={values.amount} options={[[true, "一致"], [false, "不一致"]]} onChange={(value) => choose("amount", value)} />
-          <Pick label="付款时间" value={values.date} options={[[true, "符合约定"], [false, "不符合"]]} onChange={(value) => choose("date", value)} />
-          <Pick label="支付状态" value={values.status} options={[["paid", "已付"], ["unpaid", "未付"]]} onChange={(value) => choose("status", value)} />
+          <Pick correct={true} label="金额" value={values.amount} options={[[true, "一致"], [false, "不一致"]]} onChange={(value) => choose("amount", value)} />
+          <Pick correct={true} label="付款时间" value={values.date} options={[[true, "符合约定"], [false, "不符合"]]} onChange={(value) => choose("date", value)} />
+          <Pick correct={id === "debt" ? "unpaid" : "paid"} label="支付状态" value={values.status} options={[["paid", "已付"], ["unpaid", "未付"]]} onChange={(value) => choose("status", value)} />
         </>}
         <Feedback>{feedback}</Feedback>
       </div>}
@@ -104,6 +104,7 @@ export function CustomerActivity({ state, dispatch }) {
           ["queue", "平时也要排这么久吗？"],
         ].map(([id, text]) => (
           <Button
+            data-idle-hint={!state.seen.includes(id) ? "1" : undefined}
             secondary
             key={id}
             onClick={() => dispatch({ type: "ASK_CUSTOMER", id })}
@@ -155,6 +156,7 @@ function ReputationNote({ state, dispatch }) {
                   {[f.wrong, f.correct].map((text, i) => (
                       <button
                         className="sentence-choice"
+                        data-idle-hint={i === 1 ? "0" : undefined}
                         key={text}
                         onClick={() => {
                           dispatch({
@@ -206,7 +208,7 @@ export function SideActivity({ id, state, dispatch }) {
     <h3 className="simple-question">尾款能晚点付吗？</h3>
     {!state.branches.aRequested && <p className="choice-guidance">点下方追问，了解延期付款的条件，留作备选；询问不代表新安排已生效。</p>}
     <Dialogue person="meng">尾款可以商量。但一边开新店，一边拖旧款，我不同意。</Dialogue>
-    {state.branches.aRequested ? <Feedback success>老孟次日发签字回执；当前尾款约定仍有效。</Feedback> : <Button onClick={() => dispatch({ type: "CONTACT_MENG" })}>能商量个备选安排吗？</Button>}
+    {state.branches.aRequested ? <Feedback success>老孟次日发签字回执；当前尾款约定仍有效。</Feedback> : <Button data-idle-hint="0" onClick={() => dispatch({ type: "CONTACT_MENG" })}>能商量个备选安排吗？</Button>}
     </div>
     <div className="side-paper"><Evidence id="contract" collapsibleSource /></div>
   </div>;
@@ -219,12 +221,12 @@ export function SideActivity({ id, state, dispatch }) {
       </section>
       <section className="trace-check" aria-label="核对投入来路和去向">
         {!state.branches.b && <p className="choice-guidance">对照出资与付款记录，每项选一个，核对双方、先后、金额、用途及是否同一笔钱，查清投入能否算进现有现金。</p>}
-        {!state.seen.includes("investment") ? <><Dialogue person="chen">第一笔买烤箱的钱，是我的积蓄。</Dialogue><Button onClick={() => dispatch({ type: "REQUEST_INVESTMENT" })}>看看出资记录</Button></> : state.branches.b ? <Evidence id="capital-note" /> : <div className="activity simple-answer">
-          <Pick label="收付款双方" value={v.parties} options={[[true, "陈叔 → 公司 → 老孟"], [false, "老孟 → 公司 → 陈叔"]]} onChange={(value) => trace("parties", value)} />
-          <Pick label="日期先后" value={v.order} options={[[true, "先转入，再付首款"], [false, "先付首款，再转入"]]} onChange={(value) => trace("order", value)} />
-          <Pick label="两张回执金额" value={v.amount} options={[[true, "都是6万元"], [false, "金额不同"]]} onChange={(value) => trace("amount", value)} />
-          <Pick label="付款用途" value={v.purpose} options={[[true, "旧设备首款"], [false, "新铺设备"]]} onChange={(value) => trace("purpose", value)} />
-          <Pick label="这两笔6万元" value={v.choice} options={[["twice", "现在多了12万元"], ["same", "同一笔转入又花出，仍余2万元"]]} onChange={(value) => trace("choice", value)} />
+        {!state.seen.includes("investment") ? <><Dialogue person="chen">第一笔买烤箱的钱，是我的积蓄。</Dialogue><Button data-idle-hint="0" onClick={() => dispatch({ type: "REQUEST_INVESTMENT" })}>看看出资记录</Button></> : state.branches.b ? <Evidence id="capital-note" /> : <div className="activity simple-answer">
+          <Pick correct={true} label="收付款双方" value={v.parties} options={[[true, "陈叔 → 公司 → 老孟"], [false, "老孟 → 公司 → 陈叔"]]} onChange={(value) => trace("parties", value)} />
+          <Pick correct={true} label="日期先后" value={v.order} options={[[true, "先转入，再付首款"], [false, "先付首款，再转入"]]} onChange={(value) => trace("order", value)} />
+          <Pick correct={true} label="两张回执金额" value={v.amount} options={[[true, "都是6万元"], [false, "金额不同"]]} onChange={(value) => trace("amount", value)} />
+          <Pick correct={true} label="付款用途" value={v.purpose} options={[[true, "旧设备首款"], [false, "新铺设备"]]} onChange={(value) => trace("purpose", value)} />
+          <Pick correct="same" label="这两笔6万元" value={v.choice} options={[["twice", "现在多了12万元"], ["same", "同一笔转入又花出，仍余2万元"]]} onChange={(value) => trace("choice", value)} />
           <Feedback>{feedback}</Feedback>
         </div>}
       </section>
@@ -236,8 +238,8 @@ export function SideActivity({ id, state, dispatch }) {
       <Evidence id="survey" collapsibleSource />
       {state.branches.c ? <Evidence id="survey-note" /> : <div className="activity simple-answer">
         <p className="choice-guidance">先选表示想去新铺的受访者组，再选他们的身份，判断这些意愿能否算作新增客源。访谈意愿不等于实际销量。</p>
-        <Pick label="哪组想去新铺？" value={selected.length || undefined} options={[[8, "8位 · 想去新铺"], [12, "其余12位"]]} onChange={(count) => survey(Array.from({ length: count }, (_, i) => count === 8 ? i + 1 : i + 9), v.identity)} />
-        <Pick label="这组人的身份" value={v.identity} options={[["new", "新增加的客人"], ["regular", "老店常客"]]} onChange={(value) => survey(selected, value)} />
+        <Pick correct={8} label="哪组想去新铺？" value={selected.length || undefined} options={[[8, "8位 · 想去新铺"], [12, "其余12位"]]} onChange={(count) => survey(Array.from({ length: count }, (_, i) => count === 8 ? i + 1 : i + 9), v.identity)} />
+        <Pick correct="regular" label="这组人的身份" value={v.identity} options={[["new", "新增加的客人"], ["regular", "老店常客"]]} onChange={(value) => survey(selected, value)} />
         <Feedback>{feedback}</Feedback>
       </div>}
     </div>
@@ -248,7 +250,7 @@ export function SideActivity({ id, state, dispatch }) {
     <div className="invitation-card"><small>留灯烘焙</small><strong>邀请函</strong><p>开业日期 <span className="blank-date" aria-label="日期空白" /></p></div>
     <Dialogue person="xiaohe">设备哪天到、什么时候开门还没定，日期不敢填。我也想问……不开新店，能让我试着带班吗？</Dialogue>
     <p className="choice-guidance">点选想问的话，了解小禾的带班意愿和商量进展，分清个人愿望与已确定的安排。</p>
-    <div className="choices">{[["wish", "你想负责什么？"], ["talk", "和陈叔聊过吗？"]].map(([key, text]) => <Button key={key} secondary onClick={() => dispatch({ type: "ASK_XIAOHE", id: key })}>{text}{state.seen.includes(key) && <Icon name="check" />}</Button>)}</div>
+    <div className="choices">{[["wish", "你想负责什么？"], ["talk", "和陈叔聊过吗？"]].map(([key, text]) => <Button data-idle-hint={!state.seen.includes(key) ? "0" : undefined} key={key} secondary onClick={() => dispatch({ type: "ASK_XIAOHE", id: key })}>{text}{state.seen.includes(key) && <Icon name="check" />}</Button>)}</div>
     </div>
     <div className="side-paper">
     {["wish", "talk"].filter((key) => state.seen.includes(key)).map((key) => <Evidence id={key} key={key} compact collapsibleSource />)}

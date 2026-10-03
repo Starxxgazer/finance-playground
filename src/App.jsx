@@ -1,3 +1,4 @@
+import IdleHint from "./components/IdleHint.jsx";
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { scenes, byId, oldMainTasks, calendarNotes } from "./game/content.js";
 import {
@@ -313,6 +314,7 @@ export default function App({ preview = null }) {
         "--art-fiber": `url("${asset("ui/notebook-fiber.webp")}")`,
       }}
     >
+      <IdleHint paused={!!((film && !atHome) || ending || departing || bag || settings || source || guide)} progress={state} screen={`${active || ""}-${workOpen}`} />
       <main
         id="main"
         aria-hidden={
@@ -397,21 +399,21 @@ export default function App({ preview = null }) {
                 </div>
               </div>
               {state.revisit ? (
-                <Button onClick={returnFromRevisit}>返回林姐 · 补交资料</Button>
+                <Button data-idle-hint="2" onClick={returnFromRevisit}>返回林姐 · 补交资料</Button>
               ) : state.scene < 2 ? (
                 <div className={`scene-next ${done ? "is-ready" : ""}`}>
                   <small role="status">{done ? "主线已完成，支线没查完也能走" : mainProgress}</small>
-                  <Button disabled={!done} onClick={advance}>
+                  <Button data-idle-hint={done ? "0" : undefined} disabled={!done} onClick={advance}>
                     {scene.next}
                   </Button>
                 </div>
               ) : state.scene === 2 ? (
-                <Button onClick={done ? advance : openWork}>
+                <Button data-idle-hint="0" onClick={done ? advance : openWork}>
                   {done ? scene.next : "开始核对资金"}
 
                 </Button>
               ) : (
-                <Button onClick={openWork}>
+                <Button data-idle-hint="0" onClick={openWork}>
                   {state.submitted ? "回看公司透视图" : "打开交接资料"}
 
                 </Button>
