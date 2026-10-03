@@ -1,0 +1,77 @@
+/* One question and direct choices; original evidence remains available. */
+html[data-ui] .simple-funds .desk-chapter { display: block; }
+html[data-ui] .simple-funds .desk-chapter h2 { font-size: 22px; margin: 0 0 5px; }
+html[data-ui] .simple-funds .desk-tools { flex-wrap: wrap; gap: 6px 16px; margin: 6px 0 12px; }
+html[data-ui] .simple-funds .simple-money-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+html[data-ui] .simple-funds .money-card { padding: 10px; transform: none; }
+.money-caption { display: grid; grid-template-columns: 1fr auto; gap: 5px; align-items: center; }
+.money-caption > span { grid-column: 1 / -1; }
+html[data-ui] .simple-funds .money-caption strong { font-size: 23px; grid-column: 1; }
+.money-choice { display: flex; gap: 7px; margin-top: 8px; }
+.money-choice > button { flex: 1; padding: 8px; border: 1px solid var(--line); border-radius: 4px; }
+.money-choice > button[aria-pressed="true"], .proof-target.current { background: var(--accent-bg); box-shadow: inset 0 0 0 1px var(--accent); }
+.simple-proof-desk { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(0, 1.7fr); gap: 14px; align-items: start; }
+.funds-date-source { grid-column: 1 / -1; }
+.funds-date-source summary { cursor: pointer; font-weight: 600; }
+html[data-ui] .simple-funds .funds-date-source p { margin: 5px 0; font-size: 13px; line-height: 1.5; }
+.funds-source-label { color: var(--muted); }
+.funds-progress { list-style: none; display: flex; flex-wrap: wrap; gap: 5px 12px; padding: 0; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.funds-progress li { padding-bottom: 3px; }
+.funds-progress [aria-current="step"] { font-weight: 700; color: var(--ink); border-bottom: 2px solid currentColor; }
+.funds-progress .done { color: var(--ink); }
+html[data-ui] .simple-funds .funds-coach { margin: 12px 0; padding-left: 10px; border-left: 2px solid #766d5d70; }
+html[data-ui] .simple-funds .funds-coach p { font-size: 15px; line-height: 1.7; margin: 4px 0; }
+html[data-ui] .simple-funds .funds-next-action { font-size: 14px; font-weight: 600; line-height: 1.6; margin: 8px 0; }
+html[data-ui] .simple-funds :is(.funds-small-help, .funds-repair) { font-size: 12px; line-height: 1.6; margin: 8px 0 0; }
+html[data-ui] .simple-funds .money-card-hint { display: block; font-size: 12px; line-height: 1.5; margin-top: 5px; }
+html[data-ui] .simple-funds .money-check { display: block; font-size: 12px; line-height: 1.5; margin-top: 5px; }
+.money-check.retry { font-weight: 700; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.proof-date { border-bottom: 1px solid var(--line); padding: 8px 0; }
+.proof-date summary { cursor: pointer; font-weight: 600; }
+html[data-ui] .simple-funds .proof-date .month { margin: 8px 0 0; padding: 8px; }
+.proof-targets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.proof-target { display: flex; flex-direction: column; text-align: left; gap: 5px; padding: 9px; border: 1px solid var(--line); border-radius: 3px; }
+.proof-target span { font-size: 13px; line-height: 1.5; }
+.proof-target small { font-size: 11px; opacity: .8; }
+.proof-target:disabled { opacity: .65; }
+html[data-ui] .simple-evidence-picker { display: block; }
+html[data-ui] .simple-evidence-picker .evidence-select { display: grid; gap: 6px; margin: 5px 0; font-weight: 600; }
+html[data-ui] .simple-evidence-picker select { width: 100%; min-width: 0; height: 40px; min-height: 40px; padding: 4px 8px; line-height: 1.6; color: var(--ink); background: var(--field); border: 1px solid var(--line); }
+html[data-ui] .simple-evidence-picker .selectable-lines { margin-top: 8px; max-height: none; }
+html[data-ui] .simple-funds .selectable-lines { max-height: 240px; overflow-y: auto; overscroll-behavior: contain; }
+html[data-ui] .simple-evidence-picker .selectable-lines button { padding: 8px; font-size: 13px; }
+html[data-ui] .simple-evidence-picker .reference-slots { grid-template-columns: 1fr; }
+.simple-order-desk { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+html[data-ui] .simple-funds .sequence-slots { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html[data-ui] .simple-funds .sequence-slots > button { min-height: 52px; }
+html[data-ui] .simple-funds .paper-options { gap: 7px; }
+html[data-ui] .simple-funds .desk-total { margin: 8px 0; font-size: 16px; }
+@media (max-width: 650px) {
+  html[data-ui="notebook"] .work-glass .simple-funds .desk-context { padding-block: 8px; }
+  html[data-ui] .simple-funds .selectable-lines { max-height: 160px; }
+  html[data-ui] .simple-funds .simple-order-desk .selectable-lines { max-height: none; }
+  html[data-ui] .simple-funds .paper-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  html[data-ui] .simple-funds .paper-options button { padding: 7px 3px; font-size: 12px; }
+  html[data-ui] .simple-funds .desk-tools { margin: 4px 0 0; }
+  html[data-ui] .simple-funds .funds-coach { margin: 6px 0; }
+  html[data-ui] .simple-funds .funds-coach strong { font-size: 13px; margin-right: 8px; }
+  html[data-ui] .simple-funds .funds-coach p { display: inline; font-size: 13px; line-height: 1.5; }
+  .funds-progress { gap: 4px 10px; margin-bottom: 6px; font-size: 12px; }
+  html[data-ui] .simple-funds .desk-chapter h2 { font-size: 20px; }
+  .simple-proof-desk, .simple-order-desk { grid-template-columns: 1fr; gap: 8px; }
+  html[data-ui] .simple-funds .proof-date .month { max-width: 300px; margin-inline: auto; }
+  html[data-ui] .simple-funds .simple-money-cards { gap: 7px; }
+  html[data-ui] .simple-funds .money-card { padding: 8px; }
+  .money-caption { font-size: 13px; }
+  .money-choice > button { padding: 7px 4px; }
+  .proof-target { padding: 7px; }
+  .proof-target span { font-size: 12px; }
+  html[data-ui] .simple-funds .sequence-slots { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  html[data-ui] .simple-funds .sequence-slots > button { padding: 6px 3px; }
+  html[data-ui] .simple-funds .sequence-slots strong { font-size: 12px; }
+}
+
+/* Direct date choice; the full calendar remains available for corrections. */
+html[data-ui] .simple-funds .funds-date-shortcut { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 4px; font-weight: 700; }
+html[data-ui] .simple-funds .funds-date-shortcut[aria-pressed="true"] { background: var(--accent-bg); }
+html[data-ui] .simple-funds .paper-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }

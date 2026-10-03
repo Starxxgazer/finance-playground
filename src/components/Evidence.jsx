@@ -3,8 +3,9 @@ import { byId, findings } from "../game/content.js";
 import ItemIcon from "./ItemIcon.jsx";
 import { Icon, Button, Dialogue } from "./Ui.jsx";
 
-export default function Evidence({ id, children, compact = false }) {
+export default function Evidence({ id, children, compact = false, foldedLines = [], collapsibleSource = false }) {
   const item = byId[id];
+  const folded = item.lines.filter((line) => foldedLines.includes(line.id));
   return (
     <article className={`document ${compact ? "compact" : ""}`}>
       <div className="document-meta">
@@ -12,14 +13,27 @@ export default function Evidence({ id, children, compact = false }) {
         <ItemIcon id={id} small />
       </div>
       <h3>{item.title}</h3>
-      <div className="document-source">
+      {collapsibleSource ? (
+        <details className="document-extra">
+          <summary>来源与日期</summary>
+          <div className="document-source">
+            <span>来源：{item.source}</span>
+            <span>{item.date}</span>
+          </div>
+        </details>
+      ) : <div className="document-source">
         <span>来源：{item.source}</span>
         <span>{item.date}</span>
-      </div>
-      <div className="document-lines">
-        {item.lines.map((line) => (
-          <p key={line.id}>{line.text}</p>
-        ))}
+      </div>}
+      <div className={`document-lines ${id === "receipt" ? "simple-receipt-pair" : ""}`}>
+        {item.lines.map((line) => foldedLines.includes(line.id) ? (
+          line.id === folded[0]?.id && (
+            <details className="document-extra" key={line.id}>
+              <summary>分段收付记录 · {folded.length} 条</summary>
+              {folded.map((entry) => <p key={entry.id}>{entry.text}</p>)}
+            </details>
+          )
+        ) : <p key={line.id}>{line.text}</p>)}
       </div>
       {children}
     </article>
@@ -33,174 +47,57 @@ export function Feedback({ children, success = false }) {
     </p>
   ) : null;
 }
+function Pick({ label, value, options, onChange }) {
+  return <fieldset className="simple-pick"><legend>{label}</legend><div className="simple-options">
+    {options.map(([key, text]) => <button type="button" key={String(key)} aria-pressed={value === key} className={value === key ? "selected" : ""} onClick={() => onChange(key)}>{text}</button>)}
+  </div></fieldset>;
+}
 export function OldActivity({ id, state, dispatch }) {
   const [values, setValues] = useState({});
   const [feedback, setFeedback] = useState("");
-  const set = (k, v) => {
-    setValues({ ...values, [k]: v });
-    setFeedback("");
-  };
   const done = state.tasks[id];
-  function submit() {
-    const okay =
-      id === "ledger"
-        ? values.cash === "now" && values.net === "forecast"
-        : id === "debt"
-          ? values.day === "1" && values.status === "unpaid"
-          : values.amount && values.date && values.status === "paid";
-    if (okay) {
-      dispatch({ type: "CLASSIFY", id, ...values, day: Number(values.day) });
-      setFeedback("核对好了。有依据的发现与待查问题已记入手记。");
-    } else
-      setFeedback(
-        id === "ledger"
-          ? "看看记录的时间：哪些已经在账上，哪些要等经营后才形成？"
-          : id === "debt"
-            ? "再看原单据的到期日，以及现在是否已经支付。"
-            : "把回执和约定放在一起，比较金额与付款时间。",
-      );
+  const question = id === "ledger" ? "这两笔钱，哪些现在能用？" : id === "debt" ? "尾款哪天付？现在付了吗？" : "首款的金额、时间对得上吗？";
+  const guidance = {
+    ledger: "分别判断2万元和6万元是现在可用的钱，还是未来预计的结余，弄清眼下能拿多少钱付款。",
+    debt: "按付款清单选到期日和当前支付状态，弄清这笔尾款何时还要付。",
+    receipt: "对照约定与回执，分别选金额是否一致、付款是否按时、首款是否已付，核实过去的履约情况。",
+  };
+  function choose(key, value) {
+    const next = { ...values, [key]: value };
+    setValues(next);
+    const fields = id === "ledger" ? ["cash", "net"] : id === "debt" ? ["day", "status"] : ["amount", "date", "status"];
+    const ready = fields.every((field) => next[field] !== undefined && next[field] !== "");
+    const okay = id === "ledger" ? next.cash === "now" && next.net === "forecast" : id === "debt" ? Number(next.day) === 1 && next.status === "unpaid" : next.amount === true && next.date === true && next.status === "paid";
+    setFeedback(ready && !okay ? "还没对上，再看原件。" : "");
+    if (ready && okay) dispatch({ type: "CLASSIFY", id, ...next, day: Number(next.day) });
   }
-  return (
-    <>
-      <Evidence id={id} />
-      {done ? (
-        <Feedback success>这组资料已核对，可随时回看。</Feedback>
-      ) : (
-        <section className="activity">
-          <h3>
-            {id === "ledger"
-              ? "把钱放对位置"
-              : id === "debt"
-                ? "这张单，什么时候付？"
-                : "回执和约定对得上吗？"}
-          </h3>
-          {id === "ledger" && (
-            <div className="classify-grid">
-              {[
-                ["cash", "2万元"],
-                ["net", "6万元"],
-              ].map(([key, label]) => (
-                <fieldset key={key}>
-                  <legend>{label}</legend>
-                  {[
-                    ["now", "现在可用"],
-                    ["forecast", "预计经营结余"],
-                  ].map(([value, text]) => (
-                    <label className="choice" key={value}>
-                      <input
-                        type="radio"
-                        name={key}
-                        checked={values[key] === value}
-                        onChange={() => set(key, value)}
-                      />
-                      {text}
-                    </label>
-                  ))}
-                </fieldset>
-              ))}
-            </div>
-          )}
-          {id === "debt" && (
-            <>
-              <label className="form-label">
-                尾款到期日
-                <select
-                  value={values.day || ""}
-                  onChange={(e) => set("day", e.target.value)}
-                >
-                  <option value="">选择11月的日期</option>
-                  {Array.from({ length: 30 }, (_, i) => (
-                    <option key={i} value={i + 1}>
-                      11月{i + 1}日
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="choice-row">
-                {[
-                  ["unpaid", "还没付"],
-                  ["paid", "已经付了"],
-                ].map(([value, text]) => (
-                  <label className="choice" key={value}>
-                    <input
-                      type="radio"
-                      name="payment"
-                      checked={values.status === value}
-                      onChange={() => set("status", value)}
-                    />
-                    {text}
-                  </label>
-                ))}
-              </div>
-            </>
-          )}
-          {id === "receipt" && (
-            <>
-              <div className="receipt-pair">
-                <div>
-                  <small>付款约定</small>
-                  <strong>公司 → 老孟</strong>
-                  <p>
-                    旧设备首款 6万元
-                    <br />
-                    约定首款日支付
-                  </p>
-                </div>
-                <div>
-                  <small>付款回执</small>
-                  <strong>公司 → 老孟</strong>
-                  <p>
-                    旧设备首款 6万元
-                    <br />
-                    付款时间与约定相符
-                  </p>
-                </div>
-              </div>
-              {[
-                ["amount", "金额一致"],
-                ["date", "付款时间符合约定"],
-              ].map(([key, label]) => (
-                <label className="choice" key={key}>
-                  <input
-                    type="checkbox"
-                    checked={!!values[key]}
-                    onChange={(e) => set(key, e.target.checked)}
-                  />
-                  {label}
-                </label>
-              ))}
-              <div className="choice-row">
-                {[
-                  ["paid", "已经付了"],
-                  ["unpaid", "还没付"],
-                ].map(([value, text]) => (
-                  <label className="choice" key={value}>
-                    <input
-                      type="radio"
-                      name="paid"
-                      checked={values.status === value}
-                      onChange={() => set("status", value)}
-                    />
-                    {text}
-                  </label>
-                ))}
-              </div>
-            </>
-          )}
-          <Button onClick={submit}>
-            确认核对
-            <Icon name="check" size={18} />
-          </Button>
-          <Feedback>{feedback}</Feedback>
-        </section>
-      )}
-    </>
-  );
+  return <section className="simple-investigation">
+    <h3 className="simple-question">{done ? "已核对" : question}</h3>
+    <div className="simple-investigation-grid">
+      <Evidence id={id} collapsibleSource foldedLines={id === "ledger" ? ["early", "middle", "late"] : []} />
+      {done ? <Feedback success>已记下，可回看原件。</Feedback> : <div className="activity simple-answer">
+        <p className="choice-guidance">{guidance[id]}每项选一个，核对正确后自动记录。</p>
+        {id === "ledger" && [["cash", "2万元"], ["net", "6万元"]].map(([key, label]) => <Pick key={key} label={label} value={values[key]} options={[["now", "现在可用"], ["forecast", "预计结余"]]} onChange={(value) => choose(key, value)} />)}
+        {id === "debt" && <>
+          <label className="form-label">尾款到期日<select value={values.day || ""} onChange={(event) => choose("day", event.target.value)}><option value="">选择日期</option>{Array.from({ length: 30 }, (_, i) => <option key={i} value={i + 1}>11月{i + 1}日</option>)}</select></label>
+          <Pick label="支付状态" value={values.status} options={[["unpaid", "未付"], ["paid", "已付"]]} onChange={(value) => choose("status", value)} />
+        </>}
+        {id === "receipt" && <>
+          <Pick label="金额" value={values.amount} options={[[true, "一致"], [false, "不一致"]]} onChange={(value) => choose("amount", value)} />
+          <Pick label="付款时间" value={values.date} options={[[true, "符合约定"], [false, "不符合"]]} onChange={(value) => choose("date", value)} />
+          <Pick label="支付状态" value={values.status} options={[["paid", "已付"], ["unpaid", "未付"]]} onChange={(value) => choose("status", value)} />
+        </>}
+        <Feedback>{feedback}</Feedback>
+      </div>}
+    </div>
+  </section>;
 }
 export function CustomerActivity({ state, dispatch }) {
   return (
-    <div className="activity">
-      <p className="muted">门口还有人在排队。你可以自己选先问什么。</p>
+    <div className="activity side-conversation">
+      <div className="side-paper">
+      <h3 className="simple-question">问问排队的顾客</h3>
+      <p className="choice-guidance">排队能说明生意好吗？点选想问的话，了解口味评价与排队原因，再判断能支持什么结论。</p>
       <div className="choices">
         {[
           ["taste", "您觉得面包怎么样？"],
@@ -216,34 +113,29 @@ export function CustomerActivity({ state, dispatch }) {
           </Button>
         ))}
       </div>
+      </div>
+      <div className="side-paper">
       {["taste", "queue"]
         .filter((id) => state.seen.includes(id))
         .map((id) => (
           <Evidence key={id} id={id} compact />
         ))}
+      {["taste", "queue"].every((id) => state.seen.includes(id)) && (
+        <ReputationNote state={state} dispatch={dispatch} />
+      )}
+      </div>
     </div>
   );
 }
-export function Notes({ state, dispatch }) {
+function ReputationNote({ state, dispatch }) {
   const [feedback, setFeedback] = useState("");
   return (
     <div className="notes-list">
-      <p className="muted">只记下有依据的发现。还没查清的事，留着继续问。</p>
+
       {findings
-        .filter(
-          (f) =>
-            state.solved.includes(f.id) ||
-            (f.id === "reputation" &&
-              ["taste", "queue"].every((id) => state.seen.includes(id))),
-        )
+        .filter((f) => f.id === "reputation")
         .map((f) => {
           const done = state.solved.includes(f.id);
-          const ready =
-            f.id === "finance"
-              ? state.tasks.ledger
-              : f.id === "credit"
-                ? state.tasks.debt && state.tasks.receipt
-                : ["taste", "queue"].every((id) => state.seen.includes(id));
           return (
             <section className="note" key={f.id}>
               <div className="section-title">
@@ -258,14 +150,12 @@ export function Notes({ state, dispatch }) {
               ) : (
                 <>
                   <p className="muted">
-                    {ready ? "选一句写进笔记。" : "先完成相关资料的核对。"}
+                    根据顾客的回答，选一句有依据的结论，记下已核实的口碑；没有问到的仍待查。
                   </p>
-                  {ready &&
-                    [f.wrong, f.correct].map((text, i) => (
+                  {[f.wrong, f.correct].map((text, i) => (
                       <button
                         className="sentence-choice"
                         key={text}
-                        disabled={!ready}
                         onClick={() => {
                           dispatch({
                             type: "NOTE",
@@ -275,12 +165,12 @@ export function Notes({ state, dispatch }) {
                           setFeedback(
                             i === 1
                               ? "发现和保留问题已记下。"
-                              : "这句话超出了现有资料能说明的范围。回到相关资料再看看，随时可以改。",
+                              : "顾客的话还不能说明这一点。",
                           );
                         }}
                       >
                         {text}
-                        <Icon name="caret" size={16} />
+
                       </button>
                     ))}
                 </>
@@ -296,201 +186,72 @@ export function SideActivity({ id, state, dispatch }) {
   const [v, setV] = useState({});
   const [selected, setSelected] = useState([]);
   const [feedback, setFeedback] = useState("");
-  const set = (key, value) => setV({ ...v, [key]: value });
-  if (id === "contract")
-    return (
-      <>
-        <Evidence id="contract" />
-        <Dialogue person="meng">
-          尾款的事可以商量。不过，一边开新店，一边拖旧款，我不同意。
-        </Dialogue>
-        {state.branches.aRequested ? (
-          <Feedback success>
-            已追问备选安排。老孟会在次日发来签字回执，当前尾款约定仍然有效。
-          </Feedback>
-        ) : (
-          <Button onClick={() => dispatch({ type: "CONTACT_MENG" })}>
-            当面追问：尾款能不能晚一点付？
-          </Button>
-        )}
-      </>
-    );
-  if (id === "transfer")
-    return (
-      <>
-        <Dialogue person="chen">
-          买这台烤箱的第一笔钱，是我从积蓄里拿的。
-        </Dialogue>
-        <Evidence id="transfer" />
-        {!state.seen.includes("investment") ? (
-          <Button onClick={() => dispatch({ type: "REQUEST_INVESTMENT" })}>
-            向陈叔索取当时的出资记录
-          </Button>
-        ) : (
-          <>
-            <Evidence id="investment" compact />
-            <Evidence id="receipt" compact />
-            {state.branches.b ? (
-              <>
-                <Evidence id="capital-note" />
-                <Dialogue person="chen">
-                  那时候就想先把炉子买好，把面包做好。
-                </Dialogue>
-              </>
-            ) : (
-              <section className="activity">
-                <h3>把来路和去向接起来</h3>
-                <div className="money-trace">
-                  陈叔 <span>6万元 →</span> 公司 <span>6万元 →</span> 老孟
-                </div>
-                {[
-                  ["parties", "核对收付款双方"],
-                  ["order", "转入早于设备首款付款"],
-                  ["amount", "两张回执金额均为6万元"],
-                  ["purpose", "去向是这台旧设备的首款"],
-                ].map(([key, text]) => (
-                  <label className="choice" key={key}>
-                    <input
-                      type="checkbox"
-                      checked={!!v[key]}
-                      onChange={(e) => set(key, e.target.checked)}
-                    />
-                    {text}
-                  </label>
-                ))}
-                <div className="choices">
-                  {[
-                    ["twice", "两笔6万元，所以共增加了12万元"],
-                    ["same", "同一笔钱转入又花出，现在余额仍为2万元"],
-                  ].map(([choice, text]) => (
-                    <button
-                      className="sentence-choice"
-                      key={choice}
-                      onClick={() => {
-                        dispatch({ type: "TRACE_CAPITAL", ...v, choice });
-                        setFeedback(
-                          choice === "twice"
-                            ? "看看钱从谁手里出去，又到了谁手里。"
-                            : Object.values(v).filter(Boolean).length < 4
-                              ? "先把双方、先后、金额和设备用途都对一遍。"
-                              : "钱的来路和去向已记入资料包。",
-                        );
-                      }}
-                    >
-                      {text}
-                    </button>
-                  ))}
-                </div>
-                <Feedback>{feedback}</Feedback>
-              </section>
-            )}
-          </>
-        )}
-      </>
-    );
-  if (id === "survey")
-    return (
-      <>
-        <Evidence id="survey" />
-        {state.branches.c ? (
-          <>
-            <Evidence id="survey-note" />
-            <Dialogue person="xiaohe">也是我们原来的客人。</Dialogue>
-          </>
-        ) : (
-          <section className="activity">
-            <h3>圈出想去新铺的8位受访者</h3>
-            <p className="muted">
-              看看他们的身份标记。点选可以圈出，再点可以取消。
-            </p>
-            <div className="survey-grid">
-              {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
-                <button
-                  key={n}
-                  aria-label={`受访者${n}：老店常客，${n <= 8 ? "想去新铺" : "更想留在老店"}`}
-                  aria-pressed={selected.includes(n)}
-                  className={selected.includes(n) ? "selected" : ""}
-                  onClick={() =>
-                    setSelected(
-                      selected.includes(n)
-                        ? selected.filter((x) => x !== n)
-                        : [...selected, n],
-                    )
-                  }
-                >
-                  <strong>{String(n).padStart(2, "0")}</strong>
-                  <span>老店常客</span>
-                  <small>{n <= 8 ? "想去新铺" : "仍选老店"}</small>
-                </button>
-              ))}
-            </div>
-            <Button
-              onClick={() => {
-                dispatch({ type: "SURVEY", selected });
-                setFeedback(
-                  selected.length === 8 && selected.every((n) => n <= 8)
-                    ? ""
-                    : "对照访谈本，圈出8位“想去新铺”的老店常客。",
-                );
-              }}
-            >
-              追问：这些都是新增加的客人吗？
-            </Button>
-            <Feedback>{feedback}</Feedback>
-          </section>
-        )}
-      </>
-    );
-  return (
-    <>
-      <div className="invitation-card">
-        <small>留灯烘焙</small>
-        <strong>邀请函</strong>
-        <p>
-          开业日期 <span className="blank-date" aria-label="日期空白" />
-        </p>
-      </div>
-      <Dialogue person="xiaohe">
-        {v.dateAsked ||
-        state.seen.includes("wish") ||
-        state.seen.includes("talk")
-          ? "设备哪天到、什么时候能开门还没定，我怕写早了。其实我还想问……不开新店，也能让我试着带班吗？"
-          : "邀请函做好了，日期还没敢填。"}
-      </Dialogue>
-      {!v.dateAsked &&
-        !state.seen.includes("wish") &&
-        !state.seen.includes("talk") && (
-          <Button onClick={() => set("dateAsked", true)}>
-            日期为什么还空着？
-          </Button>
-        )}
-      {(v.dateAsked ||
-        state.seen.includes("wish") ||
-        state.seen.includes("talk")) && (
-        <div className="choices">
-          {[
-            ["wish", "你最想试着负责什么？"],
-            ["talk", "你和陈叔聊过吗？"],
-          ].map(([key, text]) => (
-            <Button
-              key={key}
-              secondary
-              onClick={() => dispatch({ type: "ASK_XIAOHE", id: key })}
-            >
-              {text}
-              {state.seen.includes(key) && <Icon name="check" />}
-            </Button>
-          ))}
-        </div>
-      )}
-      {["wish", "talk"]
-        .filter((key) => state.seen.includes(key))
-        .map((key) => (
-          <Evidence id={key} key={key} />
-        ))}
-      <p className="muted">
-        愿意带班，和已经能够独立开店，是两件事。问到什么就记录什么。
-      </p>
-    </>
-  );
+    function trace(key, value) {
+    const next = { ...v, [key]: value };
+    setV(next);
+    const ready = ["parties", "order", "amount", "purpose", "choice"].every((field) => next[field] !== undefined);
+    const correct = next.parties && next.order && next.amount && next.purpose && next.choice === "same";
+    setFeedback(ready && !correct ? "还没对上，再看看两张回执。" : "");
+    if (ready && correct) dispatch({ type: "TRACE_CAPITAL", ...next });
+  }
+  function survey(group, identity) {
+    setSelected(group);
+    setV({ ...v, identity });
+    const correctGroup = group.length === 8 && group.every((n) => n >= 1 && n <= 8);
+    setFeedback(group.length && identity ? !correctGroup ? "找的是想去新铺的那组。" : identity !== "regular" ? "看看访谈对象是谁。" : "" : "");
+    if (correctGroup && identity === "regular") dispatch({ type: "SURVEY", selected: group });
+  }
+  if (id === "contract") return <div className="simple-side side-conversation">
+    <div className="side-paper">
+    <h3 className="simple-question">尾款能晚点付吗？</h3>
+    {!state.branches.aRequested && <p className="choice-guidance">点下方追问，了解延期付款的条件，留作备选；询问不代表新安排已生效。</p>}
+    <Dialogue person="meng">尾款可以商量。但一边开新店，一边拖旧款，我不同意。</Dialogue>
+    {state.branches.aRequested ? <Feedback success>老孟次日发签字回执；当前尾款约定仍有效。</Feedback> : <Button onClick={() => dispatch({ type: "CONTACT_MENG" })}>能商量个备选安排吗？</Button>}
+    </div>
+    <div className="side-paper"><Evidence id="contract" collapsibleSource /></div>
+  </div>;
+  if (id === "transfer") return <div className="simple-side">
+    <h3 className="simple-question">陈叔投入的6万元，去了哪里？</h3>
+    <div className="trace-workspace">
+      <section className="trace-documents" aria-label="投入去向原件，可滚动查看" tabIndex={0}>
+        <Evidence id="transfer" collapsibleSource />
+        {state.seen.includes("investment") && <><Evidence id="investment" compact collapsibleSource /><Evidence id="receipt" compact collapsibleSource /></>}
+      </section>
+      <section className="trace-check" aria-label="核对投入来路和去向">
+        {!state.branches.b && <p className="choice-guidance">对照出资与付款记录，每项选一个，核对双方、先后、金额、用途及是否同一笔钱，查清投入能否算进现有现金。</p>}
+        {!state.seen.includes("investment") ? <><Dialogue person="chen">第一笔买烤箱的钱，是我的积蓄。</Dialogue><Button onClick={() => dispatch({ type: "REQUEST_INVESTMENT" })}>看看出资记录</Button></> : state.branches.b ? <Evidence id="capital-note" /> : <div className="activity simple-answer">
+          <Pick label="收付款双方" value={v.parties} options={[[true, "陈叔 → 公司 → 老孟"], [false, "老孟 → 公司 → 陈叔"]]} onChange={(value) => trace("parties", value)} />
+          <Pick label="日期先后" value={v.order} options={[[true, "先转入，再付首款"], [false, "先付首款，再转入"]]} onChange={(value) => trace("order", value)} />
+          <Pick label="两张回执金额" value={v.amount} options={[[true, "都是6万元"], [false, "金额不同"]]} onChange={(value) => trace("amount", value)} />
+          <Pick label="付款用途" value={v.purpose} options={[[true, "旧设备首款"], [false, "新铺设备"]]} onChange={(value) => trace("purpose", value)} />
+          <Pick label="这两笔6万元" value={v.choice} options={[["twice", "现在多了12万元"], ["same", "同一笔转入又花出，仍余2万元"]]} onChange={(value) => trace("choice", value)} />
+          <Feedback>{feedback}</Feedback>
+        </div>}
+      </section>
+    </div>
+  </div>;
+  if (id === "survey") return <section className="simple-investigation">
+    <h3 className="simple-question">想去新铺的，是新客吗？</h3>
+    <div className="simple-investigation-grid">
+      <Evidence id="survey" collapsibleSource />
+      {state.branches.c ? <Evidence id="survey-note" /> : <div className="activity simple-answer">
+        <p className="choice-guidance">先选表示想去新铺的受访者组，再选他们的身份，判断这些意愿能否算作新增客源。访谈意愿不等于实际销量。</p>
+        <Pick label="哪组想去新铺？" value={selected.length || undefined} options={[[8, "8位 · 想去新铺"], [12, "其余12位"]]} onChange={(count) => survey(Array.from({ length: count }, (_, i) => count === 8 ? i + 1 : i + 9), v.identity)} />
+        <Pick label="这组人的身份" value={v.identity} options={[["new", "新增加的客人"], ["regular", "老店常客"]]} onChange={(value) => survey(selected, value)} />
+        <Feedback>{feedback}</Feedback>
+      </div>}
+    </div>
+  </section>;
+  return <div className="simple-side side-conversation">
+    <div className="side-paper">
+    <h3 className="simple-question">小禾想负责什么？</h3>
+    <div className="invitation-card"><small>留灯烘焙</small><strong>邀请函</strong><p>开业日期 <span className="blank-date" aria-label="日期空白" /></p></div>
+    <Dialogue person="xiaohe">设备哪天到、什么时候开门还没定，日期不敢填。我也想问……不开新店，能让我试着带班吗？</Dialogue>
+    <p className="choice-guidance">点选想问的话，了解小禾的带班意愿和商量进展，分清个人愿望与已确定的安排。</p>
+    <div className="choices">{[["wish", "你想负责什么？"], ["talk", "和陈叔聊过吗？"]].map(([key, text]) => <Button key={key} secondary onClick={() => dispatch({ type: "ASK_XIAOHE", id: key })}>{text}{state.seen.includes(key) && <Icon name="check" />}</Button>)}</div>
+    </div>
+    <div className="side-paper">
+    {["wish", "talk"].filter((key) => state.seen.includes(key)).map((key) => <Evidence id={key} key={key} compact collapsibleSource />)}
+    </div>
+  </div>;
 }

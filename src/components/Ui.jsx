@@ -1,7 +1,5 @@
 import { useEffect, useRef, useId } from "react";
 import {
-  ArrowRight,
-  ArrowLeft,
   BookOpenText,
   CalendarBlank,
   ChartLine,
@@ -21,7 +19,6 @@ import {
   Wallet,
   X,
   ArrowCounterClockwise,
-  CaretRight,
   MapPin,
   FilmSlate,
   Link as LinkIcon,
@@ -84,8 +81,6 @@ const icons = {
   timer: Timer,
   settings: GearSix,
   fullscreen: CornersOut,
-  arrow: ArrowRight,
-  back: ArrowLeft,
   book: BookOpenText,
   calendar: CalendarBlank,
   chart: ChartLine,
@@ -105,7 +100,6 @@ const icons = {
   close: X,
   seal: SealCheck,
   reset: ArrowCounterClockwise,
-  caret: CaretRight,
   pin: MapPin,
   film: FilmSlate,
   link: LinkIcon,
@@ -237,8 +231,8 @@ export function Modal({
           onClick={onClose}
           aria-label={closeLabel}
         >
-          <Icon name={closeLabel === "返回全景" ? "back" : "close"} />
-          {closeLabel === "返回全景" && <span>返回全景</span>}
+          {!closeLabel.startsWith("返回") && <Icon name="close" />}
+          {closeLabel.startsWith("返回") && <span>{closeLabel}</span>}
         </button>
       </div>
       <div className="modal-body">{children}</div>

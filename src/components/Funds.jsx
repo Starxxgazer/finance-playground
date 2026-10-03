@@ -1,651 +1,206 @@
 import { useEffect, useRef, useState } from "react";
 import { byId, assumption, chain } from "../game/content.js";
-import {
-  amounts,
-  calculatePlan,
-  evaluateProof,
-  getLine,
-  validChain,
-} from "../game/model.js";
-import { Button, Icon, Dialogue } from "./Ui.jsx";
+import { amounts, calculatePlan, evaluateProof, getLine, validChain } from "../game/model.js";
+import { Icon } from "./Ui.jsx";
 import Evidence, { Feedback } from "./Evidence.jsx";
-import ItemIcon from "./ItemIcon.jsx";
 import { Month } from "./Calendar.jsx";
 
-export function EvidencePicker({
-  seen,
-  refs,
-  onChange,
-  max = 2,
-  hint = false,
-  label = "选取依据",
-  onSource,
-}) {
-  const [doc, setDoc] = useState("");
-  const [feedback, setFeedback] = useState("");
-  function add(line) {
-    if (refs.length >= max) {
-      setFeedback("这处已经放好了。先收起原来的纸条，再换一条。");
-      return;
-    }
-    onChange([...refs, { doc, line }]);
-    setDoc("");
-    setFeedback("");
-  }
+export function EvidencePicker({ seen, refs, onChange, max = 2, label = "选取依据", onSource, suggestedDoc = "", suggestedCanonical = "" }) {
+  const [doc, setDoc] = useState(seen.includes(suggestedDoc) ? suggestedDoc : "");
+  const [showAll, setShowAll] = useState(false);
+  const lines = doc ? byId[doc].lines : [];
+  const focused = suggestedCanonical && !showAll && doc === suggestedDoc;
   return (
-    <div className="evidence-picker object-picker">
-      <div className="reference-slots">
-        {Array.from({ length: max }, (_, i) => {
-          const ref = refs[i];
-          return (
-            <div className={`reference-slot ${ref ? "filled" : ""}`} key={i}>
-              {ref ? (
-                <>
-                  <small>{byId[ref.doc].title}</small>
-                  <p>{getLine(ref)?.text}</p>
-                  <button
-                    className="text-button"
-                    aria-label={`收起第${i + 1}份依据`}
-                    onClick={() => onChange(refs.filter((_, j) => j !== i))}
-                  >
-                    <Icon name="close" size={14} />
-                    收起，换一条
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Icon name="file" size={24} />
-                  <p>{max === 1 ? label : `第${i + 1}份依据`}</p>
-                  <small>翻开物件，圈出一行原文</small>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      {refs.length < max && (
-        <>
-          <p className="section-caption">{label} · 已收集的物件</p>
-          <div className="evidence-objects" role="group" aria-label={label}>
-            {seen
-              .filter((id) => byId[id])
-              .map((id) => (
-                <button
-                  key={id}
-                  aria-pressed={doc === id}
-                  onClick={() => {
-                    setDoc(doc === id ? "" : id);
-                    setFeedback("");
-                  }}
-                >
-                  <ItemIcon id={id} small />
-                  <span>{byId[id].title}</span>
-                </button>
-              ))}
+    <div className="evidence-picker simple-evidence-picker">
+      {refs.length > 0 && <div className="reference-slots">
+        {refs.map((ref, i) => <div className="reference-slot filled" key={`${ref.doc}-${ref.line}-${i}`}>
+          <small>{byId[ref.doc].title}</small>
+          <p>{getLine(ref)?.text}</p>
+          <button className="text-button" aria-label={`收起第${i + 1}份依据`} onClick={() => onChange(refs.filter((_, j) => j !== i))}>换一条</button>
+        </div>)}
+      </div>}
+      {refs.length < max && <>
+        <label className="evidence-select">
+          {suggestedDoc ? "引用原文" : label}
+          <select aria-label="选择原资料" value={doc} onChange={(event) => { setDoc(event.target.value); setShowAll(true); }}>
+            <option value="">选资料，点原文</option>
+            {seen.filter((id) => byId[id]).map((id) => <option key={id} value={id}>{byId[id].title}</option>)}
+          </select>
+        </label>
+        {doc && <div className="selectable-lines">
+          <div className="document-source">
+            {byId[doc].title} · {byId[doc].nature} / {byId[doc].date}
+            {onSource && <button className="text-button" onClick={() => onSource(doc)}>完整原件</button>}
           </div>
-          {doc && (
-            <div className="selectable-lines">
-              <div className="document-source">
-                {byId[doc].title} · {byId[doc].nature} / {byId[doc].date}
-                {onSource && (
-                  <button className="text-button" onClick={() => onSource(doc)}>
-                    查看原件
-                  </button>
-                )}
-              </div>
-              {byId[doc].lines.map((line) => (
-                <button
-                  key={line.id}
-                  className={
-                    hint && ["old-early", "new-later"].includes(line.canonical)
-                      ? "hint-line"
-                      : ""
-                  }
-                  onClick={() => add(line.id)}
-                >
-                  <span>{line.text}</span>
-                  <Icon name="link" size={18} />
-                </button>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-      <Feedback>{feedback}</Feedback>
+          {lines.filter((line) => !focused || line.canonical === suggestedCanonical).map((line) => <button key={line.id} onClick={() => {
+            onChange([...refs, { doc, line: line.id }]);
+            if (!suggestedDoc) setDoc("");
+          }}><span>{line.text}</span><Icon name="link" size={16} /></button>)}
+          {focused && <button className="text-button" onClick={() => setShowAll(true)}>展开其他原文</button>}
+        </div>}
+      </>}
     </div>
   );
 }
 
 const moneyCards = [
-  { id: "oldDebt", label: "旧设备尾款", source: "debt", side: "payment" },
-  { id: "cash", label: "当前可用现金", source: "ledger", side: "available" },
-  { id: "startup", label: "新店首批付款", source: "budget", side: "payment" },
-  {
-    id: "loan",
-    label: "假设贷款到账",
-    source: "calculation",
-    side: "available",
-  },
+  { id: "oldDebt", label: "旧设备尾款", source: "debt", side: "payment", hint: "欠款 → 要付" },
+  { id: "cash", label: "当前可用现金", source: "ledger", side: "available", hint: "手头的钱 → 可用" },
+  { id: "startup", label: "新店首批付款", source: "budget", side: "payment", hint: "开店付款 → 要付" },
+  { id: "loan", label: "假设贷款到账", source: "calculation", side: "available", hint: "假设到账 → 可用（未获批）" },
 ];
-const phaseFor = (f) =>
-  !f.initial
-    ? "initial"
-    : f.noted
-      ? "saved"
-      : f.chainDone
-        ? "note"
-        : f.explained
-          ? "order"
-          : f.gap
-            ? "gap"
-            : !f.day
-              ? "date"
-              : !f.refs.length
-                ? "available"
-                : "payment";
+
+function ProofDesk({ state, dispatch, onSource, error }) {
+  const f = state.funds;
+  const [target, setTarget] = useState(f.refs.length === 1 ? 1 : 0);
+  const [pickerVersion, setPickerVersion] = useState(0);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  return <div className="simple-proof-desk">
+    <details className="funds-date-source">
+      <summary>付款原件 · 11月10日到期</summary>
+      <p className="funds-source-label">{byId.budget.title} · {byId.budget.nature}</p>
+      {byId.budget.lines.slice(0, 2).map((line) => <p key={line.id}>{line.text}</p>)}
+      <details><summary>预算补充说明</summary><p>{byId.budget.lines[2].text}</p></details>
+      <button className="text-button" onClick={() => onSource("budget")}>完整原件与来源</button>
+    </details>
+    <div className="simple-date-choice">
+      <button className="funds-date-shortcut" aria-pressed={f.day === 10} onClick={() => dispatch({ type: "DAY", day: 10 })}>选11月10日</button>
+    <details className="proof-date" open={calendarOpen} onToggle={(event) => setCalendarOpen(event.currentTarget.open)}>
+      <summary>{f.day ? `① 已选11月${f.day}日 · 点这里改日期` : "其他日期"}</summary>
+      <Month day={f.day} onDay={(day) => { dispatch({ type: "DAY", day }); setCalendarOpen(false); }} />
+    </details>
+    </div>
+    {f.day && <div className="proof-work">
+      <div className="proof-targets">
+        {["到这天能用的钱", "这天要付的钱"].map((label, index) => <button
+          key={label} className={`proof-target ${target === index ? "current" : ""}`} aria-pressed={target === index}
+          disabled={index === 1 && !f.refs[0]} onClick={() => { setTarget(index); setPickerVersion((value) => value + 1); }}>
+          <strong>{index === 0 ? "②" : "③"} {label}</strong>
+          {f.refs[index] ? <><span>✓ 已引用</span><small>点此更换</small></> : <span>{target === index ? "点下方原文 ↓" : "待引用"}</span>}
+        </button>)}
+      </div>
+      <Feedback>{error}</Feedback>
+      {error && <p className="funds-repair">日期点“10”；②选前十天收支，③选10日付款。</p>}
+      <EvidencePicker key={`${target}-${pickerVersion}`} seen={state.seen} refs={[]} max={1} suggestedDoc={target === 0 ? "ledger" : "budget"}
+        suggestedCanonical={target === 0 ? "old-early" : "new-later"}
+        label={target === 0 ? "找能用的钱" : "找要付的钱"} onSource={onSource}
+        onChange={([ref]) => {
+          const next = [...f.refs];
+          next[target] = ref;
+          dispatch({ type: "REFS", refs: next });
+          if (target === 0 && !f.refs[1]) setTarget(1);
+        }} />
+    </div>}
+  </div>;
+}
+
+function OrderDesk({ state, dispatch, onSource }) {
+  const f = state.funds;
+  const wrongIndex = f.order.findIndex((id, index) => id !== chain[index].id);
+  const nextHint = wrongIndex !== -1
+    ? `第${wrongIndex + 1}步应是“${chain[wrongIndex].label}”。点已放纸条可撤回。`
+    : f.order.length < chain.length
+      ? `现在点“${chain[f.order.length].label}”，放到第${f.order.length + 1}步。`
+      : "最后点“付清余款后发货”的原文。";
+  return <div className="simple-order-desk">
+    <div>
+      <p className="choice-guidance">从左到右点四步，再引用发货条件。</p>
+      <p className="funds-next-action" role="status">{nextHint}</p>
+      <div className="sequence-slots">
+        {Array.from({ length: 4 }, (_, i) => {
+          const card = chain.find((c) => c.id === f.order[i]);
+          return <button key={i} className={card ? "filled" : ""} disabled={!card}
+            aria-label={card ? `收回${card.label}` : `第${i + 1}步`}
+            onClick={() => dispatch({ type: "ORDER", order: f.order.filter((id) => id !== card.id) })}>
+            <small>{i + 1}</small><strong>{card?.label || "…"}</strong>
+          </button>;
+        })}
+      </div>
+      <div className="paper-options">
+        {chain.filter((c) => !f.order.includes(c.id)).map((c) =>
+          <button key={c.id} onClick={() => dispatch({ type: "ORDER", order: [...f.order, c.id] })}>{c.label}</button>)}
+      </div>
+      {f.order.length > 0 && <small>点已放的纸条可重排。</small>}
+    </div>
+    <EvidencePicker seen={state.seen} max={1} refs={f.condition ? [f.condition] : []} suggestedDoc="equipment" suggestedCanonical="delivery"
+      label="什么条件满足后才能发货？" onSource={onSource}
+      onChange={(refs) => dispatch(refs[0] ? { type: "CONDITION", ref: refs[0] } : { type: "CLEAR_CONDITION" })} />
+  </div>;
+}
 
 export default function Funds({ state, dispatch, onSource }) {
   const f = state.funds;
-  const [phase, setPhase] = useState(() => phaseFor(f));
-  const [selected, setSelected] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const heading = useRef(null);
   const plan = calculatePlan();
-  const stepHeading = useRef(null);
-  useEffect(() => {
-    stepHeading.current
-      ?.closest(".work-glass")
-      ?.scrollTo({ top: 0, behavior: "instant" });
-    stepHeading.current?.focus({ preventScroll: true });
-  }, [phase]);
-  const gapWan = Math.abs(plan.day10) / 10000;
+  const stage = !f.initial ? "initial" : !f.gap ? "proof" : !f.explained ? "explain" : !f.noted ? "order" : "saved";
   const placements = f.placements || {};
-  function go(next) {
+  const stages = ["initial", "proof", "explain", "order"];
+  const stageIndex = stage === "saved" ? 4 : stages.indexOf(stage);
+  const proof = evaluateProof(f.day, f.refs, f.initial, state.seen);
+  const chainValid = validChain(f.order, f.condition, state.seen);
+  useEffect(() => { dispatch({ type: "READ", id: "calculation" }); }, [dispatch]);
+  useEffect(() => {
+    if (!f.initial && moneyCards.every((card) => placements[card.id] === card.side)) dispatch({ type: "INITIAL" });
+    if (f.initial && !f.gap && proof.ok && getLine(f.refs[0])?.canonical === "old-early") dispatch({ type: "CALCULATE" });
+    if (f.explained && !f.noted && chainValid) dispatch({ type: f.chainDone ? "SAVE_RISK" : "CHECK_CHAIN" });
+  }, [f, placements, proof.ok, chainValid, dispatch]);
+  useEffect(() => {
+    heading.current?.closest(".work-glass")?.scrollTo({ top: 0, behavior: "instant" });
+    heading.current?.focus({ preventScroll: true });
     setFeedback("");
-    setPhase(next);
-  }
-  function readTable() {
-    dispatch({ type: "READ", id: "calculation" });
-    onSource("calculation");
-  }
-  function place(side) {
-    if (!selected) {
-      setFeedback("先拿起一张凭据，再放到相应的位置。");
-      return;
-    }
-    dispatch({ type: "READ", id: "calculation" });
-    dispatch({ type: "INITIAL_PLACE", id: selected, side });
-    setSelected(null);
-    setFeedback("");
-  }
-  function confirmInitial() {
-    dispatch({ type: "READ", id: "calculation" });
-    if (!moneyCards.every((c) => placements[c.id] === c.side)) {
-      setFeedback(
-        "再看一眼：手上已有的钱、假设借到的钱放一边；需要付出去的钱放另一边。点凭据可以重新摆。",
-      );
-      return;
-    }
-    dispatch({ type: "INITIAL" });
-    go("balance");
-  }
-  function putRef(index, refs) {
-    const next = [...f.refs];
-    if (refs[0]) next[index] = refs[0];
-    else next.splice(index);
-    dispatch({ type: "REFS", refs: next });
-    setFeedback("");
-  }
-  function calculate() {
-    const result = evaluateProof(f.day, f.refs, f.initial, state.seen);
-    if (!result.ok) {
-      setFeedback(result.message);
-      return;
-    }
-    if (getLine(f.refs[0])?.canonical !== "old-early") {
-      setFeedback(
-        "两张资料找对了，再把它们放回对应的位置：先放能留下的钱，再放要付的钱。",
-      );
-      return;
-    }
-    dispatch({ type: "CALCULATE" });
-    go("gap");
-  }
-  const stage = ["initial", "balance"].includes(phase)
-    ? 1
-    : ["date", "available", "payment", "gap"].includes(phase)
-      ? 2
-      : 3;
-  return (
-    <div className="funds-workspace guided-desk">
-      <header className="desk-chapter">
-        <span className="section-caption">打烊后的资金桌 · {stage} / 3</span>
-        <h2 ref={stepHeading} tabIndex={-1}>
-          {
-            [
-              "",
-              "先摆清月初的钱",
-              "找到接不上的那一天",
-              "后面的收入，能提前用吗？",
-            ][stage]
-          }
-        </h2>
-        <p className="assumption">{assumption}</p>
-      </header>
-      <div className="desk-tools">
-        <button className="text-button" onClick={readTable}>
-          <Icon name="book" />
-          翻看陈叔的计算表
-        </button>
-        {f.initial && <span>月初余额已核对：{plan.initial / 10000} 万元</span>}
+  }, [stage]);
+  const initialError = moneyCards.every((card) => placements[card.id]) && !moneyCards.every((card) => placements[card.id] === card.side);
+  const proofError = f.day && f.refs.length === 2 && (!proof.ok ? proof.message : getLine(f.refs[0])?.canonical !== "old-early" ? "两条依据放反了：先选能用的钱，再选要付的钱。" : "");
+  const chainError = f.order.length === 4 && f.condition && !chainValid
+    ? getLine(f.condition)?.canonical !== "delivery" ? "点依据上的“换一条”，改选“付清余款后发货”开头的整句。" : "点已放的纸条收回，按“付设备余款 → 发货安装 → 开门营业 → 收到营业款”重排。" : "";
+  return <div className="funds-workspace guided-desk simple-funds" data-stage={stage}>
+    <div className="desk-context side-paper">
+    <header className="desk-chapter">
+      <ol className="funds-progress" aria-label="资金桌进度">{["分清钱", "对日期", "看原因", "排先后"].map((label, index) => <li key={label} aria-current={stageIndex === index ? "step" : undefined} className={stageIndex > index ? "done" : ""}>{stageIndex > index ? "✓" : index + 1} {label}</li>)}</ol>
+      <h2 ref={heading} tabIndex={-1}>{({ initial: "分清进账和付款", proof: "哪天的钱不够付？", explain: "月底的钱不能提前用", order: "先付款，才能开业", saved: "资金调查已记下" })[stage]}</h2>
+      <div className="funds-coach">
+        <strong>林姐的小提示</strong>
+        <p>{({ initial: "按纸条提示点选，不用算数。", proof: "点日期，再各点一条原文。", explain: "付款前预计只攒下1万元。", order: "按排列顺序点选。", saved: "关掉这页，次日去见林姐。" })[stage]}</p>
       </div>
-      <section className="desk-step" aria-label={`资金桌第${stage}段`}>
-        {phase === "initial" && (
-          <>
-            <Dialogue person="xiaohe">
-              先别算月底。月初手上能用哪些钱，又得先付出去哪些？我来记数，你帮忙摆一摆。
-            </Dialogue>
-            <p className="muted">
-              先点一张凭据，再点它应该放的位置。贷款只是计算假设，还没有实际到账。
-            </p>
-            <div className="money-cards">
-              {moneyCards.map((c) => (
-                <div
-                  key={c.id}
-                  className={`money-card ${selected === c.id ? "selected" : ""}`}
-                >
-                  <button
-                    aria-pressed={selected === c.id}
-                    onClick={() => setSelected(c.id)}
-                  >
-                    <ItemIcon id={c.source} small />
-                    <span>{c.label}</span>
-                    <strong>{amounts[c.id] / 10000} 万元</strong>
-                    <small>
-                      {placements[c.id]
-                        ? placements[c.id] === "available"
-                          ? "已放：可用的钱"
-                          : "已放：要付的钱"
-                        : "拿起凭据"}
-                    </small>
-                  </button>
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      if (c.source === "calculation")
-                        dispatch({ type: "READ", id: "calculation" });
-                      onSource(c.source);
-                    }}
-                  >
-                    原件
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="money-trays">
-              {[
-                ["available", "可用的钱", "已有现金，以及假设到账的贷款"],
-                ["payment", "要付的钱", "月初先要履行的付款"],
-              ].map(([side, title, subtitle]) => (
-                <button key={side} onClick={() => place(side)}>
-                  <Icon
-                    name={side === "available" ? "wallet" : "receipt"}
-                    size={28}
-                  />
-                  <strong>{title}</strong>
-                  <small>{subtitle}</small>
-                  <span>
-                    {moneyCards
-                      .filter((c) => placements[c.id] === side)
-                      .map((c) => c.label)
-                      .join(" · ") || "把凭据放在这里"}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <Button onClick={confirmInitial}>摆好了，请小禾算一算</Button>
-          </>
-        )}
-        {phase === "balance" && (
-          <>
-            <Dialogue person="xiaohe">
-              两万现金，加上假设借到的二十万，付完这两笔，月初就没有余钱了。
-            </Dialogue>
-            <div className="desk-total">
-              {amounts.cash / 10000} ＋ {amounts.loan / 10000} −{" "}
-              {amounts.oldDebt / 10000} − {amounts.startup / 10000} ＝{" "}
-              <strong>{plan.initial / 10000} 万元</strong>
-            </div>
-            <Dialogue person="chen">
-              那后面的款，就得看店里什么时候能留下钱。
-            </Dialogue>
-            <Button onClick={() => go("date")}>看看后面还有哪笔付款</Button>
-          </>
-        )}
-        {phase === "date" && (
-          <>
-            <Dialogue person="xiaohe">
-              下一笔大额付款，单据上写的是哪一天？我们就看看，那时的钱够不够。
-            </Dialogue>
-            <div className="date-desk">
-              <Month
-                day={f.day}
-                onDay={(day) => {
-                  dispatch({ type: "DAY", day });
-                  setFeedback("");
-                }}
-              />
-              <div className="desk-documents">
-                <p>翻原单据找日期，再圈日历。</p>
-                {["budget", "equipment", "schedule"]
-                  .filter((id) => state.seen.includes(id))
-                  .map((id) => (
-                    <button key={id} onClick={() => onSource(id)}>
-                      <ItemIcon id={id} small />
-                      <span>{byId[id].title}</span>
-                    </button>
-                  ))}
-              </div>
-            </div>
-            <Button disabled={!f.day} onClick={() => go("available")}>
-              检查{f.day ? `11月${f.day}日` : "选定日期"}的钱
-            </Button>
-          </>
-        )}
-        {["available", "payment"].includes(phase) && (
-          <>
-            <p className="desk-date-tag">
-              正在核对：11月{f.day}日{" "}
-              <button className="text-button" onClick={() => go("date")}>
-                重选日期
-              </button>
-            </p>
-            <Dialogue person="xiaohe">
-              {phase === "available"
-                ? "到你圈的这天，老店预计能留下多少钱？从原单据圈出收支记录，别把还没挣到的也算进来。"
-                : "现在再找这一天要付的钱。把另一份资料里的付款记录放在旁边。"}
-            </Dialogue>
-            {phase === "payment" && (
-              <button
-                className="desk-kept-note"
-                onClick={() => go("available")}
-              >
-                <Icon name="file" />
-                <span>
-                  到时能留下的钱：{getLine(f.refs[0])?.text || "尚未放好"}
-                </span>
-                <small>点击换依据</small>
-              </button>
-            )}
-            <EvidencePicker
-              key={phase}
-              seen={state.seen}
-              max={1}
-              refs={
-                f.refs[phase === "available" ? 0 : 1]
-                  ? [f.refs[phase === "available" ? 0 : 1]]
-                  : []
-              }
-              label={
-                phase === "available" ? "到这时能留下的钱" : "这天要付的钱"
-              }
-              onChange={(refs) => putRef(phase === "available" ? 0 : 1, refs)}
-              onSource={onSource}
-            />
-            {phase === "available" ? (
-              <Button disabled={!f.refs[0]} onClick={() => go("payment")}>
-                再找这一天要付的钱
-              </Button>
-            ) : (
-              <Button disabled={f.refs.length !== 2} onClick={calculate}>
-                两份放好了，请小禾算一算
-              </Button>
-            )}
-            <div className="desk-help">
-              <button
-                className="text-button"
-                onClick={() => dispatch({ type: "HINT" })}
-              >
-                <Icon name="hint" />
-                问问小禾
-              </button>
-              {f.hint > 0 && (
-                <p role="status">
-                  {
-                    [
-                      "",
-                      "先看付款的具体日期，再看那之前的经营收支。",
-                      "整月结余不能提前拿来用，两份资料也不能引用同一条账目。",
-                      "看看新店预算的后续付款，再翻老店按时间分段的经营收支。",
-                    ][f.hint]
-                  }
-                </p>
-              )}
-            </div>
-          </>
-        )}
-        {phase === "gap" &&
-          f.gap &&
-          evaluateProof(f.day, f.refs, f.initial, state.seen).ok && (
-            <>
-              <Dialogue person="xiaohe">
-                两份单据对上了。到这一天，还接不上这笔付款。
-              </Dialogue>
-              <div className="desk-payment-proof">
-                <div className="desk-payment-heading">
-                  <h3>11月{f.day}日 · 六个付款位置</h3>
-                  <span className="stamp">按原计划估算</span>
-                </div>
-                <p>每格代表1万元。预计能用的钱，只能填上其中一格。</p>
-                <div
-                  className="desk-payment-slots"
-                  role="img"
-                  aria-label={`到期付款6万元，预计可用1万元，五个付款位置空缺，共缺${gapWan}万元`}
-                >
-                  {Array.from({ length: amounts.followup / 10000 }, (_, i) => {
-                    const available =
-                      i <
-                      (plan.initial +
-                        amounts.oldReceipts[0] -
-                        amounts.oldPayments[0]) /
-                        10000;
-                    return (
-                      <div
-                        key={i}
-                        className={`desk-payment-slot ${available ? "available" : "empty"}`}
-                      >
-                        <Icon
-                          name={available ? "wallet" : "receipt"}
-                          size={28}
-                        />
-                        <strong>1万元</strong>
-                        <small>{available ? "预计可用" : "付款空位"}</small>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="desk-total">
-                月初 {plan.initial / 10000} ＋ 前十天{" "}
-                {(amounts.oldReceipts[0] - amounts.oldPayments[0]) / 10000} −
-                到期付款 {amounts.followup / 10000}
-                <strong>预计缺 {gapWan} 万元</strong>
-              </div>
-              <p className="muted">
-                单位：万元。经营收支是预测，贷款仍是假设到账。
-              </p>
-              <Dialogue person="chen">老店一个月不是能剩六万吗？</Dialogue>
-              <p>把能回答陈叔的那行原文指给他看。</p>
-              <div className="choices">
-                {f.refs.map((ref, i) => (
-                  <button
-                    className="sentence-choice"
-                    key={i}
-                    onClick={() => {
-                      if (getLine(ref)?.canonical !== "old-early") {
-                        setFeedback(
-                          "这是要付的钱。陈叔想知道的是，这时已经能留下多少钱。",
-                        );
-                        return;
-                      }
-                      dispatch({ type: "EXPLAIN", ref });
-                      go("order");
-                    }}
-                  >
-                    {getLine(ref)?.text}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        {phase === "order" && (
-          <>
-            <Dialogue person="chen">
-              我把后面才能挣的钱，算到前面去了。
-            </Dialogue>
-            <Dialogue person="xiaohe">
-              那等新店开门收到钱，再把前面这笔补上呢？
-            </Dialogue>
-            <h3>把四张纸条依次摆好</h3>
-            <p className="muted">
-              点选纸条放入下一格；点已放好的纸条可以收回重排。
-            </p>
-            <div className="sequence-slots">
-              {Array.from({ length: 4 }, (_, i) => {
-                const card = chain.find((c) => c.id === f.order[i]);
-                return (
-                  <button
-                    key={i}
-                    className={card ? "filled" : ""}
-                    disabled={!card}
-                    onClick={() =>
-                      dispatch({
-                        type: "ORDER",
-                        order: f.order.filter((id) => id !== card.id),
-                      })
-                    }
-                  >
-                    <small>{i + 1}</small>
-                    <strong>{card?.label || "放一张纸条"}</strong>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="paper-options">
-              {[chain[2], chain[0], chain[3], chain[1]]
-                .filter((c) => !f.order.includes(c.id))
-                .map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() =>
-                      dispatch({ type: "ORDER", order: [...f.order, c.id] })
-                    }
-                  >
-                    {c.label}
-                    <Icon name="arrow" size={16} />
-                  </button>
-                ))}
-            </div>
-            <Button
-              disabled={f.order.length !== 4}
-              onClick={() => go("condition")}
-            >
-              找一句原文，核实这个顺序
-            </Button>
-          </>
-        )}
-        {phase === "condition" && (
-          <>
-            <Dialogue person="xiaohe">
-              设备什么时候能发货，不能光凭我们猜。哪句条款能说明？
-            </Dialogue>
-            <button className="desk-kept-note" onClick={() => go("order")}>
-              <span>
-                {f.order
-                  .map((id) => chain.find((c) => c.id === id)?.label)
-                  .join(" → ")}
-              </span>
-              <small>点击重排</small>
-            </button>
-            <EvidencePicker
-              seen={state.seen}
-              max={1}
-              refs={f.condition ? [f.condition] : []}
-              label="引用发货依据"
-              onSource={onSource}
-              onChange={(refs) =>
-                dispatch(
-                  refs[0]
-                    ? { type: "CONDITION", ref: refs[0] }
-                    : { type: "CLEAR_CONDITION" },
-                )
-              }
-            />
-            <Button
-              onClick={() => {
-                if (!validChain(f.order, f.condition, state.seen)) {
-                  setFeedback(
-                    getLine(f.condition)?.canonical !== "delivery"
-                      ? "还需要发货条件的原文。翻翻设备采购资料，什么条件满足后才能发货？"
-                      : "原文说要先付清余款。看看你摆的顺序，后面的事能提前发生吗？可以回去重排。",
-                  );
-                  return;
-                }
-                dispatch({ type: "CHECK_CHAIN" });
-                go("note");
-              }}
-            >
-              拿着依据，看看顺序
-            </Button>
-          </>
-        )}
-        {phase === "note" && (
-          <>
-            <Dialogue person="xiaohe">
-              得先付上，后面的生意才做得起来。开业后的收入，补不了开业前必须付的款。
-            </Dialogue>
-            <p className="open-question">
-              付完款还要核实安装、人员和手续，不能保证十五号一定开业。
-            </p>
-            <Dialogue person="chen">
-              这笔钱怎么接上，设备什么时候能到，还得问清楚。
-            </Dialogue>
-            <Button
-              onClick={() => {
-                dispatch({ type: "SAVE_RISK" });
-                go("saved");
-              }}
-            >
-              记下发现
-              <Icon name="notebook" />
-            </Button>
-          </>
-        )}
-        {phase === "saved" && (
-          <>
-            <Evidence id="risk-note" />
-            <Feedback success>
-              原计算表、两份缺口依据和发货条件都已保存，明天带给林姐。
-            </Feedback>
-            <div className="proof-links">
-              {[
-                ...new Set([
-                  "calculation",
-                  ...f.refs.map((r) => r.doc),
-                  f.condition?.doc,
-                ]),
-              ]
-                .filter(Boolean)
-                .map((id) => (
-                  <button key={id} onClick={() => onSource(id)}>
-                    <Icon name="link" />
-                    {byId[id].title}
-                  </button>
-                ))}
-            </div>
-          </>
-        )}
-        <Feedback>{feedback}</Feedback>
-      </section>
+      <details className="desk-assumption"><summary>贷款到账、按期开业均为假设</summary><p className="assumption">{assumption}</p></details>
+    </header>
+    <div className="desk-tools">
+      <button className="text-button" onClick={() => onSource("calculation")}>陈叔的计算表</button>
+      {f.initial && <details className="funds-initial-result"><summary>月初预计剩 {plan.initial / 10000} 万元 · 看算式</summary><p>{amounts.cash / 10000} ＋ {amounts.loan / 10000} − {amounts.oldDebt / 10000} − {amounts.startup / 10000} ＝ {plan.initial / 10000} 万元（假设贷款到账）</p></details>}
     </div>
-  );
+    </div>
+    <section className="desk-step side-paper" aria-label="资金桌调查">
+      {stage === "initial" && <>
+        <div className="money-cards simple-money-cards">{moneyCards.map((card) => <div className="money-card" key={card.id}>
+          <div className="money-caption"><span>{card.label}</span><strong>{amounts[card.id] / 10000} 万元</strong>
+            <button className="text-button" onClick={() => onSource(card.source)}>原件</button></div>
+          <small className="money-card-hint">{card.hint}</small>
+          <div className="money-choice" role="group" aria-label={card.label}>
+            {[["available", "可用"], ["payment", "要付"]].map(([side, label]) => <button key={side}
+              aria-pressed={placements[card.id] === side} onClick={() => dispatch({ type: "INITIAL_PLACE", id: card.id, side })}>{label}</button>)}
+          </div>
+          {placements[card.id] && <small className={`money-check ${placements[card.id] === card.side ? "correct" : "retry"}`}>{placements[card.id] === card.side ? "✓ 这笔对了" : `再想想：${card.side === "available" ? "这笔是拿来付款的钱，点“可用”。" : "这笔要交给别人，点“要付”。"}`}</small>}
+        </div>)}</div>
+        <Feedback>{initialError ? "还有放反的钱。已有和借来的可用，欠款和采购要付。" : ""}</Feedback>
+      </>}
+      {stage === "proof" && <><ProofDesk state={state} dispatch={dispatch} onSource={onSource} error={proofError} /></>}
+      {stage === "explain" && proof.ok && <>
+        <div className="desk-total">11月{f.day}日：月初 {plan.initial / 10000} ＋ 前十天 {(amounts.oldReceipts[0] - amounts.oldPayments[0]) / 10000} − 到期款 {amounts.followup / 10000}<strong>预计缺 {Math.abs(plan.day10) / 10000} 万元</strong></div>
+        <p className="muted">单位：万元。经营收支为预测，贷款假设到账。</p>
+        <h3>陈叔：“老店一个月不是能剩六万吗？”</h3>
+        <p className="choice-guidance">点下方收支原文，回答陈叔。</p>
+        <div className="choices">{f.refs.filter((ref) => getLine(ref)?.canonical === "old-early").map((ref, i) => <button className="sentence-choice" key={i} onClick={() => {
+          if (getLine(ref)?.canonical !== "old-early") { setFeedback("这句是付款。改点“11月1至10日：预计经营收款6万元，日常现金支出5万元。”"); return; }
+          dispatch({ type: "EXPLAIN", ref });
+        }}>{getLine(ref)?.text}</button>)}</div>
+        <Feedback>{feedback}</Feedback>
+      </>}
+      {stage === "order" && <><OrderDesk state={state} dispatch={dispatch} onSource={onSource} /><Feedback>{chainError}</Feedback></>}
+      {stage === "saved" && <>
+        <Evidence id="risk-note" />
+        <div className="proof-links">{[...new Set(["calculation", ...f.refs.map((ref) => ref.doc), f.condition?.doc])].filter(Boolean).map((id) => <button key={id} onClick={() => onSource(id)}><Icon name="link" />{byId[id].title}</button>)}</div>
+      </>}
+    </section>
+  </div>;
 }

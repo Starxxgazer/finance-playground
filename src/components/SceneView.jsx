@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cameraFrame } from "../game/camera.js";
+import { sceneObject, sceneImageSize } from "../game/scene-objects.js";
 import { asset, Icon } from "./Ui.jsx";
+import { useEdgePan } from "./useEdgePan.js";
 
 const descriptions = {
   bakery: "小禾在柜台装面包，陈叔在烤箱旁查看面包，顾客在门口排队",
@@ -12,26 +14,22 @@ const descriptions = {
     "小禾在新铺窗边拿着日期留白的邀请函，陈叔在远处测量设备位置",
 };
 
-// Object contours, not interface icons. Coordinates fit each object's projected region.
-function Contour({ shape }) {
-  const paths = {
-    equipment:
-      "M17 17L74 8L92 23L92 85L36 95L17 78Z M17 17L36 33L92 23 M36 33L36 95 M43 42L84 35L84 60L43 67Z M43 74L84 67 M47 80L78 75 M22 28L28 34 M23 83L23 91 M86 88L86 96",
-    book: "M6 24L45 13L52 21L87 9L96 73L57 89L49 83L13 94Z M52 21L57 89 M45 13L49 83",
-    folder: "M7 28L34 22L40 12L91 18L94 84L10 93Z M12 35L88 27",
-    invitation: "M10 17L90 10L95 82L15 91Z M19 29L79 23 M26 70L70 66",
-    person:
-      "M33 10Q50 2 64 12 M18 37Q9 52 10 74 M82 37Q93 52 90 74 M23 91Q49 99 77 91",
-    paper: "M8 19L84 9L94 81L18 94Z M22 34L73 26 M25 47L77 39 M29 62L70 55",
-  };
+// The SVG uses the object's original aspect ratio even when its touch target
+// grows to 44px. Only the invisible target grows; the traced edge stays in place.
+function Contour({ geometry, width, height }) {
+  if (!geometry) return null;
   return (
     <svg
-      className={`hotspot-contour contour-${shape || "paper"}`}
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
+      className={`hotspot-contour ${geometry.dashed ? "contour-equipment" : ""}`}
+      viewBox={geometry.viewBox}
+      style={{ width, height }}
       aria-hidden="true"
     >
-      <path d={paths[shape] || paths.paper} />
+      <path className="contour-hit-area" d={geometry.path} />
+      <path d={geometry.path} />
+      {geometry.details.map((path, index) => (
+        <path key={index} className="contour-detail" d={path} />
+      ))}
     </svg>
   );
 }
@@ -43,20 +41,27 @@ export default function SceneView({
   onOpen,
   isDone,
   observing = false,
-  motion = true,
   paused = false,
   guidedId = null,
+  guideText = "",
+  guideNote = "",
+  resultMessage = "",
 }) {
   const ref = useRef(null);
   const drag = useRef(null);
   const moved = useRef(false);
+  const pointerFocus = useRef(false);
+  const inspectionOrigin = useRef(null);
+  const motionPaused = useRef(paused || !!focus);
+  motionPaused.current = paused || !!focus;
   const [size, setSize] = useState(() => ({
     width: window.innerWidth,
     height: window.innerHeight,
   }));
-  const [ratio, setRatio] = useState(16 / 9);
+  const [ratio, setRatio] = useState(sceneImageSize.width / sceneImageSize.height);
   const [failed, setFailed] = useState(false);
   const [pan, setPan] = useState(0.5);
+  const guiding = !focus && !paused && !!(guideText || resultMessage);
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) =>
       setSize({
@@ -78,27 +83,28 @@ export default function SceneView({
       root.style.setProperty("--look-y", "0px");
     };
     const move = (e) => {
-      if (!motion || paused || focus || reduced.matches || !fine.matches)
+      if (motionPaused.current || reduced.matches || !fine.matches || e.target.closest(".world-hotspot"))
         return;
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const r = root.getBoundingClientRect();
         root.style.setProperty(
           "--look-x",
-          `${((e.clientX - r.left) / r.width - 0.5) * -5}px`,
+          `${((e.clientX - r.left) / r.width - 0.5) * -16}px`,
         );
         root.style.setProperty(
           "--look-y",
-          `${((e.clientY - r.top) / r.height - 0.5) * -3}px`,
+          `${((e.clientY - r.top) / r.height - 0.5) * -10}px`,
         );
       });
     };
     const visibility = () => {
       root.dataset.hidden = String(document.hidden);
-      if (document.hidden) reset();
+      if (document.hidden) cancelAnimationFrame(frame);
     };
+    const leave = () => { if (!motionPaused.current) reset(); };
     root.addEventListener("pointermove", move);
-    root.addEventListener("pointerleave", reset);
+    root.addEventListener("pointerleave", leave);
     document.addEventListener("visibilitychange", visibility);
     reduced.addEventListener("change", reset);
     visibility();
@@ -106,51 +112,111 @@ export default function SceneView({
     return () => {
       reset();
       root.removeEventListener("pointermove", move);
-      root.removeEventListener("pointerleave", reset);
+      root.removeEventListener("pointerleave", leave);
       document.removeEventListener("visibilitychange", visibility);
       reduced.removeEventListener("change", reset);
     };
-  }, [motion, paused, focus]);
+  }, []);
   const base = cameraFrame(
     size.width,
     size.height,
     ratio,
     focus,
-    size.width < 700,
+    size.width < 900,
+    pan,
+    focus && inspectionOrigin.current?.viewportWidth === size.width && inspectionOrigin.current?.viewportHeight === size.height
+      ? inspectionOrigin.current : null,
   );
   const overflow = Math.max(0, base.width - size.width);
-  const frame = focus ? base : { ...base, x: -overflow * pan };
+  const stopEdgePan = useEdgePan(ref, {
+    enabled: !focus && !paused,
+    overflow,
+    pan,
+    setPan,
+  });
+  const frame = base;
+  useLayoutEffect(() => {
+    const root = ref.current;
+    const app = root.closest(".immersive-app");
+    const clue = root.querySelector(".focused-clue-marker");
+    if (clue && app) {
+      const rect = clue.getBoundingClientRect();
+      const y = rect.top + rect.height / 2;
+      root.dataset.cluePlacement = y > size.height / 2 ? "below" : "above";
+      root.dataset.clueMiddle = String(y > size.height * 0.35 && y < size.height * 0.62);
+      app.style.setProperty("--inspection-clue-y", `${y}px`);
+    }
+    return () => {
+      delete root.dataset.cluePlacement;
+      delete root.dataset.clueMiddle;
+      app?.style.removeProperty("--inspection-clue-y");
+    };
+  }, [focus, size.width, size.height]);
   const setBoundedPan = (n) => setPan(Math.max(0, Math.min(1, n)));
+  function inspect(id) {
+    stopEdgePan.current();
+    const root = ref.current;
+    const camera = root.querySelector(".camera-world");
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(camera).transform);
+    inspectionOrigin.current = { x: matrix.e, y: matrix.f, zoom: matrix.a,
+      viewportWidth: size.width, viewportHeight: size.height };
+    // During an interrupted zoom-out, keep the original browsing position;
+    // the scaled translation is not a new horizontal pan.
+    if (overflow && Math.abs(matrix.a - 1) < 0.001) setBoundedPan(-matrix.e / overflow);
+    // Preserve even a partly completed parallax movement when opening a clue.
+    const look = new DOMMatrixReadOnly(getComputedStyle(root.querySelector(".scene-parallax")).transform);
+    root.style.setProperty("--look-x", `${look.e}px`);
+    root.style.setProperty("--look-y", `${look.f}px`);
+    onOpen(id);
+  }
   function bringIntoView(spot) {
+    stopEdgePan.current();
     if (!overflow || focus) return;
     const x = frame.x + (frame.width * spot.x) / 100;
     if (x < 45 || x > size.width - 45)
       setBoundedPan(((frame.width * spot.x) / 100 - size.width / 2) / overflow);
   }
+  const lastGuide = useRef(null);
+  useEffect(() => {
+    if (paused || focus || !guidedId || lastGuide.current === guidedId) return;
+    const spot = spots.find((item) => item.id === guidedId);
+    if (spot) {
+      bringIntoView(spot);
+      lastGuide.current = guidedId;
+    }
+  }, [guidedId, paused, focus, overflow]);
   return (
     <section
       ref={ref}
       className={`world-view world-${scene.id} ${observing ? "is-observing" : ""}`}
-      data-still={!motion || !!focus || paused}
+      data-still={!!focus || paused}
       aria-label={`${scene.title}调查场景`}
       onPointerDown={(e) => {
+        pointerFocus.current = true;
         moved.current = false;
-        if (focus || !overflow || e.pointerType === "mouse") return;
+        if (focus || paused || !overflow || e.pointerType === "mouse") return;
         drag.current = { x: e.clientX, pan };
       }}
       onPointerMove={(e) => {
         if (!drag.current) return;
         const distance = e.clientX - drag.current.x;
         if (Math.abs(distance) > 8) moved.current = true;
-        if (moved.current)
+        if (moved.current) {
+          e.currentTarget.dataset.dragging = "true";
           setBoundedPan(drag.current.pan - distance / overflow);
+        }
       }}
-      onPointerUp={() => {
+      onPointerUp={(e) => {
+        pointerFocus.current = false;
         drag.current = null;
+        e.currentTarget.dataset.dragging = "false";
       }}
-      onPointerCancel={() => {
+      onPointerCancel={(e) => {
+        pointerFocus.current = false;
         drag.current = null;
+        e.currentTarget.dataset.dragging = "false";
       }}
+      onKeyDown={() => { pointerFocus.current = false; }}
     >
       <div className="scene-parallax">
         <div className="scene-drift">
@@ -180,80 +246,101 @@ export default function SceneView({
             />
             <div className="scene-atmosphere" aria-hidden="true">
               <span className="ambient-light" />
+              <span className="ambient-window" />
               <span className="ambient-dust dust-one" />
               <span className="ambient-dust dust-two" />
               <span className="ambient-dust dust-three" />
+              <span className="ambient-dust dust-four" />
+              <span className="ambient-dust dust-five" />
+              <span className="ambient-dust dust-six" />
             </div>
-          </div>
-          <div className="world-shade" />
+            {/* Shade the photograph, not the exploration outlines. Keep the
+                fade anchored to the viewport as the camera zooms and pans. */}
+            <div
+              className="world-shade"
+              style={{
+                left: -frame.x / frame.zoom,
+                top: -frame.y / frame.zoom,
+                width: size.width / frame.zoom,
+                height: size.height / frame.zoom,
+              }}
+            />
+          {focus?.id && sceneObject(scene.id, focus.id) && (
+            <div className="focused-clue" aria-hidden="true"
+              data-object-id={focus.id}
+              style={{ left: `${focus.x}%`, top: `${focus.y}%`,
+                width: frame.width * focus.width / 100,
+                height: frame.height * focus.height / 100,
+                "--focus-scale": frame.zoom }}>
+              <Contour geometry={sceneObject(scene.id, focus.id)}
+                width={frame.width * focus.width / 100} height={frame.height * focus.height / 100} />
+              <span className="focused-clue-marker"><Icon name={isDone(focus.id) ? "check" : "search"} size={18} /></span>
+            </div>
+          )}
           {!focus &&
-            spots.map((spot) => {
-              const seen = isDone(spot.id);
+            spots.map((entry) => {
+              const geometry = sceneObject(scene.id, entry.id);
+              const spot = { ...entry, ...geometry };
+              const width = (frame.width * (spot.width || 9)) / 100;
+              const height = (frame.height * (spot.height || 10)) / 100;
+              const completed = isDone(spot.id);
               return (
                 <button
                   key={spot.id}
-                  className={`world-hotspot ${seen ? "is-read" : ""} ${guidedId === spot.id ? "is-guided" : ""}`}
+                  className={`world-hotspot ${completed ? "is-read" : ""} ${guidedId === spot.id ? "is-guided" : ""}`}
+                  data-object-id={spot.id}
                   style={{
-                    left: frame.x + (frame.width * spot.x) / 100,
-                    top: frame.y + (frame.height * spot.y) / 100,
-                    width: Math.max(
-                      44,
-                      (frame.width * (spot.width || 9)) / 100,
-                    ),
-                    height: Math.max(
-                      44,
-                      (frame.height * (spot.height || 10)) / 100,
-                    ),
+                    left: `${spot.x}%`,
+                    top: `${spot.y}%`,
+                    width: Math.max(44, width),
+                    height: Math.max(44, height),
+                    "--marker-x": `${Math.max(44, width) / 2 + width * ((geometry?.markerX ?? 0.5) - 0.5)}px`,
+                    "--marker-y": `${Math.max(44, height) / 2 + height * ((geometry?.markerY ?? 0.5) - 0.5)}px`,
+                    "--marker-size": `${Math.min(22, geometry ? geometry.markerDiameter * frame.width / sceneImageSize.width : 22)}px`,
                   }}
                   aria-label={`调查${spot.label}`}
-                  onFocus={() => bringIntoView(spot)}
+                  aria-description={completed ? "已完成调查，可再次查看" : spot.optional ? "选看，不影响前往下一场景" : "主线，核对完成后才能前往下一场景"}
+                  aria-describedby={guiding && guidedId === spot.id ? "investigation-guide" : undefined}
+                  onFocus={() => {
+                    // A pointer click must not trigger keyboard auto-panning.
+                    if (!pointerFocus.current) bringIntoView(spot);
+                    else stopEdgePan.current();
+                  }}
                   onClick={(event) => {
                     // Keyboard activation has no pointerdown to clear a prior swipe.
-                    if (event.detail === 0 || !moved.current) onOpen(spot.id);
+                    if (event.detail === 0 || !moved.current) inspect(spot.id);
                   }}
                 >
-                  <Contour shape={spot.shape} />
-                  <span className="hotspot-center">
-                    {seen ? (
-                      <Icon name="check" size={13} />
+                  <Contour geometry={geometry} width={width} height={height} />
+                  <span className="hotspot-center" aria-hidden="true">
+                    {completed ? (
+                      <Icon name="check" size={12} />
                     ) : (
-                      <Icon name="search" size={15} />
+                      <Icon name="search" size={12} />
                     )}
                   </span>
                   <span className="world-hotspot-label">
                     {spot.label}
-                    <small>{seen ? "再次查看" : "靠近看看"}</small>
+                    <small>{completed ? "再次查看" : guidedId === spot.id ? "点这里 · 主线待核对" : spot.optional ? "选看 · 不拦路" : "点击调查 · 主线待核对"}</small>
                   </span>
                 </button>
               );
             })}
+          </div>
         </div>
       </div>
-      {!focus && overflow > 60 && (
-        <div className="scene-pan-controls" aria-label="移动视线">
-          <button
-            className="pan-left"
-            aria-label="向左查看现场"
-            disabled={pan <= 0}
-            onClick={() => setBoundedPan(pan - (size.width * 0.65) / overflow)}
-          >
-            <Icon name="back" size={21} />
-          </button>
-          <button
-            className="pan-right"
-            aria-label="向右查看现场"
-            disabled={pan >= 1}
-            onClick={() => setBoundedPan(pan + (size.width * 0.65) / overflow)}
-          >
-            <Icon name="arrow" size={21} />
-          </button>
+      {guiding && !failed && (
+        <div className="investigation-guide" id="investigation-guide" role="status" aria-live="polite">
+          {resultMessage && <small className="scene-result">{resultMessage}</small>}
+          <p>{guideText}</p>
+          {guideNote && <small className="tutorial-note">{guideNote}</small>}
         </div>
       )}
       {failed && (
         <div className="world-error" role="status">
           <p>现场图片暂时无法加载，仍可从以下物品继续调查。</p>
           {spots.map((spot) => (
-            <button key={spot.id} onClick={() => onOpen(spot.id)}>
+            <button key={spot.id} onClick={() => inspect(spot.id)}>
               {spot.label}
             </button>
           ))}

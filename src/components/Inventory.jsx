@@ -63,7 +63,7 @@ export default function Inventory({ state, onClose, initialSection = "items", in
           className="inventory-total"
           aria-label={`已收集 ${state.seen.length} 份，共 ${evidence.length} 份`}
         >
-          <small>归档</small>
+
           {state.seen.length}
           <i>/</i>
           {evidence.length}
@@ -131,7 +131,6 @@ export default function Inventory({ state, onClose, initialSection = "items", in
               })}
             </div>
           ))}
-          <p className="inventory-footnote">轻触物件翻阅 · 灰暗位置等待收集</p>
         </section>
       )}
       {section === "items" && selected && (
@@ -145,28 +144,18 @@ export default function Inventory({ state, onClose, initialSection = "items", in
             className="inventory-return text-button"
             onClick={returnToBoard}
           >
-            <Icon name="back" size={17} />
-            返回物品栏
+
+            返回资料包
           </button>
           {collected ? (
             <div className="inventory-original" key={selected}>
-              <div className="original-heading">
-                <ItemIcon id={selected} small />
-                <span>
-                  资料原件<small>已收集 · 可回看</small>
-                </span>
-              </div>
               <Evidence id={selected} />
-              <p className="original-note">
-                收进资料包，不代表已经核实。完成核对的发现另记在笔记里。
-              </p>
             </div>
           ) : (
             <div className="inventory-uncollected-detail">
               <ItemIcon id={selected} />
               <h3>{byId[selected].title}</h3>
               <p>尚未收集</p>
-              <small>找到这份资料后，就能在这里翻阅。</small>
             </div>
           )}
         </section>
@@ -191,7 +180,7 @@ export default function Inventory({ state, onClose, initialSection = "items", in
             <div className="inventory-empty">
               <Icon name="notebook" size={48} weight="thin" />
               <h3>笔记还没落笔</h3>
-              <p>在现场完成核对后，有依据的发现会留在这里。</p>
+              <p>核对后自动记下。</p>
             </div>
           )}
         </section>

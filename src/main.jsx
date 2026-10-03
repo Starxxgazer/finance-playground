@@ -10,6 +10,14 @@ import "./funds.css";
 import "./scene-effects.css";
 import pencilNotes from "./pencil-notes.css?inline";
 import pencilMaterials from "./pencil-materials.css?inline";
+import compactUi from "./compact-ui.css?inline";
+import simpleUi from "./simple-ui.css?inline";
+import simpleActivities from "./simple-activities.css?inline";
+import simpleFunds from "./simple-funds.css?inline";
+import simpleReading from "./simple-reading.css?inline";
+import sideUi from "./side-ui.css?inline";
+import storySound from "./story-sound.css?inline";
+const simpleStyles = simpleUi + simpleActivities + simpleFunds + simpleReading + storySound + sideUi;
 function addStyles(text) {
   const style = document.createElement("style");
   style.textContent = text;
@@ -26,12 +34,12 @@ async function boot() {
   } else if (import.meta.env.DEV && query.has("ui-preview")) {
     const { makePreview, installTheme } = await import("./design/preview.js");
     await import("./design/directions.css");
-    addStyles(pencilMaterials);
+    addStyles(pencilMaterials + compactUi + simpleStyles);
     installTheme(query.get("variant"));
     content = <App preview={makePreview(query.get("ui-preview"))} />;
   } else {
     document.documentElement.dataset.ui = "notebook";
-    addStyles(pencilNotes + pencilMaterials);
+    addStyles(pencilNotes + pencilMaterials + compactUi + simpleStyles);
     content = <App />;
   }
   createRoot(document.getElementById("root")).render(

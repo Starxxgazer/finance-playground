@@ -1,4 +1,4 @@
-# Only the playable game, its source, assets and reproducible build are published.
+# Publish the game, source, runtime assets, build tools and selected public guides.
 /*
 !/.gitignore
 !/index.html
@@ -12,15 +12,21 @@
 
 /scripts/*
 !/scripts/package-game.mjs
+!/scripts/deploy-game.py
 /public/*
 !/public/scenes/
 !/public/characters/
 !/public/items/
 !/public/ui/
 !/public/fonts/
+!/public/videos/
+!/public/audio/
 
 # Design, instructions, references, exported masters, tests and worktrees stay local.
 *.md
+!/README.md
+!/运行说明.md
+!/DEPLOYMENT.md
 node_modules/
 dist/
 test-results/

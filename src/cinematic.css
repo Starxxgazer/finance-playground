@@ -1,0 +1,114 @@
+/* Full-frame films remain separate from the paper reading surfaces. */
+.cinematic {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  background: #141310;
+  color: #f5f1e9;
+  opacity: 1;
+}
+.cinematic-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(100vw, 177.7778dvh);
+  height: min(56.25vw, 100dvh);
+  transform: translate(-50%, -50%);
+  transition: width 800ms ease-in-out, height 800ms ease-in-out;
+}
+.cinematic-frame > :is(video, img) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cinematic-caption {
+  position: absolute;
+  left: max(24px, env(safe-area-inset-left));
+  top: max(28px, env(safe-area-inset-top));
+  padding: 10px 16px;
+  text-shadow: 0 1px 8px #000;
+  background: #19171485;
+  pointer-events: none;
+}
+.cinematic-caption span { font-size: 12px; }
+.cinematic-caption p { margin: 4px 0 0; font: 20px/1.4 var(--display); }
+.cinematic-controls {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cinematic button {
+  color: #f5f1e9;
+  background: #191714c9;
+  border: 1px solid #f5f1e967;
+  border-radius: 3px;
+  padding: 10px 15px;
+  min-height: 44px;
+  font: 14px/1.5 var(--body-font);
+  cursor: pointer;
+}
+.cinematic button:hover { background: #474039e8; }
+.cinematic button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.cinematic-message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: #14131099;
+  text-align: center;
+}
+.cinematic.is-finishing {
+  pointer-events: none;
+  animation: cinematic-reveal 850ms ease-in-out forwards;
+}
+.cinematic.is-finishing .cinematic-frame {
+  width: max(100vw, 177.7778dvh);
+  height: max(56.25vw, 100dvh);
+}
+.cinematic.is-finishing :is(.cinematic-controls, .cinematic-caption, .cinematic-message) { visibility: hidden; }
+.scene-revealing :is(.scene-hud, .scene-controls, .investigation-guide) { visibility: hidden; }
+.scene-revealing .scene-drift { animation: none; transform: none; }
+.scene-revealing .scene-atmosphere { visibility: hidden; }
+@keyframes cinematic-reveal { 0%, 35% { opacity: 1; } 100% { opacity: 0; } }
+@media (max-width: 699px) {
+  .cinematic-caption { left: 12px; top: 82px; padding: 8px 12px; }
+  .cinematic-caption p { font-size: 18px; }
+  .cinematic-controls { right: 12px; bottom: max(20px, env(safe-area-inset-bottom)); gap: 6px; }
+  .cinematic button { padding-inline: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-frame { transition: none; }
+  .cinematic.is-finishing { animation: none; opacity: 0; }
+}
+
+/* Hold an outgoing decoded frame until the next clip can actually be painted. */
+/* The stage stays opaque while a decoder is loading, including at scene changes. */
+.film.is-starting::before {
+  content: ""; position: absolute; inset: 0; z-index: 5;
+  background: #141310; animation: scene-departure 360ms ease-in-out both;
+}
+.immersive-app.is-departing .modal { animation: cinematic-reveal 360ms ease-in-out forwards; pointer-events: none; }
+.cinematic-frame > .cinematic-held-frame,
+.cinematic-incoming-shade { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.cinematic-held-frame { opacity: 0; transition: opacity 700ms ease-in-out; }
+.cinematic-held-frame.is-holding { opacity: 1; transition: none; }
+.cinematic-incoming-shade { background: #141310; opacity: 0; transition: opacity 600ms ease-in-out; }
+.cinematic.awaiting-frame:not(.has-bridge) .cinematic-incoming-shade { opacity: 1; transition: none; }
+.scene-departure {
+  position: fixed; inset: 0; z-index: 20; background: #141310;
+  animation: scene-departure 360ms ease-in-out both; cursor: progress;
+}
+@keyframes scene-departure { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .film.is-starting::before, .scene-departure, .immersive-app.is-departing .modal { animation-duration: 1ms; }
+  .cinematic-held-frame, .cinematic-incoming-shade { transition-duration: 1ms; }
+}

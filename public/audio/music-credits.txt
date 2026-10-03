@@ -1,0 +1,39 @@
+《账面之下》背景音乐署名 / MUSIC CREDITS
+
+Music by Scott Buckley — www.scottbuckley.com.au
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+'First Snow' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+Source: https://www.scottbuckley.com.au/library/first-snow/
+File: first-snow.mp3
+用途：首页与序章
+
+'Childhood' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+Source: https://www.scottbuckley.com.au/library/childhood/
+File: childhood.mp3
+用途：老店、顾客及街坊访谈
+
+'Reverie' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+Source: https://www.scottbuckley.com.au/library/reverie/
+File: reverie.mp3
+用途：新铺与窗边邀请函
+
+'Undertow' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+Source: https://www.scottbuckley.com.au/library/undertow/
+File: undertow.mp3
+用途：资金桌、旧款与历史出资追查
+
+'In Search Of Solitude' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+Source: https://www.scottbuckley.com.au/library/in-search-of-solitude/
+File: in-search-of-solitude.mp3
+用途：银行复核交接
+
+'Horizons' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+Source: https://www.scottbuckley.com.au/library/horizons/
+File: horizons.mp3
+用途：邀请函结尾
+
+Changes: loudness normalization, MP3 transcoding; in-game per-scene gain, looping, smooth crossfades, return-position resume, reading attenuation and ducking beneath the original video audio.
+本项目保留原曲作者署名，不主张音乐作者身份或作者对游戏的背书。此许可仅适用于以上音乐，不为游戏代码、图片、字体或视频添加许可证。
+离线游玩不需要打开上述网站。

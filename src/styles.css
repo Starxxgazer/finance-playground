@@ -22,34 +22,7 @@
   background: var(--bg);
   font-size: 15px;
 }
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #151918;
-  --surface: #1d2220;
-  --paper: #262b27;
-  --ink: #efeee5;
-  --muted: #b4b8ac;
-  --line: #42483f;
-  --accent: #d0af75;
-  --accent-bg: #383528;
-  --button: #d0ad73;
-  --shadow: #09110dcc;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --bg: #151918;
-    --surface: #1d2220;
-    --paper: #262b27;
-    --ink: #efeee5;
-    --muted: #b4b8ac;
-    --line: #42483f;
-    --accent: #d0af75;
-    --accent-bg: #383528;
-    --button: #d0ad73;
-    --shadow: #09110dcc;
-  }
-}
+
 * {
   box-sizing: border-box;
 }

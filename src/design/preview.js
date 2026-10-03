@@ -12,7 +12,7 @@ export const surfaces = [
   ["ledger", "账本核对", "调查"], ["debt", "付款核对", "调查"], ["receipt", "回执核对", "调查"],
   ["conversation", "当面对话", "调查"], ["survey", "走访记录", "调查"], ["invitation", "窗边交谈", "调查"],
   ["bag", "资料包", "资料"], ["document", "资料详情", "资料"], ["uncollected", "未收集资料", "资料"],
-  ["people", "人物记录", "资料"], ["findings", "已记发现", "资料"], ["notes", "当前手记", "资料"],
+  ["people", "人物记录", "资料"], ["findings", "已记发现", "资料"],
   ["calendar", "付款日历", "资金"], ["money", "月初分类", "资金"], ["date", "寻找日期", "资金"],
   ["proof", "引用依据", "资金"], ["order", "收付顺序", "资金"],
   ["handover", "交接资料", "结尾"], ["company", "公司透视", "结尾"], ["ending", "邀请函结尾", "结尾"],
@@ -46,7 +46,6 @@ export function makePreview(surface) {
     { type: "CLASSIFY", id: "ledger", cash: "now", net: "forecast" },
     { type: "CLASSIFY", id: "debt", day: 1, status: "unpaid" },
     { type: "CLASSIFY", id: "receipt", amount: true, date: true, status: "paid" });
-  if (surface === "notes") return { state, clues: true };
   act(read("contract"), { type: "CONTACT_MENG" }, { type: "ADVANCE" }, { type: "FILM", index: 1 });
   if (surface === "new") return { state };
   if (surface === "invitation") return { state, active: "invitation" };

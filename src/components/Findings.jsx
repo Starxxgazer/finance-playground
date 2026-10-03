@@ -1,18 +1,28 @@
 import { useState } from "react";
 import { byId, dimensions, findings } from "../game/content.js";
+import { needsRevisit } from "../game/revisit.js";
 import { canSubmit } from "../game/state.js";
 import { getLine } from "../game/model.js";
 import { Button, Icon, Dialogue, asset } from "./Ui.jsx";
-import Evidence, { Feedback } from "./Evidence.jsx";
+import { Feedback } from "./Evidence.jsx";
 import { EvidencePicker } from "./Funds.jsx";
+
+const shortFindings = {
+  finance: "现在可用2万元；11月预计经营结余6万元。",
+  credit: "旧首款已付，尾款未安排好。",
+  reputation: "老店有人喜欢，新店需求待查。",
+  risk: "按原计划，11月10日预计缺5万元。",
+};
 
 export default function Findings({ state, dispatch, onSource }) {
   const [editing, setEditing] = useState(false);
   const [tab, setTab] = useState("finance");
+  const ready = canSubmit(state);
   if (!state.submitted)
     return (
-      <section className="handover">
-        <Dialogue person="lin">昨晚看出什么问题了？</Dialogue>
+      <section className="handover simple-handover">
+        <div className="handover-context side-paper">
+        <Dialogue person="lin">资料给我，没查清的我接着问。</Dialogue>
         {state.branches.aRequested && !state.seen.includes("alternative") && (
           <button
             className="receipt-notice"
@@ -24,24 +34,37 @@ export default function Findings({ state, dispatch, onSource }) {
             <Icon name="receipt" />
             <span>
               <strong>老孟的签字回执到了</strong>
-              <small>10月30日，点击拆开并收入资料包</small>
+              <small>点开收入资料包</small>
             </span>
-            <Icon name="arrow" />
+
           </button>
         )}
         <div className="section-title">
-          <h2>昨晚的记录，已经摊开。</h2>
+          <h2>调查手记</h2>
           <span className="stamp">{state.solved.length}条发现</span>
         </div>
+        <div className="handover-action primary-handover-action">
+          <span>全部 {state.seen.length} 份资料</span>
+          <Button disabled={!ready} onClick={() => dispatch({ type: "SUBMIT" })}>交给林姐</Button>
+        </div>
+        {!ready && <div className="citation-recovery">
+          <Feedback>依据未对齐，请恢复或调整引用。</Feedback>
+          <Button secondary onClick={() => dispatch({ type: "RESTORE_REFS" })}>恢复昨晚的依据</Button>
+        </div>}
+        </div>
+        <div className="handover-records side-paper">
         <div className="handover-notes">
           {findings
             .filter((f) => state.solved.includes(f.id))
             .map((f) => (
               <article key={f.id}>
                 <h3>{f.title}</h3>
-                <p>{f.correct}</p>
-                <p className="open-question">还要问：{f.question}</p>
-                <div className="proof-links">
+                <p>{shortFindings[f.id]}</p>
+                <p className="open-question">待查：{f.question}</p>
+                <details className="finding-sources">
+                  <summary>完整记录与依据</summary>
+                  <p>{f.correct}</p>
+                  <div className="proof-links">
                   {f.sources
                     .filter((id) => state.seen.includes(id))
                     .map((id) => (
@@ -50,20 +73,23 @@ export default function Findings({ state, dispatch, onSource }) {
                         {byId[id].title}
                       </button>
                     ))}
-                </div>
+                  </div>
+                </details>
               </article>
             ))}
         </div>
-        <section className="review-citations">
+        <details className="review-citations">
+          <summary>核对引用</summary>
           <div className="section-title">
-            <h3>昨晚用过的两份缺口依据</h3>
+            <h3>原文引用</h3>
             <button
               className="text-button"
               onClick={() => setEditing(!editing)}
             >
-              {editing ? "收起引用编辑" : "查看或调整引用"}
+              {editing ? "收起引用编辑" : "调整引用"}
             </button>
           </div>
+          {editing && <p className="choice-guidance">要交接的资金判断由哪两条原文支持？选择资料，再点原文，分别引用所查日期前可用的钱和到期要付的钱，供林姐复核。同一账目重复引用不算两条独立依据。</p>}
           {editing ? (
             <EvidencePicker
               seen={state.seen}
@@ -80,41 +106,17 @@ export default function Findings({ state, dispatch, onSource }) {
               ))}
             </div>
           )}
-          {!canSubmit(state) && (
-            <>
-              <Feedback>
-                调整后的引用还不能支持昨晚的发现。请补回对应依据，或恢复昨晚的记录。
-              </Feedback>
-              <Button
-                secondary
-                onClick={() => dispatch({ type: "RESTORE_REFS" })}
-              >
-                恢复昨晚的记录
-              </Button>
-            </>
-          )}
-        </section>
-        <div className="handover-action">
-          <p>
-            本次将交出全部已收集的 {state.seen.length}{" "}
-            份资料，包括尚未核对完的支线材料。还没查清的事也一并留下。
-          </p>
-          <Button
-            disabled={!canSubmit(state)}
-            onClick={() => dispatch({ type: "SUBMIT" })}
-          >
-            把发现和资料交给林姐
-            <Icon name="arrow" />
-          </Button>
+        </details>
         </div>
       </section>
     );
   const dimension = dimensions.find((d) => d.id === tab);
   const finding = findings.find((f) => f.id === tab);
   return (
-    <section className="company-view" aria-label="公司透视图">
+    <section className="company-view simple-company" aria-label="公司透视图">
+      <div className="company-context side-paper">
       <Dialogue person="lin">
-        你找到了钱接不上的那一天，也拿出了依据。剩下的补款、设备和开业时间，我接着核实。
+        点灰色资料补查，回来再交给我。
       </Dialogue>
       <div className="section-title">
         <div>
@@ -128,9 +130,11 @@ export default function Findings({ state, dispatch, onSource }) {
           调查已交接
         </span>
       </div>
-      <p className="muted">
-        亮起的是收到的资料。查到了什么，和还要问什么，放在一起看。
-      </p>
+      <div className="handover-action primary-handover-action">
+        <span>贷款未批准，备选分期未生效。</span>
+        <Button onClick={() => dispatch({ type: "END" })}>完成调查</Button>
+      </div>
+      </div>
       <div className="company-layout">
         <div className="company-nav" role="tablist" aria-label="公司透视图分区">
           {dimensions.map((d) => (
@@ -154,7 +158,7 @@ export default function Findings({ state, dispatch, onSource }) {
                 size={25}
               />
               <span>{d.label}</span>
-              <Icon name="caret" size={18} />
+
             </button>
           ))}
         </div>
@@ -167,9 +171,13 @@ export default function Findings({ state, dispatch, onSource }) {
           <h3>查到了什么</h3>
           <p>
             {state.solved.includes(tab)
-              ? finding.correct
-              : "顾客口碑还没有充分核实，暂不作结论。"}
+              ? shortFindings[tab]
+              : "口碑未核实，暂不作结论。"}
           </p>
+          {state.solved.includes(tab) && <details className="finding-sources">
+            <summary>完整记录</summary>
+            <p>{finding.correct}</p>
+          </details>}
           {tab === "finance" && state.branches.b && (
             <p className="extended-finding">
               陈叔投过的6万元，已用于旧设备首款；现在的可用现金仍是2万元。
@@ -203,42 +211,32 @@ export default function Findings({ state, dispatch, onSource }) {
           <div className="dimension-evidence">
             {dimension.sources.map((id) => {
               const collected = state.submittedIds.includes(id);
-              const pending =
-                collected &&
-                ((["transfer", "investment"].includes(id) &&
-                  !state.branches.b) ||
-                  (id === "survey" && !state.branches.c));
+              const revisit = needsRevisit(state, id);
+              const pending = collected && revisit;
               return (
                 <button
                   key={id}
-                  disabled={!collected}
+                  disabled={!collected && !revisit}
                   className={collected ? "collected" : "uncollected"}
-                  onClick={() => onSource(id)}
+                  onClick={() => revisit ? dispatch({ type: "REVISIT", id }) : onSource(id)}
                 >
                   <Icon name={collected ? "file" : "lock"} size={18} />
                   <span>
                     {byId[id].title}
                     <small>
                       {!collected
-                        ? "未收集"
+                        ? "未收集 · 点此补查"
                         : pending
-                          ? "已收集，待确认"
+                          ? "已收集，待确认 · 点此继续"
                           : byId[id].nature}
                     </small>
                   </span>
-                  {collected && <Icon name="caret" size={16} />}
+
                 </button>
               );
             })}
           </div>
         </article>
-      </div>
-      <div className="handover-action">
-        <p>完成首次企业调查。贷款还没批准，钱还没放出，备选分期也未生效。</p>
-        <Button onClick={() => dispatch({ type: "END" })}>
-          看看小禾发来的消息
-          <Icon name="arrow" />
-        </Button>
       </div>
     </section>
   );

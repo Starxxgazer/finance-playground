@@ -1,0 +1,73 @@
+/* A question, its original, and direct answers share one notebook surface. */
+html[data-ui="notebook"] .simple-question {
+  margin: 0 0 10px;
+  font-size: 22px;
+  line-height: 1.35;
+}
+html[data-ui="notebook"] .simple-investigation-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+html[data-ui="notebook"] .simple-investigation-grid > .document { margin-top: 0; }
+html[data-ui="notebook"] .simple-answer { margin: 0; padding: 0; border: 0; }
+html[data-ui="notebook"] .simple-pick { min-width: 0; border: 0; padding: 0; margin: 0 0 10px; }
+html[data-ui="notebook"] .simple-pick legend { padding: 0; margin-bottom: 5px; font-size: 15px; }
+html[data-ui="notebook"] .simple-options { display: flex; flex-wrap: wrap; gap: 5px; }
+html[data-ui="notebook"] .simple-options button {
+  flex: 1 1 90px;
+  min-height: 36px;
+  padding: 6px 9px;
+  color: var(--ink, #393630);
+  background: rgb(255 255 255 / 30%);
+  border: 1px solid rgb(91 83 73 / 36%);
+  border-radius: 3px 5px 3px 4px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+html[data-ui="notebook"] .simple-options button.selected {
+  background: rgb(108 99 85 / 16%);
+  border-color: #716758;
+  box-shadow: inset 0 -2px rgb(91 83 73 / 35%);
+  font-weight: 700;
+}
+html[data-ui="notebook"] .simple-options button:hover { border-color: #716758; }
+html[data-ui="notebook"] .simple-options button:focus-visible { outline: 2px solid #716758; outline-offset: 2px; }
+html[data-ui="notebook"] .simple-receipt-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+html[data-ui="notebook"] .simple-receipt-pair p + p { border-left: 1px solid rgb(91 83 73 / 25%); padding-left: 12px; }
+html[data-ui="notebook"] .simple-side .trace-workspace { gap: 14px; }
+html[data-ui="notebook"] .simple-side .trace-documents .document { margin-block: 6px; }
+@media (max-width: 680px) {
+  html[data-ui="notebook"] .simple-investigation-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  html[data-ui="notebook"] .simple-question { font-size: 20px; margin-bottom: 7px; }
+  html[data-ui="notebook"] .simple-investigation-grid .document { padding: 9px; margin-bottom: 0; }
+  html[data-ui="notebook"] .simple-pick { margin-bottom: 7px; }
+  html[data-ui="notebook"] .simple-pick legend { margin-bottom: 3px; }
+  html[data-ui="notebook"] .simple-side .trace-workspace { gap: 8px; }
+  html[data-ui="notebook"] .simple-side .trace-documents { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  html[data-ui="notebook"] .simple-side .trace-documents > .document:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+  html[data-ui="notebook"] .simple-side .trace-documents .document { padding: 7px; margin: 0; }
+  html[data-ui="notebook"] .simple-side .trace-documents .document h3 { font-size: 17px; }
+}
+@media (max-width: 680px) {
+  html[data-ui="notebook"] .simple-side .trace-documents {
+    max-height: min(220px, 30dvh);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    border-bottom: 1px solid rgb(91 83 73 / 25%);
+    padding-bottom: 5px;
+  }
+  html[data-ui="notebook"] .simple-side .trace-documents .simple-receipt-pair { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  html[data-ui="notebook"] .simple-side .trace-documents .simple-receipt-pair p + p { border-left: 0; padding-left: 0; }
+}
+
+/* Keep the question and purpose visible beside the choices. */
+html[data-ui] .choice-guidance {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}

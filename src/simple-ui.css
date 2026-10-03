@@ -1,0 +1,103 @@
+/* One question on the paper; one next action over the scene. */
+html[data-ui="notebook"] .scene-next {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+  pointer-events: auto;
+}
+html[data-ui="notebook"] .scene-next > small {
+  color: #f2ece2;
+  font: 400 12px/1.4 "UI Sans", sans-serif;
+  text-shadow: 0 1px 4px #171410;
+}
+html[data-ui="notebook"] .scene-next.is-ready .button-primary {
+  background: #f0e9dc26;
+  border-bottom-color: #fff5e5;
+}
+html[data-ui="notebook"] .scene-explore-tools {
+  display: grid;
+  gap: 4px;
+}
+html[data-ui="notebook"] .scene-explore-help {
+  color: #f2ece2;
+  font: 400 12px/1.5 "UI Sans", sans-serif;
+  text-shadow: 0 1px 4px #171410;
+}
+.explore-touch { display: none; }
+@media (pointer: coarse) {
+  .explore-mouse { display: none; }
+  .explore-touch { display: inline; }
+}
+html[data-ui="notebook"] .world-hotspot.is-guided .world-hotspot-label {
+  top: calc(var(--marker-y, 50%) + 27px);
+  padding: 3px 8px;
+  background: radial-gradient(ellipse, #29251fcc, #29251f70 55%, transparent 75%);
+}
+html[data-ui="notebook"] .optional-investigation {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font: 400 12px/1.4 "UI Sans", sans-serif;
+}
+html[data-ui="notebook"] .investigation-guide .tutorial-note {
+  font: 400 12px/1.5 "UI Sans", sans-serif;
+}
+html[data-ui="notebook"] .simple-inspection .inspection-panels {
+  display: block;
+  left: max(24px, calc((100vw - 960px) / 2));
+  right: max(24px, calc((100vw - 960px) / 2));
+}
+html[data-ui="notebook"] .simple-inspection .inspection-body {
+  width: 100%;
+  max-width: none;
+  max-height: 100%;
+  margin: 0;
+  overflow: auto;
+}
+html[data-ui="notebook"] .simple-inspection.branch-overlay .inspection-panels {
+  left: auto;
+  width: min(700px, 70vw);
+}
+html[data-ui="notebook"] .work-glass {
+  bottom: auto;
+  height: auto;
+  max-height: calc(100dvh - 86px);
+}
+html[data-ui="notebook"] .simple-evidence-picker .evidence-select select {
+  height: 38px;
+  min-height: 38px;
+  padding: 5px 9px;
+  line-height: normal;
+}
+html[data-ui="notebook"] .simple-company > .dialogue { margin-block: 0 5px; }
+html[data-ui="notebook"] .investigation-guide {
+  top: 100px;
+  padding: 10px 20px;
+  width: min(540px, calc(100% - 40px));
+}
+html[data-ui="notebook"] .investigation-guide p {
+  margin: 4px 0;
+  font: 400 21px/1.5 "Spring Hand", serif;
+}
+html[data-ui="notebook"] .investigation-guide .scene-result {
+  display: block;
+  font: 400 13px/1.6 "UI Sans", sans-serif;
+}
+@media (max-width: 699px) {
+  html[data-ui="notebook"] .world-hotspot.is-guided .world-hotspot-label {
+    top: calc(var(--marker-y, 50%) - 27px);
+    translate: -50% -100%;
+  }
+  html[data-ui="notebook"] .simple-inspection .inspection-panels,
+  html[data-ui="notebook"] .simple-inspection.branch-overlay .inspection-panels {
+    left: 0;
+    right: 0;
+    width: auto;
+    top: 58px;
+    bottom: 10px;
+  }
+  html[data-ui="notebook"] .investigation-guide { top: 76px; padding: 8px 12px; }
+  html[data-ui="notebook"] .investigation-guide p { font-size: 18px; }
+}
+@media (max-height: 480px) {
+  html[data-ui="notebook"] .investigation-guide { top: 64px; }
+}

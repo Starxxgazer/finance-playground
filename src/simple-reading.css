@@ -1,0 +1,39 @@
+/* A single date question stays beside its complete original document. */
+html[data-ui="notebook"] .simple-newshop {
+  grid-template-areas: "original question";
+  grid-template-columns: minmax(0, 1.1fr) minmax(270px, .9fr);
+  gap: 20px;
+}
+html[data-ui="notebook"] .simple-newshop .newshop-documents { grid-area: original; }
+html[data-ui="notebook"] .simple-newshop .newshop-dates { grid-area: question; padding-top: 0; }
+html[data-ui="notebook"] .simple-calendar .date-question { position: relative; padding-top: 2px; }
+html[data-ui="notebook"] .simple-calendar .date-question h3 { margin: 5px 0; font-size: 23px; line-height: 1.35; }
+html[data-ui="notebook"] .simple-calendar .date-question p { margin: 4px 0 8px; font-size: 16px; }
+html[data-ui="notebook"] .simple-calendar .date-question small,
+html[data-ui="notebook"] .date-progress { font-size: 12px; color: var(--muted); }
+html[data-ui="notebook"] .simple-calendar .calendar-workspace { display: block; margin-top: 8px; }
+html[data-ui="notebook"] .simple-calendar .month { width: 100%; max-width: 380px; margin: 0; }
+html[data-ui="notebook"] .simple-calendar .days button { min-height: 34px; font-size: 14px; }
+html[data-ui="notebook"] :is(.calendar-history, .related-original) { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px; }
+html[data-ui="notebook"] :is(.calendar-history, .related-original, .simple-handover .finding-sources, .simple-company .finding-sources) > summary { cursor: pointer; font-size: 12px; color: var(--muted); line-height: 1.7; }
+html[data-ui="notebook"] .calendar-history-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+html[data-ui="notebook"] .calendar-history-row strong { margin-left: auto; font-weight: 400; }
+html[data-ui="notebook"] .simple-handover .handover-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html[data-ui="notebook"] :is(.simple-handover, .simple-company) .primary-handover-action { margin: 8px 0 12px; padding: 8px 0; border-bottom: 1px solid var(--line); border-top: 0; justify-content: space-between; }
+html[data-ui="notebook"] .primary-handover-action > span { font-size: 12px; color: var(--muted); }
+html[data-ui="notebook"] .primary-handover-action .button-primary { min-width: 130px; flex: 0 0 auto; }
+html[data-ui="notebook"] .citation-recovery { padding: 8px 0; }
+html[data-ui="notebook"] .simple-handover .handover-notes article { padding: 8px 0; }
+html[data-ui="notebook"] .simple-handover .handover-notes p { margin: 5px 0; }
+html[data-ui="notebook"] .inventory-return { margin-bottom: 10px; }
+@media (max-width: 699px) {
+  html[data-ui="notebook"] .simple-newshop { display: flex; flex-direction: column; height: auto; gap: 16px; }
+  html[data-ui="notebook"] .simple-newshop .newshop-dates { order: 0; overflow: visible; padding: 0; }
+  html[data-ui="notebook"] .simple-newshop .newshop-documents { order: 1; overflow: visible; padding: 10px 0 0; border: 0; border-top: 1px solid var(--line); }
+  html[data-ui="notebook"] .simple-calendar .date-question h3 { font-size: 21px; }
+  html[data-ui="notebook"] .simple-calendar .month { max-width: none; }
+  html[data-ui="notebook"] .simple-calendar .days button { min-height: 32px; }
+  html[data-ui="notebook"] .simple-handover .handover-notes { grid-template-columns: 1fr; }
+  html[data-ui="notebook"] :is(.simple-handover, .simple-company) .primary-handover-action { flex-direction: row; align-items: center; gap: 10px; }
+  html[data-ui="notebook"] .primary-handover-action .button-primary { width: auto; min-width: 116px; }
+}

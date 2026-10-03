@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { calendarNotes } from "../game/content.js";
-import { Icon } from "./Ui.jsx";
 import { Feedback } from "./Evidence.jsx";
 export function Month({
   day,
@@ -57,111 +56,62 @@ export function Month({
     </div>
   );
 }
-export default function Calendar({ state, dispatch, onSource }) {
-  const [selected, setSelected] = useState(null);
-  const [day, setDay] = useState(null);
+const dateQuestions = {
+  rent: "押金和首期租金，哪天付？",
+  "decor-first": "装修首款，哪天付？",
+  "equipment-first": "设备预付款，哪天付？",
+  "decor-last": "装修验收款，哪天付？",
+  "equipment-last": "设备尾款，哪天付？",
+  staff: "人员筹备费，哪天付？",
+  stock: "备货试制费，哪天付？",
+  open: "计划哪天开业？",
+};
+
+export default function Calendar({ state, dispatch, onSource, sources }) {
+  const [attempt, setAttempt] = useState(null);
   const [feedback, setFeedback] = useState("");
-  const notes = calendarNotes.filter((n) => state.seen.includes(n.source));
-  const placed = Object.keys(state.calendar).length;
-  function place(id, date) {
-    const note = notes.find((n) => n.id === id);
-    if (!note) {
-      setFeedback("先选一张已经找到的便签，再点日历日期。");
+  const notes = calendarNotes.filter((n) => state.seen.includes(n.source) && (!sources || sources.includes(n.source)));
+  const checked = notes.filter((n) => state.calendar[n.id] === n.day);
+  const total = sources ? calendarNotes.filter((n) => sources.includes(n.source)).length : calendarNotes.length;
+  const complete = total > 0 && checked.length === total;
+  const current = notes.find((n) => state.calendar[n.id] !== n.day);
+  function place(date) {
+    if (!current) return;
+    setAttempt({ id: current.id, day: date });
+    if (current.day !== date) {
+      setFeedback("还没对上，再看原件的日期。");
       return;
     }
-    if (note.day !== date) {
-      setFeedback("日期和原单据还没对上。点便签旁的“原单据”再看一下。");
-      return;
-    }
-    dispatch({ type: "PLACE", id, day: date });
-    setSelected(null);
-    setDay(date);
-    setFeedback(`${note.text}已放到11月${date}日。`);
+    dispatch({ type: "PLACE", id: current.id, day: date });
+    setFeedback("");
   }
   return (
-    <>
-      <p className="muted">
-        先点便签，再点日期。也可以直接把便签拖到日历上。所有日期都可以试。
-      </p>
-      <div className="calendar-workspace">
+    <div className={`${sources ? "scoped-calendar" : "full-calendar"} simple-calendar`}>
+      <div className="date-question">
+        <span className="date-progress">已核对 {checked.length} / {total}</span>
+        <h3>{current ? dateQuestions[current.id] : complete ? "日期已核对" : "先找一份原件"}</h3>
+        {current && <p>{current.amount}{current.id !== "open" && <small> · 计划付款</small>}</p>}
+        {current && onSource && <button className="text-button" onClick={() => onSource(current.source)}>看原件</button>}
+      </div>
+      {current && <p className="choice-guidance">{current.id === "open"
+        ? "按原件在日历选计划开业日，用来核对开业收款与付款的先后；计划日期不代表能如期开业。"
+        : "按原件在日历选本项付款日，排清收付先后。选对自动记录并转到下一项，选错可重选。"}</p>}
+      {current && <div className="calendar-workspace">
         <Month
-          day={day}
-          onDay={(n) => {
-            setDay(n);
-            place(selected, n);
-          }}
-          onDrop={place}
-          markers={Object.values(state.calendar).reduce(
-            (counts, n) => ({ ...counts, [n]: (counts[n] || 0) + 1 }),
-            {},
-          )}
-        >
-          {day && (
-            <div className="calendar-pins">
-              <h4>11月{day}日</h4>
-              {notes.filter((n) => state.calendar[n.id] === day).length ? (
-                notes
-                  .filter((n) => state.calendar[n.id] === day)
-                  .map((n) => (
-                    <p key={n.id}>
-                      <span>{n.text}</span>
-                      <strong>{n.amount}</strong>
-                    </p>
-                  ))
-              ) : (
-                <p className="muted">这天还没贴便签</p>
-              )}
-            </div>
-          )}
-        </Month>
-        <div className="sticky-list">
-          {notes.map((n) => (
-            <div
-              className={`sticky-note ${selected === n.id ? "selected" : ""} ${state.calendar[n.id] ? "placed" : ""}`}
-              key={n.id}
-            >
-              <button
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("text/plain", n.id);
-                  setSelected(n.id);
-                }}
-                onClick={() => {
-                  setSelected(n.id);
-                  setFeedback("");
-                }}
-                aria-pressed={selected === n.id}
-              >
-                <span>{n.text}</span>
-                <strong>{n.amount}</strong>
-                <small>
-                  {state.calendar[n.id]
-                    ? `已贴：11月${state.calendar[n.id]}日`
-                    : "点击后放到日历"}
-                </small>
-              </button>
-              <button
-                className="text-button"
-                onClick={() => onSource(n.source)}
-              >
-                原单据
-                <Icon name="caret" size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-      {notes.length < calendarNotes.length && (
-        <p className="muted">还有便签没找到，先回新铺查看剩下的资料。</p>
-      )}
-      <Feedback success={placed === calendarNotes.length}>
-        {placed === calendarNotes.length
-          ? "付款和计划开业日期已核对。日期仍是计划，能否实现还要继续查。"
-          : feedback}
+          day={attempt?.id === current.id ? attempt.day : null}
+          onDay={place}
+        />
+      </div>}
+      <Feedback success={complete}>
+        {complete ? "日期仍是计划，能否实现还待核实。" : feedback}
       </Feedback>
-      <div className="count-line">
-        已贴好 {placed} / {calendarNotes.length} 张便签
-      </div>
-    </>
+      {checked.length > 0 && <details className="calendar-history">
+        <summary>已核对日期 · {checked.length}</summary>
+        {checked.map((note) => <div className="calendar-history-row" key={note.id}>
+          <span>{note.text}</span><strong>11月{state.calendar[note.id]}日</strong>
+          {onSource && <button className="text-button" onClick={() => onSource(note.source)}>原件</button>}
+        </div>)}
+      </details>}
+    </div>
   );
 }
