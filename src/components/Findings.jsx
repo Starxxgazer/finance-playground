@@ -244,7 +244,7 @@ export default function Findings({ state, dispatch, onSource }) {
 export function Ending({ onReview }) {
   const [back, setBack] = useState(false);
   return (
-    <section className="ending">
+    <section className="ending" aria-labelledby="chapter-complete-title">
       <img
         className="ending-image"
         src={asset("scenes/invitation.webp")}
@@ -254,11 +254,11 @@ export function Ending({ onReview }) {
       />
       <div className="ending-content">
         <span className="section-caption">完成首次企业调查</span>
-        <h1>
-          日期还空着，
-          <br />
-          邀请还在。
-        </h1>
+        <h1 id="chapter-complete-title">第一章通关</h1>
+        <p>
+          《排队的面包店》调查完成。<br />
+          关键收付已核对，调查资料已交给林姐。
+        </p>
         <Dialogue person="xiaohe">
           先把钱和设备的时间问清楚。等日期定下来，这张留给你。
         </Dialogue>
@@ -294,6 +294,7 @@ export function Ending({ onReview }) {
         <p className="ending-note">
           调查完成，剩下的问题由林姐继续核实。贷款尚未批准，分期安排尚未生效。
         </p>
+        <p className="ending-note">未查支线不影响通关；可回看交接，继续补查。</p>
         <Button secondary onClick={onReview}>
           回看调查交接
           <Icon name="notebook" />

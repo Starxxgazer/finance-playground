@@ -59,3 +59,21 @@ python3 scripts/deploy-game.py rollback
 - 不通过删除断言、改写预期或绕过状态机来让检查通过。
 - 不覆盖其他站点配置，不改变 SSH 登录安全规则，不删除当前或回滚目标版本。
 - 发布记录保留失败、复测和已知风险；不同快照与多次复测不能写成一次全量通过。
+
+## 视频与配乐带宽
+
+分发视频保持 1080p、30 fps、H.264，保留 AAC 原音轨和 faststart；平均总码率约 2.32～2.61 Mbps。保持 MP4 的 Range 支持。
+
+为避免背景音乐一次下载整首、与视频抢占带宽，当前 Nginx 站点在 `/releases/` 的普通静态资源配置之外增加以下规则。128 kbps 配乐先快速提供 128 KB 缓冲，随后每个请求以 24 KB/s 下载；音乐内容、音量与淡化逻辑不变。新建站点或调整配置时请同时保留这项策略；修改现有配置须先备份并通过 `nginx -t`，不要覆盖 Certbot 的 HTTPS 配置。
+
+```nginx
+location ~ ^/releases/[A-Za-z0-9-]+/audio/[a-z0-9-]+\.mp3$ {
+    root /srv/zhangmianzhixia;
+    try_files $uri =404;
+    expires 1y;
+    limit_rate_after 128k;
+    limit_rate 24k;
+}
+```
+
+音频策略保留 HTTP Range，适用于当前 128 kbps 的配乐；如果未来提高音乐码率，须重新核对下载上限。客户端实际带宽仍受网络和服务器出口影响，压缩与带宽分配不能保证所有网络都无卡顿。
