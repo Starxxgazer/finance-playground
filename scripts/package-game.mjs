@@ -3,6 +3,7 @@
 import { readFile, writeFile, readdir, stat } from "node:fs/promises";
 import { resolve, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { evidence } from "../src/game/content.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
@@ -73,7 +74,7 @@ async function checkAssets(dir) {
     else {
       const name = relative(resolve(root, "public"), p).split(sep).join("/");
       if (
-        !/^(scenes|characters)\/[a-z0-9-]+\.webp$/.test(name) &&
+        !/^(scenes|characters|items)\/[a-z0-9-]+\.webp$/.test(name) &&
         !/^fonts\/ui\/[\w.-]+\.(woff2|txt)$/.test(name)
       ) {
         throw new Error(`Non-runtime file in public/: ${name}`);
@@ -83,5 +84,12 @@ async function checkAssets(dir) {
   }
 }
 await checkAssets(resolve(root, "public"));
+const itemFiles = (await readdir(resolve(root, "public/items"))).sort();
+const expectedItems = evidence.map(({ id }) => `${id}.webp`).sort();
+if (JSON.stringify(itemFiles) !== JSON.stringify(expectedItems)) {
+  throw new Error(
+    "Every document must have exactly one generated inventory image.",
+  );
+}
 await writeFile(resolve(root, "开始游戏.html"), html);
 console.log("已生成 开始游戏.html：双击即可游玩，无需 Node.js 或本地服务器。");

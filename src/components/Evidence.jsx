@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { byId, findings } from "../game/content.js";
-import { itemAppearance } from "../game/inventory.js";
+import ItemIcon from "./ItemIcon.jsx";
 import { Icon, Button, Dialogue } from "./Ui.jsx";
 
 export default function Evidence({ id, children, compact = false }) {
@@ -9,7 +9,7 @@ export default function Evidence({ id, children, compact = false }) {
     <article className={`document ${compact ? "compact" : ""}`}>
       <div className="document-meta">
         <span>{item.nature}</span>
-        <Icon name={itemAppearance(id).icon} />
+        <ItemIcon id={id} small />
       </div>
       <h3>{item.title}</h3>
       <div className="document-source">

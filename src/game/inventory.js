@@ -1,6 +1,5 @@
 // Presentation only: physical filing categories never unlock findings or evidence.
 export const inventoryCategories = [
-  { id: "all", label: "全部资料", icon: "bag" },
   { id: "accounts", label: "账本测算", icon: "book" },
   { id: "papers", label: "合同单据", icon: "folder" },
   { id: "voices", label: "人物记录", icon: "chat" },

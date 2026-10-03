@@ -1,15 +1,13 @@
-import { itemAppearance } from "../game/inventory.js";
-import { Icon } from "./Ui.jsx";
+import { asset } from "./Ui.jsx";
 
 export default function ItemIcon({ id, small = false }) {
-  const look = itemAppearance(id);
   return (
-    <span
-      className={`item-art item-${look.shape} ${small ? "item-art-small" : ""}`}
+    <img
+      className={`item-art ${small ? "item-art-small" : ""}`}
+      src={asset(`items/${id}.webp`)}
+      alt=""
       aria-hidden="true"
-    >
-      <Icon name={look.icon} size={small ? 22 : 36} weight="duotone" />
-      {!small && <span className="item-art-caption">{look.label}</span>}
-    </span>
+      draggable="false"
+    />
   );
 }
