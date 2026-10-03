@@ -202,8 +202,21 @@ export default function App() {
   const closeWork = () => {
     setWorkOpen(false);
     requestAnimationFrame(() =>
-      document.querySelector(".scene-controls > button")?.focus(),
+      restoreSceneFocus(document.querySelector(".scene-controls > button")),
     );
+  };
+  const restoreSceneFocus = (target) => {
+    const focused = document.activeElement;
+    // A delayed return must not replace a new keyboard or pointer focus.
+    if (
+      focused &&
+      focused !== document.body &&
+      focused !== document.documentElement &&
+      focused.isConnected &&
+      focused.getClientRects().length
+    )
+      return;
+    target?.focus();
   };
   const closeInspection = () => {
     setActive(null);
@@ -214,9 +227,9 @@ export default function App() {
       const hotspot = [...document.querySelectorAll(".world-hotspot")].find(
         (button) => button.getAttribute("aria-label") === `调查${label}`,
       );
-      (
-        hotspot || document.querySelector(".scene-controls-left button")
-      )?.focus();
+      restoreSceneFocus(
+        hotspot || document.querySelector(".scene-controls-left button"),
+      );
     });
   };
   const goTo = (index) => {
